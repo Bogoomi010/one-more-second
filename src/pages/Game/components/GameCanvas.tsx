@@ -225,7 +225,7 @@ export default function GameCanvas({ lives, setLives, setSpawnIntervalStatus, se
         ctx.textAlign = "center";
         ctx.fillText("GAME OVER", CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2);
         ctx.font = "16px monospace";
-        ctx.fillText("Press R or ㄱ to Restart", CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 + 30);
+        ctx.fillText("Press R to Restart", CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 + 30);
         ctx.textAlign = "left";
       }
     }
