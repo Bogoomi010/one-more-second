@@ -1,4 +1,5 @@
 import React from 'react';
+import AdSidebar from './AdSidebar'; // 광고 컴포넌트 추가
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -55,9 +56,11 @@ export default function Layout({ children }: LayoutProps) {
       
       <main className="main-centered">
         <div className="main-row">
+          <AdSidebar /> {/* 왼쪽 광고 */}
           {Array.isArray(children) ? children.map((child, idx) => (
             <div key={idx}>{child}</div>
           )) : children}
+          <AdSidebar /> {/* 오른쪽 광고 */}
         </div>
       </main>
 
@@ -68,4 +71,4 @@ export default function Layout({ children }: LayoutProps) {
       </footer>
     </div>
   );
-} 
+}
