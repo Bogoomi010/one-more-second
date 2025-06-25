@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 
-const CANVAS_WIDTH = 480;
-const CANVAS_HEIGHT = 640;
+const CANVAS_WIDTH = 400;
+const CANVAS_HEIGHT = 500;
 const PLAYER_SPEED = 4;
 const PLAYER_SIZE = 20;
 const BULLET_RADIUS = 4;
@@ -9,9 +9,9 @@ const BULLET_SPEED = 3;
 const INITIAL_SPAWN_INTERVAL = 500;
 const INTERVAL_DECREASE = 50;
 const MIN_SPAWN_INTERVAL = 100;
-const DIFFICULTY_INTERVAL = 3000; // 3초
+const DIFFICULTY_INTERVAL = 3000;
 
-// 플레이어 시작 위치 상수 추가
+// 플레이어 시작 위치
 const PLAYER_START_X = CANVAS_WIDTH / 2 - PLAYER_SIZE / 2;
 const PLAYER_START_Y = CANVAS_HEIGHT / 2 - PLAYER_SIZE / 2;
 
@@ -260,8 +260,8 @@ export default function GameCanvas({ lives, setLives, setSpawnIntervalStatus, se
         margin: '0 auto',
         background: '#18181b',
         border: '2px solid #222',
-        maxWidth: 480,
-        height: 640
+        maxWidth: 400,
+        height: 500
       }}
     />
   );

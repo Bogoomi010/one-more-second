@@ -14,8 +14,8 @@ export default function Game() {
       alignItems: 'center',
       gap: 20,
       padding: 20,
-      minHeight: '100vh',
-      background: '#000'
+      height: '600px',
+      background: 'black'
     }}>
       <PlayerStatus
         lives={lives}
