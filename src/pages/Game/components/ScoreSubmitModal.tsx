@@ -35,12 +35,6 @@ const formatOptionLabel = ({ value, label }: CountryOption) => (
     </div>
 );
 
-const SelectedFlag = ({ value }: { value: string }) => (
-    <div style={{ width: '24px', marginRight: '8px' }}>
-        <Flag code={value} height="16" />
-    </div>
-);
-
 const ScoreSubmitModal: React.FC<ScoreSubmitModalProps> = ({ score, onClose, isOpen }) => {
     const [nickname, setNickname] = useState('');
     const [country, setCountry] = useState<CountryOption | null>(null);
@@ -199,6 +193,15 @@ const ScoreSubmitModal: React.FC<ScoreSubmitModalProps> = ({ score, onClose, isO
                                 </div>
                             </div>
                         </div>
+
+                        {error && (
+                            <div className="w-full text-center">
+                                <p className="text-red-500 text-sm" style={{
+                                    fontFamily: 'Montserrat, -apple-system, BlinkMacSystemFont, sans-serif',
+                                    letterSpacing: '0.5px'
+                                }}>{error}</p>
+                            </div>
+                        )}
 
                         <div className="w-full mt-4">
                             <button
