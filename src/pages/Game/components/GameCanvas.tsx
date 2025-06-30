@@ -1,11 +1,11 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 
 const CANVAS_WIDTH = 400;
 const CANVAS_HEIGHT = 500;
-const PLAYER_SPEED = 4;
+const PLAYER_SPEED = 240; // 초당 240픽셀로 변경
 const PLAYER_SIZE = 20;
 const BULLET_RADIUS = 4;
-const BULLET_SPEED = 3;
+const BULLET_SPEED = 180; // 초당 180픽셀로 변경
 const INITIAL_SPAWN_INTERVAL = 500;
 const INTERVAL_DECREASE = 50;
 const MIN_SPAWN_INTERVAL = 100;
@@ -20,14 +20,16 @@ interface GameCanvasProps {
   setLives: (lives: number) => void;
   setSpawnIntervalStatus: (interval: number) => void;
   setScore: (score: number) => void;
+  onGameOver: (finalScore: number) => void;
 }
 
-export default function GameCanvas({ lives, setLives, setSpawnIntervalStatus, setScore }: GameCanvasProps) {
+export default function GameCanvas({ lives, setLives, setSpawnIntervalStatus, setScore, onGameOver }: GameCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const keysRef = useRef({ ArrowLeft: false, ArrowRight: false, ArrowUp: false, ArrowDown: false });
   const playerRef = useRef({ x: PLAYER_START_X, y: PLAYER_START_Y });
   const bulletsRef = useRef<any[]>([]);
   const startTimeRef = useRef(Date.now());
+  const lastFrameTimeRef = useRef(0);
   const gameOverRef = useRef(false);
   const animationRef = useRef<number | undefined>(undefined);
   const spawnLoopRef = useRef<NodeJS.Timeout | undefined>(undefined);
@@ -64,10 +66,146 @@ export default function GameCanvas({ lives, setLives, setSpawnIntervalStatus, se
     isTopSpawnRef.current = !isTopSpawnRef.current;
   }
 
-  // lives 값이 변경될 때마다 ref 업데이트
-  useEffect(() => {
-    livesRef.current = lives;
-  }, [lives]);
+  function checkCollision(px: number, py: number, bx: number, by: number, br: number) {
+    const dx = px + PLAYER_SIZE / 2 - bx;
+    const dy = py + PLAYER_SIZE / 2 - by;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+    return distance < br + PLAYER_SIZE / 2;
+  }
+
+  function handleCollision() {
+    isHitRef.current = true;
+    setTimeout(() => {
+      isHitRef.current = false;
+    }, 150);
+    
+    if (livesRef.current > 1) {
+      setLives(livesRef.current - 1);
+    } else {
+      gameOverRef.current = true;
+      setLives(0);
+      cancelAnimationFrame(animationRef.current!);
+      clearInterval(spawnLoopRef.current);
+      clearInterval(difficultyLoopRef.current);
+      // 게임 오버 시 점수 전달
+      const finalScore = Math.floor((Date.now() - startTimeRef.current) / 1000);
+      onGameOver(finalScore);
+    }
+  }
+
+  function update(deltaTime: number) {
+    if (gameOverRef.current) return;
+
+    const keys = keysRef.current;
+    const moveDistance = PLAYER_SPEED * deltaTime;
+    if (keys.ArrowLeft) playerRef.current.x -= moveDistance;
+    if (keys.ArrowRight) playerRef.current.x += moveDistance;
+    if (keys.ArrowUp) playerRef.current.y -= moveDistance;
+    if (keys.ArrowDown) playerRef.current.y += moveDistance;
+
+    playerRef.current.x = Math.max(0, Math.min(CANVAS_WIDTH - PLAYER_SIZE, playerRef.current.x));
+    playerRef.current.y = Math.max(0, Math.min(CANVAS_HEIGHT - PLAYER_SIZE, playerRef.current.y));
+
+    bulletsRef.current.forEach((b) => {
+      const bulletDistance = BULLET_SPEED * deltaTime;
+      b.x += Math.cos(b.angle) * bulletDistance;
+      b.y += Math.sin(b.angle) * bulletDistance;
+    });
+
+    for (const b of bulletsRef.current) {
+      if (checkCollision(playerRef.current.x, playerRef.current.y, b.x, b.y, BULLET_RADIUS)) {
+        bulletsRef.current = bulletsRef.current.filter((bullet) => bullet !== b);
+        handleCollision();
+        return;
+      }
+    }
+
+    bulletsRef.current = bulletsRef.current.filter((b) => b.x >= 0 && b.x <= CANVAS_WIDTH && b.y >= 0 && b.y <= CANVAS_HEIGHT);
+  }
+
+  function draw() {
+    const ctx = canvasRef.current?.getContext("2d");
+    if (!ctx) return;
+    
+    // 배경을 어두운색으로 채우기
+    ctx.fillStyle = "#18181b";
+    ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+
+    // 피격 시 붉은색 오버레이
+    if (isHitRef.current) {
+      ctx.fillStyle = "rgba(255, 0, 0, 0.5)";
+      ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+    }
+
+    // 플레이어 그리기
+    ctx.fillStyle = "#00f";
+    ctx.fillRect(playerRef.current.x, playerRef.current.y, PLAYER_SIZE, PLAYER_SIZE);
+
+    // 시간 업데이트
+    const elapsedSec = Math.floor((Date.now() - startTimeRef.current) / 1000);
+    setScore(elapsedSec);
+
+    // 총알 그리기
+    ctx.fillStyle = "#f00";
+    bulletsRef.current.forEach((b) => {
+      ctx.beginPath();
+      ctx.arc(b.x, b.y, BULLET_RADIUS, 0, Math.PI * 2);
+      ctx.fill();
+    });
+
+    if (gameOverRef.current) {
+      ctx.fillStyle = "#fff";
+      ctx.font = "bold 32px monospace";
+      ctx.textAlign = "center";
+      ctx.fillText("GAME OVER", CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2);
+      ctx.font = "bold 16px monospace";
+      ctx.fillText("Press R to restart", CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 + 32);
+      ctx.textAlign = "left";
+    }
+  }
+
+  const gameLoop = useCallback((timestamp: number) => {
+    if (!lastFrameTimeRef.current) {
+      lastFrameTimeRef.current = timestamp;
+    }
+    
+    const deltaTime = (timestamp - lastFrameTimeRef.current) / 1000;
+    lastFrameTimeRef.current = timestamp;
+    
+    update(deltaTime);
+    draw();
+    
+    if (!gameOverRef.current) {
+      animationRef.current = requestAnimationFrame(gameLoop);
+    }
+  }, []);
+
+  const resetGame = useCallback(() => {
+    gameOverRef.current = false;
+    playerRef.current = { x: PLAYER_START_X, y: PLAYER_START_Y };
+    bulletsRef.current = [];
+    startTimeRef.current = Date.now();
+    lastFrameTimeRef.current = 0;
+    isHitRef.current = false;
+    isTopSpawnRef.current = true;
+    setSpawnInterval(INITIAL_SPAWN_INTERVAL);
+    setLives(3);
+
+    // 기존 인터벌 제거
+    if (difficultyLoopRef.current) clearInterval(difficultyLoopRef.current);
+    if (spawnLoopRef.current) clearInterval(spawnLoopRef.current);
+    if (animationRef.current) cancelAnimationFrame(animationRef.current);
+    
+    // 난이도 증가 인터벌 설정
+    difficultyLoopRef.current = setInterval(() => {
+      if (!gameOverRef.current) {
+        setSpawnInterval(prev => Math.max(MIN_SPAWN_INTERVAL, prev - INTERVAL_DECREASE));
+      }
+    }, DIFFICULTY_INTERVAL);
+
+    // 게임 루프 시작
+    gameLoop(performance.now());
+  }, [gameLoop, setLives]);
 
   // spawnInterval이 변경될 때마다 상태 업데이트
   useEffect(() => {
@@ -93,33 +231,16 @@ export default function GameCanvas({ lives, setLives, setSpawnIntervalStatus, se
     };
   }, [spawnInterval]);
 
+  // lives 값이 변경될 때마다 ref 업데이트
+  useEffect(() => {
+    livesRef.current = lives;
+  }, [lives]);
+
+  // 메인 게임 로직
   useEffect(() => {
     const canvas = canvasRef.current;
     const ctx = canvas?.getContext("2d");
     if (!canvas || !ctx) return;
-
-    function resetGame() {
-      gameOverRef.current = false;
-      playerRef.current = { x: PLAYER_START_X, y: PLAYER_START_Y };
-      bulletsRef.current = [];
-      startTimeRef.current = Date.now();
-      isHitRef.current = false;
-      isTopSpawnRef.current = true;
-      setSpawnInterval(INITIAL_SPAWN_INTERVAL);
-      setLives(3);
-
-      // 기존 인터벌 제거
-      if (difficultyLoopRef.current) clearInterval(difficultyLoopRef.current);
-      
-      // 난이도 증가 인터벌 설정
-      difficultyLoopRef.current = setInterval(() => {
-        if (!gameOverRef.current) {
-          setSpawnInterval(prev => Math.max(MIN_SPAWN_INTERVAL, prev - INTERVAL_DECREASE));
-        }
-      }, DIFFICULTY_INTERVAL);
-
-      gameLoop();
-    }
 
     function handleKeyDown(e: KeyboardEvent) {
       if (["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"].includes(e.key)) {
@@ -138,107 +259,7 @@ export default function GameCanvas({ lives, setLives, setSpawnIntervalStatus, se
     window.addEventListener("keydown", handleKeyDown);
     window.addEventListener("keyup", handleKeyUp);
 
-    function checkCollision(px: number, py: number, bx: number, by: number, br: number) {
-      const dx = px + PLAYER_SIZE / 2 - bx;
-      const dy = py + PLAYER_SIZE / 2 - by;
-      const distance = Math.sqrt(dx * dx + dy * dy);
-      return distance < br + PLAYER_SIZE / 2;
-    }
-
-    function handleCollision() {
-      isHitRef.current = true;
-      setTimeout(() => {
-        isHitRef.current = false;
-      }, 150);
-      
-      if (livesRef.current > 1) {
-        setLives(livesRef.current - 1);
-      } else {
-        gameOverRef.current = true;
-        setLives(0);
-        cancelAnimationFrame(animationRef.current!);
-        clearInterval(spawnLoopRef.current);
-        clearInterval(difficultyLoopRef.current);
-      }
-    }
-
-    function update() {
-      if (gameOverRef.current) return;
-
-      const keys = keysRef.current;
-      if (keys.ArrowLeft) playerRef.current.x -= PLAYER_SPEED;
-      if (keys.ArrowRight) playerRef.current.x += PLAYER_SPEED;
-      if (keys.ArrowUp) playerRef.current.y -= PLAYER_SPEED;
-      if (keys.ArrowDown) playerRef.current.y += PLAYER_SPEED;
-
-      playerRef.current.x = Math.max(0, Math.min(CANVAS_WIDTH - PLAYER_SIZE, playerRef.current.x));
-      playerRef.current.y = Math.max(0, Math.min(CANVAS_HEIGHT - PLAYER_SIZE, playerRef.current.y));
-
-      bulletsRef.current.forEach((b) => {
-        b.x += Math.cos(b.angle) * b.speed;
-        b.y += Math.sin(b.angle) * b.speed;
-      });
-
-      for (const b of bulletsRef.current) {
-        if (checkCollision(playerRef.current.x, playerRef.current.y, b.x, b.y, BULLET_RADIUS)) {
-          bulletsRef.current = bulletsRef.current.filter((bullet) => bullet !== b);
-          handleCollision();
-          return;
-        }
-      }
-
-      bulletsRef.current = bulletsRef.current.filter((b) => b.x >= 0 && b.x <= CANVAS_WIDTH && b.y >= 0 && b.y <= CANVAS_HEIGHT);
-    }
-
-    function draw() {
-      if (!ctx) return;
-      
-      // 배경을 어두운색으로 채우기
-      ctx.fillStyle = "#18181b";
-      ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-
-      // 피격 시 붉은색 오버레이
-      if (isHitRef.current) {
-        ctx.fillStyle = "rgba(255, 0, 0, 0.5)";
-        ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-      }
-
-      // 플레이어 그리기
-      ctx.fillStyle = "#00f";
-      ctx.fillRect(playerRef.current.x, playerRef.current.y, PLAYER_SIZE, PLAYER_SIZE);
-
-      // 시간 업데이트
-      const elapsedSec = Math.floor((Date.now() - startTimeRef.current) / 1000);
-      setScore(elapsedSec);
-
-      // 총알 그리기
-      ctx.fillStyle = "#f00";
-      bulletsRef.current.forEach((b) => {
-        ctx.beginPath();
-        ctx.arc(b.x, b.y, BULLET_RADIUS, 0, Math.PI * 2);
-        ctx.fill();
-      });
-
-      if (gameOverRef.current) {
-        ctx.fillStyle = "#fff";
-        ctx.font = "bold 32px monospace";
-        ctx.textAlign = "center";
-        ctx.fillText("GAME OVER", CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2);
-        ctx.font = "16px monospace";
-        ctx.fillText("Press R to Restart", CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 + 30);
-        ctx.textAlign = "left";
-      }
-    }
-
-    function gameLoop() {
-      update();
-      draw();
-      if (!gameOverRef.current) {
-        animationRef.current = requestAnimationFrame(gameLoop);
-      }
-    }
-
-    // 초기 게임 시작
+    // 게임 시작 시 초기화
     resetGame();
 
     return () => {
@@ -248,7 +269,7 @@ export default function GameCanvas({ lives, setLives, setSpawnIntervalStatus, se
       window.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("keyup", handleKeyUp);
     };
-  }, [setLives, setScore]);
+  }, [resetGame]);
 
   return (
     <canvas
