@@ -72,14 +72,14 @@ export default function GameCanvas({
     isTopSpawnRef.current = !isTopSpawnRef.current;
   }
 
-  function checkCollision(px: number, py: number, bx: number, by: number, br: number) {
+  const checkCollision = useCallback((px: number, py: number, bx: number, by: number, br: number) => {
     const dx = px + PLAYER_SIZE / 2 - bx;
     const dy = py + PLAYER_SIZE / 2 - by;
     const distance = Math.sqrt(dx * dx + dy * dy);
     return distance < br + PLAYER_SIZE / 2;
-  }
+  }, []);
 
-  function handleCollision() {
+  const handleCollision = useCallback(() => {
     hitsRef.current += 1;
 
     isHitRef.current = true;
@@ -98,9 +98,9 @@ export default function GameCanvas({
       const finalScore = Math.floor((Date.now() - startTimeRef.current) / 1000);
       onGameOver({ scoreSeconds: finalScore, hitsTaken: hitsRef.current });
     }
-  }
+  }, [onGameOver, setLives]);
 
-  function update(deltaTime: number) {
+  const update = useCallback((deltaTime: number) => {
     if (gameOverRef.current) return;
 
     const keys = keysRef.current;
@@ -128,9 +128,9 @@ export default function GameCanvas({
     }
 
     bulletsRef.current = bulletsRef.current.filter((b) => b.x >= 0 && b.x <= CANVAS_WIDTH && b.y >= 0 && b.y <= CANVAS_HEIGHT);
-  }
+  }, [checkCollision, handleCollision]);
 
-  function draw() {
+  const draw = useCallback(() => {
     const ctx = canvasRef.current?.getContext('2d');
     if (!ctx) return;
 
@@ -167,10 +167,8 @@ export default function GameCanvas({
       ctx.fillText('Press R to restart', CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 + 32);
       ctx.textAlign = 'left';
     }
-  }
+  }, [playerColor, bulletColor, setScore]);
 
-  // NOTE: draw/update는 렌더링 루프 내부의 ref 기반 로직이라 의존성 나열이 의미가 약함.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   const gameLoop = useCallback((timestamp: number) => {
     if (!lastFrameTimeRef.current) {
       lastFrameTimeRef.current = timestamp;
@@ -185,7 +183,7 @@ export default function GameCanvas({
     if (!gameOverRef.current) {
       animationRef.current = requestAnimationFrame(gameLoop);
     }
-  }, [playerColor, bulletColor]);
+  }, [draw, update]);
 
   const resetGame = useCallback(() => {
     gameOverRef.current = false;
