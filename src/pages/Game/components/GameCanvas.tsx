@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { GameResult } from '../../../gameSystem/types';
 
 const CANVAS_WIDTH = 400;
@@ -25,6 +25,13 @@ interface GameCanvasProps {
   bulletColor: string;
 }
 
+type Bullet = {
+  x: number;
+  y: number;
+  angle: number;
+  speed: number;
+};
+
 export default function GameCanvas({
   lives,
   setLives,
@@ -35,19 +42,43 @@ export default function GameCanvas({
   bulletColor,
 }: GameCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+
   const keysRef = useRef({ ArrowLeft: false, ArrowRight: false, ArrowUp: false, ArrowDown: false });
   const playerRef = useRef({ x: PLAYER_START_X, y: PLAYER_START_Y });
-  const bulletsRef = useRef<any[]>([]);
+  const bulletsRef = useRef<Bullet[]>([]);
+
   const startTimeRef = useRef(Date.now());
   const lastFrameTimeRef = useRef(0);
+  const lastScoreSecRef = useRef<number>(0);
+
   const gameOverRef = useRef(false);
   const animationRef = useRef<number | undefined>(undefined);
-  const spawnLoopRef = useRef<NodeJS.Timeout | undefined>(undefined);
-  const difficultyLoopRef = useRef<NodeJS.Timeout | undefined>(undefined);
+
   const livesRef = useRef(lives);
   const hitsRef = useRef(0);
+
   const isHitRef = useRef(false);
   const isTopSpawnRef = useRef(true);
+
+  // 색상/콜백은 부모 rerender에 의해 identity가 바뀌어도 루프가 리셋되지 않도록 ref로 보관
+  const playerColorRef = useRef(playerColor);
+  const bulletColorRef = useRef(bulletColor);
+  const onGameOverRef = useRef(onGameOver);
+  useEffect(() => {
+    playerColorRef.current = playerColor;
+  }, [playerColor]);
+  useEffect(() => {
+    bulletColorRef.current = bulletColor;
+  }, [bulletColor]);
+  useEffect(() => {
+    onGameOverRef.current = onGameOver;
+  }, [onGameOver]);
+
+  // 스폰/난이도는 setInterval 대신 rAF 기반 누적 시간으로 처리 → 모니터 주사율/프레임 드랍에 덜 민감
+  const spawnIntervalMsRef = useRef(INITIAL_SPAWN_INTERVAL);
+  const spawnAccMsRef = useRef(0);
+  const difficultyAccMsRef = useRef(0);
+
   const [spawnInterval, setSpawnInterval] = useState(INITIAL_SPAWN_INTERVAL);
 
   function spawnSingleBullet() {
@@ -61,7 +92,7 @@ export default function GameCanvas({
       playerRef.current.x + PLAYER_SIZE / 2 - centerX
     );
 
-    const bullet = {
+    const bullet: Bullet = {
       x: centerX,
       y: centerY,
       angle: targetAngle,
@@ -72,14 +103,14 @@ export default function GameCanvas({
     isTopSpawnRef.current = !isTopSpawnRef.current;
   }
 
-  const checkCollision = useCallback((px: number, py: number, bx: number, by: number, br: number) => {
+  function checkCollision(px: number, py: number, bx: number, by: number, br: number) {
     const dx = px + PLAYER_SIZE / 2 - bx;
     const dy = py + PLAYER_SIZE / 2 - by;
     const distance = Math.sqrt(dx * dx + dy * dy);
     return distance < br + PLAYER_SIZE / 2;
-  }, []);
+  }
 
-  const handleCollision = useCallback(() => {
+  function handleCollision() {
     hitsRef.current += 1;
 
     isHitRef.current = true;
@@ -89,22 +120,24 @@ export default function GameCanvas({
 
     if (livesRef.current > 1) {
       setLives(livesRef.current - 1);
-    } else {
-      gameOverRef.current = true;
-      setLives(0);
-      cancelAnimationFrame(animationRef.current!);
-      clearInterval(spawnLoopRef.current);
-      clearInterval(difficultyLoopRef.current);
-      const finalScore = Math.floor((Date.now() - startTimeRef.current) / 1000);
-      onGameOver({ scoreSeconds: finalScore, hitsTaken: hitsRef.current });
+      return;
     }
-  }, [onGameOver, setLives]);
 
-  const update = useCallback((deltaTime: number) => {
+    // game over
+    gameOverRef.current = true;
+    setLives(0);
+    if (animationRef.current) cancelAnimationFrame(animationRef.current);
+
+    const finalScore = Math.floor((Date.now() - startTimeRef.current) / 1000);
+    onGameOverRef.current({ scoreSeconds: finalScore, hitsTaken: hitsRef.current });
+  }
+
+  function update(deltaTimeSec: number) {
     if (gameOverRef.current) return;
 
+    // movement
     const keys = keysRef.current;
-    const moveDistance = PLAYER_SPEED * deltaTime;
+    const moveDistance = PLAYER_SPEED * deltaTimeSec;
     if (keys.ArrowLeft) playerRef.current.x -= moveDistance;
     if (keys.ArrowRight) playerRef.current.x += moveDistance;
     if (keys.ArrowUp) playerRef.current.y -= moveDistance;
@@ -113,12 +146,14 @@ export default function GameCanvas({
     playerRef.current.x = Math.max(0, Math.min(CANVAS_WIDTH - PLAYER_SIZE, playerRef.current.x));
     playerRef.current.y = Math.max(0, Math.min(CANVAS_HEIGHT - PLAYER_SIZE, playerRef.current.y));
 
+    // bullets update
     bulletsRef.current.forEach((b) => {
-      const bulletDistance = BULLET_SPEED * deltaTime;
+      const bulletDistance = b.speed * deltaTimeSec;
       b.x += Math.cos(b.angle) * bulletDistance;
       b.y += Math.sin(b.angle) * bulletDistance;
     });
 
+    // collision
     for (const b of bulletsRef.current) {
       if (checkCollision(playerRef.current.x, playerRef.current.y, b.x, b.y, BULLET_RADIUS)) {
         bulletsRef.current = bulletsRef.current.filter((bullet) => bullet !== b);
@@ -127,31 +162,57 @@ export default function GameCanvas({
       }
     }
 
-    bulletsRef.current = bulletsRef.current.filter((b) => b.x >= 0 && b.x <= CANVAS_WIDTH && b.y >= 0 && b.y <= CANVAS_HEIGHT);
-  }, [checkCollision, handleCollision]);
+    // cull
+    bulletsRef.current = bulletsRef.current.filter(
+      (b) => b.x >= 0 && b.x <= CANVAS_WIDTH && b.y >= 0 && b.y <= CANVAS_HEIGHT
+    );
 
-  const draw = useCallback(() => {
+    // score (초 단위로만 state 업데이트해서 불필요한 rerender 방지)
+    const elapsedSec = Math.floor((Date.now() - startTimeRef.current) / 1000);
+    if (elapsedSec !== lastScoreSecRef.current) {
+      lastScoreSecRef.current = elapsedSec;
+      setScore(elapsedSec);
+    }
+
+    // difficulty + spawn (time-based)
+    const deltaMs = deltaTimeSec * 1000;
+    spawnAccMsRef.current += deltaMs;
+    difficultyAccMsRef.current += deltaMs;
+
+    while (difficultyAccMsRef.current >= DIFFICULTY_INTERVAL) {
+      difficultyAccMsRef.current -= DIFFICULTY_INTERVAL;
+      spawnIntervalMsRef.current = Math.max(MIN_SPAWN_INTERVAL, spawnIntervalMsRef.current - INTERVAL_DECREASE);
+      const nextInterval = spawnIntervalMsRef.current;
+      setSpawnInterval(nextInterval);
+      setSpawnIntervalStatus(nextInterval);
+    }
+
+    while (spawnAccMsRef.current >= spawnIntervalMsRef.current) {
+      spawnAccMsRef.current -= spawnIntervalMsRef.current;
+      spawnSingleBullet();
+    }
+  }
+
+  function draw() {
     const ctx = canvasRef.current?.getContext('2d');
     if (!ctx) return;
 
+    // background
     ctx.fillStyle = '#18181b';
     ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
+    // hit overlay
     if (isHitRef.current) {
       ctx.fillStyle = 'rgba(255, 0, 0, 0.5)';
       ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
     }
 
     // player
-    ctx.fillStyle = playerColor;
+    ctx.fillStyle = playerColorRef.current;
     ctx.fillRect(playerRef.current.x, playerRef.current.y, PLAYER_SIZE, PLAYER_SIZE);
 
-    // score
-    const elapsedSec = Math.floor((Date.now() - startTimeRef.current) / 1000);
-    setScore(elapsedSec);
-
     // bullets
-    ctx.fillStyle = bulletColor;
+    ctx.fillStyle = bulletColorRef.current;
     bulletsRef.current.forEach((b) => {
       ctx.beginPath();
       ctx.arc(b.x, b.y, BULLET_RADIUS, 0, Math.PI * 2);
@@ -167,70 +228,51 @@ export default function GameCanvas({
       ctx.fillText('Press R to restart', CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 + 32);
       ctx.textAlign = 'left';
     }
-  }, [playerColor, bulletColor, setScore]);
+  }
 
   const gameLoop = useCallback((timestamp: number) => {
     if (!lastFrameTimeRef.current) {
       lastFrameTimeRef.current = timestamp;
     }
 
-    const deltaTime = (timestamp - lastFrameTimeRef.current) / 1000;
+    const deltaTimeSec = (timestamp - lastFrameTimeRef.current) / 1000;
     lastFrameTimeRef.current = timestamp;
 
-    update(deltaTime);
+    // 탭 전환 등으로 delta가 너무 커졌을 때 폭주 방지
+    const clampedDelta = Math.min(deltaTimeSec, 0.05);
+
+    update(clampedDelta);
     draw();
 
     if (!gameOverRef.current) {
       animationRef.current = requestAnimationFrame(gameLoop);
     }
-  }, [draw, update]);
+  }, []);
 
   const resetGame = useCallback(() => {
     gameOverRef.current = false;
     playerRef.current = { x: PLAYER_START_X, y: PLAYER_START_Y };
     bulletsRef.current = [];
+
     startTimeRef.current = Date.now();
     lastFrameTimeRef.current = 0;
+    lastScoreSecRef.current = 0;
+
     isHitRef.current = false;
     isTopSpawnRef.current = true;
+
     hitsRef.current = 0;
+    spawnIntervalMsRef.current = INITIAL_SPAWN_INTERVAL;
+    spawnAccMsRef.current = 0;
+    difficultyAccMsRef.current = 0;
     setSpawnInterval(INITIAL_SPAWN_INTERVAL);
+    setSpawnIntervalStatus(INITIAL_SPAWN_INTERVAL);
+
     setLives(3);
 
-    if (difficultyLoopRef.current) clearInterval(difficultyLoopRef.current);
-    if (spawnLoopRef.current) clearInterval(spawnLoopRef.current);
     if (animationRef.current) cancelAnimationFrame(animationRef.current);
-
-    difficultyLoopRef.current = setInterval(() => {
-      if (!gameOverRef.current) {
-        setSpawnInterval((prev) => Math.max(MIN_SPAWN_INTERVAL, prev - INTERVAL_DECREASE));
-      }
-    }, DIFFICULTY_INTERVAL);
-
-    gameLoop(performance.now());
-  }, [gameLoop, setLives]);
-
-  useEffect(() => {
-    setSpawnIntervalStatus(spawnInterval);
-  }, [spawnInterval, setSpawnIntervalStatus]);
-
-  useEffect(() => {
-    if (spawnLoopRef.current) {
-      clearInterval(spawnLoopRef.current);
-    }
-
-    spawnLoopRef.current = setInterval(() => {
-      if (!gameOverRef.current) {
-        spawnSingleBullet();
-      }
-    }, spawnInterval);
-
-    return () => {
-      if (spawnLoopRef.current) {
-        clearInterval(spawnLoopRef.current);
-      }
-    };
-  }, [spawnInterval]);
+    animationRef.current = requestAnimationFrame(gameLoop);
+  }, [gameLoop, setLives, setSpawnIntervalStatus]);
 
   useEffect(() => {
     livesRef.current = lives;
@@ -261,9 +303,7 @@ export default function GameCanvas({
     resetGame();
 
     return () => {
-      cancelAnimationFrame(animationRef.current!);
-      clearInterval(spawnLoopRef.current);
-      clearInterval(difficultyLoopRef.current);
+      if (animationRef.current) cancelAnimationFrame(animationRef.current);
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
     };
