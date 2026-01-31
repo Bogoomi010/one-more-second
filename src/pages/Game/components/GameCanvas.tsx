@@ -64,6 +64,10 @@ export default function GameCanvas({
   const playerColorRef = useRef(playerColor);
   const bulletColorRef = useRef(bulletColor);
   const onGameOverRef = useRef(onGameOver);
+  const setLivesRef = useRef(setLives);
+  const setScoreRef = useRef(setScore);
+  const setSpawnIntervalStatusRef = useRef(setSpawnIntervalStatus);
+
   useEffect(() => {
     playerColorRef.current = playerColor;
   }, [playerColor]);
@@ -73,13 +77,20 @@ export default function GameCanvas({
   useEffect(() => {
     onGameOverRef.current = onGameOver;
   }, [onGameOver]);
+  useEffect(() => {
+    setLivesRef.current = setLives;
+  }, [setLives]);
+  useEffect(() => {
+    setScoreRef.current = setScore;
+  }, [setScore]);
+  useEffect(() => {
+    setSpawnIntervalStatusRef.current = setSpawnIntervalStatus;
+  }, [setSpawnIntervalStatus]);
 
   // 스폰/난이도는 setInterval 대신 rAF 기반 누적 시간으로 처리 → 모니터 주사율/프레임 드랍에 덜 민감
   const spawnIntervalMsRef = useRef(INITIAL_SPAWN_INTERVAL);
   const spawnAccMsRef = useRef(0);
   const difficultyAccMsRef = useRef(0);
-
-  const [spawnInterval, setSpawnInterval] = useState(INITIAL_SPAWN_INTERVAL);
 
   function spawnSingleBullet() {
     const margin = BULLET_RADIUS * 2;
@@ -119,20 +130,20 @@ export default function GameCanvas({
     }, 150);
 
     if (livesRef.current > 1) {
-      setLives(livesRef.current - 1);
+      setLivesRef.current(livesRef.current - 1);
       return;
     }
 
     // game over
     gameOverRef.current = true;
-    setLives(0);
+    setLivesRef.current(0);
     if (animationRef.current) cancelAnimationFrame(animationRef.current);
 
     const finalScore = Math.floor((Date.now() - startTimeRef.current) / 1000);
     onGameOverRef.current({ scoreSeconds: finalScore, hitsTaken: hitsRef.current });
   }
 
-  function update(deltaTimeSec: number) {
+  const update = useCallback((deltaTimeSec: number) => {
     if (gameOverRef.current) return;
 
     // movement
@@ -171,7 +182,7 @@ export default function GameCanvas({
     const elapsedSec = Math.floor((Date.now() - startTimeRef.current) / 1000);
     if (elapsedSec !== lastScoreSecRef.current) {
       lastScoreSecRef.current = elapsedSec;
-      setScore(elapsedSec);
+      setScoreRef.current(elapsedSec);
     }
 
     // difficulty + spawn (time-based)
@@ -183,17 +194,16 @@ export default function GameCanvas({
       difficultyAccMsRef.current -= DIFFICULTY_INTERVAL;
       spawnIntervalMsRef.current = Math.max(MIN_SPAWN_INTERVAL, spawnIntervalMsRef.current - INTERVAL_DECREASE);
       const nextInterval = spawnIntervalMsRef.current;
-      setSpawnInterval(nextInterval);
-      setSpawnIntervalStatus(nextInterval);
+      setSpawnIntervalStatusRef.current(nextInterval);
     }
 
     while (spawnAccMsRef.current >= spawnIntervalMsRef.current) {
       spawnAccMsRef.current -= spawnIntervalMsRef.current;
       spawnSingleBullet();
     }
-  }
+  }, []);
 
-  function draw() {
+  const draw = useCallback(() => {
     const ctx = canvasRef.current?.getContext('2d');
     if (!ctx) return;
 
@@ -228,7 +238,7 @@ export default function GameCanvas({
       ctx.fillText('Press R to restart', CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 + 32);
       ctx.textAlign = 'left';
     }
-  }
+  }, []);
 
   const gameLoop = useCallback((timestamp: number) => {
     if (!lastFrameTimeRef.current) {
@@ -247,7 +257,7 @@ export default function GameCanvas({
     if (!gameOverRef.current) {
       animationRef.current = requestAnimationFrame(gameLoop);
     }
-  }, []);
+  }, [draw, update]);
 
   const resetGame = useCallback(() => {
     gameOverRef.current = false;
@@ -265,14 +275,13 @@ export default function GameCanvas({
     spawnIntervalMsRef.current = INITIAL_SPAWN_INTERVAL;
     spawnAccMsRef.current = 0;
     difficultyAccMsRef.current = 0;
-    setSpawnInterval(INITIAL_SPAWN_INTERVAL);
-    setSpawnIntervalStatus(INITIAL_SPAWN_INTERVAL);
+    setSpawnIntervalStatusRef.current(INITIAL_SPAWN_INTERVAL);
 
-    setLives(3);
+    setLivesRef.current(3);
 
     if (animationRef.current) cancelAnimationFrame(animationRef.current);
     animationRef.current = requestAnimationFrame(gameLoop);
-  }, [gameLoop, setLives, setSpawnIntervalStatus]);
+  }, [gameLoop]);
 
   useEffect(() => {
     livesRef.current = lives;
