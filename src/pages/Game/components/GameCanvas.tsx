@@ -169,6 +169,8 @@ export default function GameCanvas({
     }
   }
 
+  // NOTE: draw/update는 렌더링 루프 내부의 ref 기반 로직이라 의존성 나열이 의미가 약함.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const gameLoop = useCallback((timestamp: number) => {
     if (!lastFrameTimeRef.current) {
       lastFrameTimeRef.current = timestamp;

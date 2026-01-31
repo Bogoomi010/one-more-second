@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import Modal from '../../../components/Modal';
-import { ACHIEVEMENTS, ensureDailyChallenge, getSkin, loadProfile, resetProfile, saveProfile, SKINS } from '../../../gameSystem';
+import { ACHIEVEMENTS, ensureDailyChallenge, getSkin, resetProfile, saveProfile, SKINS } from '../../../gameSystem';
 import { PlayerProfile, SkinId } from '../../../gameSystem/types';
 
 type TabId = 'profile' | 'shop' | 'achievements';
