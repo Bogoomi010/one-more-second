@@ -9,8 +9,8 @@
     "@testing-library/user-event": "^13.2.1",
     "@types/jest": "^27.0.1",
     "@types/node": "^16.7.13",
-    "@types/react": "^19.1.8",
-    "@types/react-dom": "^19.1.6",
+    "@types/react": "^19.2.3",
+    "@types/react-dom": "^19.2.3",
     "@types/react-world-flags": "^1.6.0",
     "axios": "^1.10.0",
     "country-list": "^2.3.0",
@@ -48,6 +48,9 @@
     ]
   },
   "devDependencies": {
+    "@babel/core": "^7.27.1",
+    "@babel/plugin-syntax-flow": "^7.27.1",
+    "@babel/plugin-transform-react-jsx": "^7.27.1",
     "@types/country-list": "^2.1.4"
   }
 }
