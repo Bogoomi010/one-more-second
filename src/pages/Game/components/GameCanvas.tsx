@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { GameResult } from '../../../gameSystem/types';
 
 const CANVAS_WIDTH = 400;
