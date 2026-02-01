@@ -7,10 +7,6 @@ class AudioManager {
   private bgmSource: AudioBufferSourceNode | null = null;
   private initialized = false;
 
-  constructor() {
-    // AudioContext는 사용자 상호작용 후 초기화
-  }
-
   init() {
     if (this.initialized) return;
     

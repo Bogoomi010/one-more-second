@@ -15,11 +15,7 @@ export default function RankingPanel({ userCountry, refreshTrigger = 0 }: Rankin
   const [rankings, setRankings] = useState<RankingEntry[]>([]);
   const [selectedCountry, setSelectedCountry] = useState<string>(userCountry ?? 'KR');
 
-  useEffect(() => {
-    loadRankings();
-  }, [rankingType, selectedCountry, refreshTrigger]);
-
-  const loadRankings = () => {
+  const loadRankings = React.useCallback(() => {
     switch (rankingType) {
       case 'global':
         setRankings(getGlobalRanking(100));
@@ -31,7 +27,11 @@ export default function RankingPanel({ userCountry, refreshTrigger = 0 }: Rankin
         setRankings(getDailyRanking(undefined, 50));
         break;
     }
-  };
+  }, [rankingType, selectedCountry]);
+
+  useEffect(() => {
+    loadRankings();
+  }, [loadRankings, refreshTrigger]);
 
   const formatTime = (seconds: number): string => {
     if (seconds < 60) return `${seconds}s`;
@@ -142,7 +142,6 @@ export default function RankingPanel({ userCountry, refreshTrigger = 0 }: Rankin
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
             {rankings.map((entry, index) => {
               const rank = index + 1;
-              const countryName = getName(entry.country) ?? entry.country;
 
               return (
                 <div
