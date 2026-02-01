@@ -9,17 +9,22 @@ import {
   applyRunToProfile,
   ensureDailyChallenge,
   getSkin,
-  loadProfile,
   saveProfile,
 } from '../../gameSystem';
 import { GameResult, PlayerProfile } from '../../gameSystem/types';
 
-export default function Game() {
+interface GameProps {
+  profile: PlayerProfile;
+  setProfile: (profile: PlayerProfile) => void;
+  setUserCountry: (country: string) => void;
+  onRankingUpdate: () => void;
+}
+
+export default function Game({ profile, setProfile, setUserCountry, onRankingUpdate }: GameProps) {
   const [lives, setLives] = useState(3);
   const [spawnInterval, setSpawnInterval] = useState(500);
   const [score, setScore] = useState(0);
   const [showScoreModal, setShowScoreModal] = useState(false);
-  const [profile, setProfile] = useState<PlayerProfile>(() => ensureDailyChallenge(loadProfile()));
   const [systemMenuOpen, setSystemMenuOpen] = useState(false);
   const [lastRunMessage, setLastRunMessage] = useState<string[]>([]);
 
@@ -82,11 +87,10 @@ export default function Game() {
         />
 
         <GameCanvas
-          lives={lives}
-          setLives={setLives}
-          setSpawnIntervalStatus={setSpawnInterval}
-          setScore={setScore}
           onGameOver={handleGameOver}
+          onLivesChange={setLives}
+          onScoreChange={setScore}
+          onSpawnIntervalChange={setSpawnInterval}
           playerColor={skin.playerColor}
           bulletColor={skin.bulletColor}
         />
@@ -104,6 +108,8 @@ export default function Game() {
         onClose={handleRestartGame}
         isOpen={showScoreModal}
         systemLines={lastRunMessage}
+        onCountrySelect={setUserCountry}
+        onRankingUpdate={onRankingUpdate}
       />
     </>
   );

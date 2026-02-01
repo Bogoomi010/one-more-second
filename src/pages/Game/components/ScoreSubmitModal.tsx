@@ -4,6 +4,7 @@ import { getName } from 'country-list';
 import Flag from 'react-world-flags';
 import { submitScore } from '../../../utils/api';
 import { ScoreRecord } from '../../../types/score';
+import { addRankingEntry } from '../../../gameSystem/ranking';
 import Modal from '../../../components/Modal';
 
 interface ScoreSubmitModalProps {
@@ -11,6 +12,8 @@ interface ScoreSubmitModalProps {
   onClose: () => void;
   isOpen: boolean;
   systemLines?: string[];
+  onCountrySelect?: (country: string) => void;
+  onRankingUpdate?: () => void;
 }
 
 interface CountryOption {
@@ -40,7 +43,14 @@ const formatOptionLabel = ({ value, label }: CountryOption) => (
   </div>
 );
 
-const ScoreSubmitModal: React.FC<ScoreSubmitModalProps> = ({ score, onClose, isOpen, systemLines = [] }) => {
+const ScoreSubmitModal: React.FC<ScoreSubmitModalProps> = ({ 
+  score, 
+  onClose, 
+  isOpen, 
+  systemLines = [],
+  onCountrySelect,
+  onRankingUpdate,
+}) => {
   const [nickname, setNickname] = useState('');
   const [country, setCountry] = useState<CountryOption | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -62,6 +72,20 @@ const ScoreSubmitModal: React.FC<ScoreSubmitModalProps> = ({ score, onClose, isO
       score,
     };
 
+    // 로컬 랭킹에 추가
+    addRankingEntry(nickname, country.value, score);
+    
+    // 국가 정보 전달
+    if (onCountrySelect) {
+      onCountrySelect(country.value);
+    }
+    
+    // 랭킹 업데이트 트리거
+    if (onRankingUpdate) {
+      onRankingUpdate();
+    }
+
+    // 백엔드 API 호출 (선택적)
     const response = await submitScore(scoreData);
     setIsSubmitting(false);
 

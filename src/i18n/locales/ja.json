@@ -1,0 +1,126 @@
+{
+  "app": {
+    "title": "one more second"
+  },
+  "ranking": {
+    "title": "ランキング",
+    "global": "全体",
+    "country": "国別",
+    "daily": "デイリー",
+    "noRecords": "まだ記録がありません",
+    "records": "{{count}}件の記録"
+  },
+  "stats": {
+    "title": "統計 & 実績",
+    "tabStats": "統計",
+    "tabAchievements": "実績",
+    "bestScore": "ベストスコア",
+    "totalRuns": "総プレイ回数",
+    "coins": "所持コイン",
+    "totalTime": "総生存時間",
+    "averageTime": "平均生存時間",
+    "ownedSkins": "所持スキン",
+    "achievementProgress": "実績達成",
+    "dailyChallenge": "デイリーチャレンジ",
+    "dailyChallengeTarget": "目標: {{seconds}}秒生存",
+    "dailyChallengeReward": "報酬: {{coins}}コイン",
+    "dailyChallengeCompleted": "完了！",
+    "achievementRate": "達成率"
+  },
+  "game": {
+    "lives": "ライフ",
+    "score": "スコア",
+    "spawnInterval": "生成間隔",
+    "gameOver": "GAME OVER",
+    "pressRToRestart": "Rキーで再スタート",
+    "menu": "メニュー"
+  },
+  "scoreSubmit": {
+    "title": "GAME OVER",
+    "score": "Score: {{score}}",
+    "nickname": "Nickname",
+    "country": "Country",
+    "enterNickname": "Enter nickname",
+    "selectCountry": "Select country",
+    "submit": "Submit",
+    "submitting": "Submitting...",
+    "restart": "Restart",
+    "error": "すべてのフィールドを入力してください。",
+    "rewardRun": "+{{coins}}コイン (プレイ)",
+    "rewardDaily": "+{{coins}}コイン (デイリー)"
+  },
+  "systemMenu": {
+    "profile": "プロフィール",
+    "shop": "ショップ",
+    "achievements": "実績",
+    "settings": "設定",
+    "coins": "Coins",
+    "best": "Best",
+    "totalRuns": "Total Runs",
+    "totalTime": "Total Time",
+    "skin": "Skin",
+    "dailyChallenge": "Daily Challenge",
+    "dailyChallengeGoal": "目標: {{seconds}}秒生存",
+    "dailyChallengeReward": "報酬: {{coins}}コイン",
+    "dailyChallengeStatus": "状態: {{status}}",
+    "dailyChallengeCompleted": "完了",
+    "dailyChallengeIncomplete": "未完了",
+    "resetProgress": "進行状況をリセット",
+    "close": "閉じる",
+    "buy": "購入",
+    "select": "選択",
+    "selected": "選択中",
+    "completed": "(完了)"
+  },
+  "settings": {
+    "graphics": "グラフィック",
+    "particles": "パーティクルエフェクト",
+    "hitFlash": "ヒットフラッシュ強度: {{intensity}}%",
+    "fpsLimit": "FPS制限",
+    "fps30": "30 FPS",
+    "fps60": "60 FPS",
+    "fpsUnlimited": "無制限",
+    "audio": "サウンド",
+    "bgmEnabled": "BGM有効",
+    "bgmVolume": "BGM音量: {{volume}}%",
+    "sfxEnabled": "効果音有効",
+    "sfxVolume": "効果音音量: {{volume}}%",
+    "profileManagement": "プロフィール管理",
+    "export": "エクスポート",
+    "import": "インポート",
+    "resetSettings": "設定をリセット",
+    "language": "言語"
+  },
+  "achievements": {
+    "first-run": {
+      "title": "初プレイ",
+      "desc": "ゲームを1回プレイ"
+    },
+    "survive-10": {
+      "title": "10秒生存",
+      "desc": "1回のプレイで10秒以上生存"
+    },
+    "survive-30": {
+      "title": "30秒生存",
+      "desc": "1回のプレイで30秒以上生存"
+    },
+    "survive-60": {
+      "title": "1分生存",
+      "desc": "1回のプレイで60秒以上生存"
+    },
+    "no-hit-20": {
+      "title": "パーフェクト20",
+      "desc": "20秒以上生存 + 被弾0回"
+    },
+    "collector-2": {
+      "title": "コレクター",
+      "desc": "スキンを2個所持"
+    }
+  },
+  "skins": {
+    "classic-blue": "Classic Blue",
+    "mint": "Mint",
+    "sunset": "Sunset",
+    "neon": "Neon"
+  }
+}

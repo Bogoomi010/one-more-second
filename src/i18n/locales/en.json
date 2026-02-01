@@ -1,0 +1,126 @@
+{
+  "app": {
+    "title": "one more second"
+  },
+  "ranking": {
+    "title": "Ranking",
+    "global": "Global",
+    "country": "Country",
+    "daily": "Daily",
+    "noRecords": "No records yet",
+    "records": "{{count}} records"
+  },
+  "stats": {
+    "title": "Stats & Achievements",
+    "tabStats": "Stats",
+    "tabAchievements": "Achievements",
+    "bestScore": "Best Score",
+    "totalRuns": "Total Runs",
+    "coins": "Coins",
+    "totalTime": "Total Survival Time",
+    "averageTime": "Average Survival",
+    "ownedSkins": "Owned Skins",
+    "achievementProgress": "Achievement Progress",
+    "dailyChallenge": "Daily Challenge",
+    "dailyChallengeTarget": "Goal: Survive {{seconds}}s",
+    "dailyChallengeReward": "Reward: {{coins}} coins",
+    "dailyChallengeCompleted": "Completed!",
+    "achievementRate": "Completion Rate"
+  },
+  "game": {
+    "lives": "Lives",
+    "score": "Score",
+    "spawnInterval": "Spawn Interval",
+    "gameOver": "GAME OVER",
+    "pressRToRestart": "Press R to restart",
+    "menu": "Menu"
+  },
+  "scoreSubmit": {
+    "title": "GAME OVER",
+    "score": "Score: {{score}}",
+    "nickname": "Nickname",
+    "country": "Country",
+    "enterNickname": "Enter nickname",
+    "selectCountry": "Select country",
+    "submit": "Submit",
+    "submitting": "Submitting...",
+    "restart": "Restart",
+    "error": "Please fill in all fields.",
+    "rewardRun": "+{{coins}} coins (run)",
+    "rewardDaily": "+{{coins}} coins (daily)"
+  },
+  "systemMenu": {
+    "profile": "Profile",
+    "shop": "Shop",
+    "achievements": "Achievements",
+    "settings": "Settings",
+    "coins": "Coins",
+    "best": "Best",
+    "totalRuns": "Total Runs",
+    "totalTime": "Total Time",
+    "skin": "Skin",
+    "dailyChallenge": "Daily Challenge",
+    "dailyChallengeGoal": "Goal: Survive {{seconds}}s",
+    "dailyChallengeReward": "Reward: {{coins}} coins",
+    "dailyChallengeStatus": "Status: {{status}}",
+    "dailyChallengeCompleted": "Completed",
+    "dailyChallengeIncomplete": "Incomplete",
+    "resetProgress": "Reset Progress",
+    "close": "Close",
+    "buy": "Buy",
+    "select": "Select",
+    "selected": "Selected",
+    "completed": "(Completed)"
+  },
+  "settings": {
+    "graphics": "Graphics",
+    "particles": "Particle Effects",
+    "hitFlash": "Hit Flash Intensity: {{intensity}}%",
+    "fpsLimit": "FPS Limit",
+    "fps30": "30 FPS",
+    "fps60": "60 FPS",
+    "fpsUnlimited": "Unlimited",
+    "audio": "Audio",
+    "bgmEnabled": "BGM Enabled",
+    "bgmVolume": "BGM Volume: {{volume}}%",
+    "sfxEnabled": "SFX Enabled",
+    "sfxVolume": "SFX Volume: {{volume}}%",
+    "profileManagement": "Profile Management",
+    "export": "Export",
+    "import": "Import",
+    "resetSettings": "Reset Settings",
+    "language": "Language"
+  },
+  "achievements": {
+    "first-run": {
+      "title": "First Run",
+      "desc": "Play the game once"
+    },
+    "survive-10": {
+      "title": "10 Second Survivor",
+      "desc": "Survive for 10+ seconds in one run"
+    },
+    "survive-30": {
+      "title": "30 Second Survivor",
+      "desc": "Survive for 30+ seconds in one run"
+    },
+    "survive-60": {
+      "title": "1 Minute Survivor",
+      "desc": "Survive for 60+ seconds in one run"
+    },
+    "no-hit-20": {
+      "title": "Perfect 20",
+      "desc": "Survive 20+ seconds with 0 hits"
+    },
+    "collector-2": {
+      "title": "Collector",
+      "desc": "Own 2 skins"
+    }
+  },
+  "skins": {
+    "classic-blue": "Classic Blue",
+    "mint": "Mint",
+    "sunset": "Sunset",
+    "neon": "Neon"
+  }
+}

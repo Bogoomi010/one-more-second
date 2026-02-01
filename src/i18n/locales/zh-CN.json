@@ -1,0 +1,126 @@
+{
+  "app": {
+    "title": "one more second"
+  },
+  "ranking": {
+    "title": "排行榜",
+    "global": "全球",
+    "country": "国家",
+    "daily": "每日",
+    "noRecords": "暂无记录",
+    "records": "{{count}}条记录"
+  },
+  "stats": {
+    "title": "统计 & 成就",
+    "tabStats": "统计",
+    "tabAchievements": "成就",
+    "bestScore": "最佳成绩",
+    "totalRuns": "总游戏次数",
+    "coins": "持有金币",
+    "totalTime": "总生存时间",
+    "averageTime": "平均生存时间",
+    "ownedSkins": "拥有皮肤",
+    "achievementProgress": "成就进度",
+    "dailyChallenge": "每日挑战",
+    "dailyChallengeTarget": "目标: 生存{{seconds}}秒",
+    "dailyChallengeReward": "奖励: {{coins}}金币",
+    "dailyChallengeCompleted": "已完成！",
+    "achievementRate": "完成率"
+  },
+  "game": {
+    "lives": "生命",
+    "score": "分数",
+    "spawnInterval": "生成间隔",
+    "gameOver": "游戏结束",
+    "pressRToRestart": "按R重新开始",
+    "menu": "菜单"
+  },
+  "scoreSubmit": {
+    "title": "游戏结束",
+    "score": "Score: {{score}}",
+    "nickname": "Nickname",
+    "country": "Country",
+    "enterNickname": "Enter nickname",
+    "selectCountry": "Select country",
+    "submit": "Submit",
+    "submitting": "Submitting...",
+    "restart": "Restart",
+    "error": "请填写所有字段。",
+    "rewardRun": "+{{coins}}金币 (游戏)",
+    "rewardDaily": "+{{coins}}金币 (每日)"
+  },
+  "systemMenu": {
+    "profile": "个人资料",
+    "shop": "商店",
+    "achievements": "成就",
+    "settings": "设置",
+    "coins": "Coins",
+    "best": "Best",
+    "totalRuns": "Total Runs",
+    "totalTime": "Total Time",
+    "skin": "Skin",
+    "dailyChallenge": "Daily Challenge",
+    "dailyChallengeGoal": "目标: 生存{{seconds}}秒",
+    "dailyChallengeReward": "奖励: {{coins}}金币",
+    "dailyChallengeStatus": "状态: {{status}}",
+    "dailyChallengeCompleted": "已完成",
+    "dailyChallengeIncomplete": "未完成",
+    "resetProgress": "重置进度",
+    "close": "关闭",
+    "buy": "购买",
+    "select": "选择",
+    "selected": "已选择",
+    "completed": "(已完成)"
+  },
+  "settings": {
+    "graphics": "图形",
+    "particles": "粒子效果",
+    "hitFlash": "受击闪光强度: {{intensity}}%",
+    "fpsLimit": "FPS限制",
+    "fps30": "30 FPS",
+    "fps60": "60 FPS",
+    "fpsUnlimited": "无限制",
+    "audio": "音频",
+    "bgmEnabled": "启用BGM",
+    "bgmVolume": "BGM音量: {{volume}}%",
+    "sfxEnabled": "启用音效",
+    "sfxVolume": "音效音量: {{volume}}%",
+    "profileManagement": "个人资料管理",
+    "export": "导出",
+    "import": "导入",
+    "resetSettings": "重置设置",
+    "language": "语言"
+  },
+  "achievements": {
+    "first-run": {
+      "title": "首次游戏",
+      "desc": "游玩游戏1次"
+    },
+    "survive-10": {
+      "title": "生存10秒",
+      "desc": "单局生存10秒以上"
+    },
+    "survive-30": {
+      "title": "生存30秒",
+      "desc": "单局生存30秒以上"
+    },
+    "survive-60": {
+      "title": "生存1分钟",
+      "desc": "单局生存60秒以上"
+    },
+    "no-hit-20": {
+      "title": "完美20秒",
+      "desc": "生存20秒以上 + 0次受击"
+    },
+    "collector-2": {
+      "title": "收藏家",
+      "desc": "拥有2个皮肤"
+    }
+  },
+  "skins": {
+    "classic-blue": "Classic Blue",
+    "mint": "Mint",
+    "sunset": "Sunset",
+    "neon": "Neon"
+  }
+}

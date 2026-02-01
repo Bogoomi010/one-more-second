@@ -1,10 +1,16 @@
 import React from 'react';
+import RankingPanel from './RankingPanel';
+import StatsPanel from './StatsPanel';
+import { PlayerProfile } from '../gameSystem/types';
 
 interface LayoutProps {
   children: React.ReactNode;
+  profile?: PlayerProfile;
+  userCountry?: string;
+  rankingRefreshTrigger?: number;
 }
 
-export default function Layout({ children }: LayoutProps) {
+export default function Layout({ children, profile, userCountry, rankingRefreshTrigger }: LayoutProps) {
   return (
     <div style={{minHeight: '100vh', background: '#111', display: 'flex', flexDirection: 'column', alignItems: 'center'}}>
       <style>{`
@@ -90,7 +96,7 @@ export default function Layout({ children }: LayoutProps) {
           justify-content: center;
           padding: 20px;
         }
-        .chat-container {
+        .stats-container {
           flex: 1;
           min-width: 400px;
           overflow-y: auto;
@@ -108,24 +114,24 @@ export default function Layout({ children }: LayoutProps) {
 
         /* 스크롤바 스타일링 */
         .ranking-container::-webkit-scrollbar,
-        .chat-container::-webkit-scrollbar {
+        .stats-container::-webkit-scrollbar {
           width: 8px;
         }
         
         .ranking-container::-webkit-scrollbar-track,
-        .chat-container::-webkit-scrollbar-track {
+        .stats-container::-webkit-scrollbar-track {
           background: #333;
           border-radius: 4px;
         }
         
         .ranking-container::-webkit-scrollbar-thumb,
-        .chat-container::-webkit-scrollbar-thumb {
+        .stats-container::-webkit-scrollbar-thumb {
           background: #444;
           border-radius: 4px;
         }
         
         .ranking-container::-webkit-scrollbar-thumb:hover,
-        .chat-container::-webkit-scrollbar-thumb:hover {
+        .stats-container::-webkit-scrollbar-thumb:hover {
           background: #555;
         }
       `}</style>
@@ -139,7 +145,7 @@ export default function Layout({ children }: LayoutProps) {
         <div className="main-row">
           <div className="container ranking-container">
             <h3 className="container-title">랭킹</h3>
-            {/* 랭킹 컴포넌트가 들어갈 자리 */}
+            <RankingPanel userCountry={userCountry} refreshTrigger={rankingRefreshTrigger} />
           </div>
 
           <div className="container game-container">
@@ -148,9 +154,9 @@ export default function Layout({ children }: LayoutProps) {
             )) : children}
           </div>
 
-          <div className="container chat-container">
-            <h3 className="container-title">채팅</h3>
-            {/* 채팅 컴포넌트가 들어갈 자리 */}
+          <div className="container stats-container">
+            <h3 className="container-title">통계 & 업적</h3>
+            {profile && <StatsPanel profile={profile} />}
           </div>
         </div>
       </main>

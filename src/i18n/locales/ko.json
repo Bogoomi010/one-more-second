@@ -1,0 +1,126 @@
+{
+  "app": {
+    "title": "one more second"
+  },
+  "ranking": {
+    "title": "랭킹",
+    "global": "전체",
+    "country": "국가별",
+    "daily": "일일",
+    "noRecords": "아직 기록이 없습니다",
+    "records": "{{count}}개 기록"
+  },
+  "stats": {
+    "title": "통계 & 업적",
+    "tabStats": "통계",
+    "tabAchievements": "업적",
+    "bestScore": "최고 기록",
+    "totalRuns": "총 플레이",
+    "coins": "보유 코인",
+    "totalTime": "총 생존 시간",
+    "averageTime": "평균 생존",
+    "ownedSkins": "보유 스킨",
+    "achievementProgress": "업적 달성",
+    "dailyChallenge": "오늘의 챌린지",
+    "dailyChallengeTarget": "목표: {{seconds}}초 생존",
+    "dailyChallengeReward": "보상: {{coins}} 코인",
+    "dailyChallengeCompleted": "완료됨!",
+    "achievementRate": "달성률"
+  },
+  "game": {
+    "lives": "생명",
+    "score": "점수",
+    "spawnInterval": "생성 간격",
+    "gameOver": "GAME OVER",
+    "pressRToRestart": "R을 눌러 재시작",
+    "menu": "메뉴"
+  },
+  "scoreSubmit": {
+    "title": "GAME OVER",
+    "score": "Score: {{score}}",
+    "nickname": "Nickname",
+    "country": "Country",
+    "enterNickname": "Enter nickname",
+    "selectCountry": "Select country",
+    "submit": "Submit",
+    "submitting": "Submitting...",
+    "restart": "Restart",
+    "error": "모든 필드를 입력해주세요.",
+    "rewardRun": "+{{coins}} coins (run)",
+    "rewardDaily": "+{{coins}} coins (daily)"
+  },
+  "systemMenu": {
+    "profile": "프로필",
+    "shop": "상점",
+    "achievements": "업적",
+    "settings": "설정",
+    "coins": "Coins",
+    "best": "Best",
+    "totalRuns": "Total Runs",
+    "totalTime": "Total Time",
+    "skin": "Skin",
+    "dailyChallenge": "Daily Challenge",
+    "dailyChallengeGoal": "목표: {{seconds}}s 생존",
+    "dailyChallengeReward": "보상: {{coins}} 코인",
+    "dailyChallengeStatus": "상태: {{status}}",
+    "dailyChallengeCompleted": "완료",
+    "dailyChallengeIncomplete": "미완료",
+    "resetProgress": "진행 초기화",
+    "close": "닫기",
+    "buy": "구매",
+    "select": "선택",
+    "selected": "선택됨",
+    "completed": "(완료)"
+  },
+  "settings": {
+    "graphics": "그래픽",
+    "particles": "파티클 효과",
+    "hitFlash": "피격 플래시 강도: {{intensity}}%",
+    "fpsLimit": "프레임 제한",
+    "fps30": "30 FPS",
+    "fps60": "60 FPS",
+    "fpsUnlimited": "무제한",
+    "audio": "사운드",
+    "bgmEnabled": "BGM 활성화",
+    "bgmVolume": "BGM 볼륨: {{volume}}%",
+    "sfxEnabled": "효과음 활성화",
+    "sfxVolume": "효과음 볼륨: {{volume}}%",
+    "profileManagement": "프로필 관리",
+    "export": "내보내기",
+    "import": "가져오기",
+    "resetSettings": "설정 초기화",
+    "language": "언어"
+  },
+  "achievements": {
+    "first-run": {
+      "title": "첫 판",
+      "desc": "게임을 1번 플레이"
+    },
+    "survive-10": {
+      "title": "10초 생존",
+      "desc": "한 판에서 10초 이상 생존"
+    },
+    "survive-30": {
+      "title": "30초 생존",
+      "desc": "한 판에서 30초 이상 생존"
+    },
+    "survive-60": {
+      "title": "1분 생존",
+      "desc": "한 판에서 60초 이상 생존"
+    },
+    "no-hit-20": {
+      "title": "무피격 20초",
+      "desc": "한 판에서 20초 이상 생존 + 피격 0회"
+    },
+    "collector-2": {
+      "title": "수집가",
+      "desc": "스킨을 2개 보유"
+    }
+  },
+  "skins": {
+    "classic-blue": "Classic Blue",
+    "mint": "Mint",
+    "sunset": "Sunset",
+    "neon": "Neon"
+  }
+}
