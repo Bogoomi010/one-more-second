@@ -48,7 +48,7 @@ export default function Game({ profile, setProfile, setUserCountry, onRankingUpd
     setProfile(next);
 
     const lines: string[] = [];
-    lines.push(`+${runReward} coins (run)`);
+    lines.push(`+${runReward} coins`);
     if (dailyReward > 0) lines.push(`+${dailyReward} coins (daily)`);
     setLastRunMessage(lines);
 
@@ -93,6 +93,7 @@ export default function Game({ profile, setProfile, setUserCountry, onRankingUpd
           onSpawnIntervalChange={setSpawnInterval}
           playerColor={skin.playerColor}
           bulletColor={skin.bulletColor}
+          isModalOpen={showScoreModal || systemMenuOpen}
         />
       </div>
 
@@ -105,6 +106,7 @@ export default function Game({ profile, setProfile, setUserCountry, onRankingUpd
 
       <ScoreSubmitModal
         score={score}
+        timePlayed={score}
         onClose={handleRestartGame}
         isOpen={showScoreModal}
         systemLines={lastRunMessage}

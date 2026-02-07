@@ -21,6 +21,7 @@ interface GameCanvasProps {
   onSpawnIntervalChange: (interval: number) => void;
   playerColor: string;
   bulletColor: string;
+  isModalOpen?: boolean;
 }
 
 type Bullet = {
@@ -54,6 +55,7 @@ function GameCanvasComponent({
   onSpawnIntervalChange,
   playerColor,
   bulletColor,
+  isModalOpen = false,
 }: GameCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   
@@ -325,6 +327,11 @@ function GameCanvasComponent({
       }
       
       state.keys[e.key] = true;
+
+      // 모달이 열려있을 때는 게임 시작/재시작 키를 무시
+      if (isModalOpen) {
+        return;
+      }
 
       if (!state.gameStarted && !state.gameOver && e.key === 'Enter') {
         console.log('🎮 Game started!');

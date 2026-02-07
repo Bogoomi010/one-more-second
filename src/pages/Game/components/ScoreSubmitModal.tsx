@@ -1,14 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Select from 'react-select';
 import { getName } from 'country-list';
 import Flag from 'react-world-flags';
 import { submitScore } from '../../../utils/api';
 import { ScoreRecord } from '../../../types/score';
 import { addRankingEntry } from '../../../gameSystem/ranking';
-import Modal from '../../../components/Modal';
 
 interface ScoreSubmitModalProps {
   score: number;
+  timePlayed?: number;
   onClose: () => void;
   isOpen: boolean;
   systemLines?: string[];
@@ -21,12 +21,40 @@ interface CountryOption {
   label: string;
 }
 
-const countries: CountryOption[] = require('country-list')
-  .getCodes()
+// 주요 국가 코드 목록
+const majorCountryCodes = [
+  'KR', // 한국
+  'US', // 미국
+  'JP', // 일본
+  'CN', // 중국
+  'GB', // 영국
+  'DE', // 독일
+  'FR', // 프랑스
+  'CA', // 캐나다
+  'AU', // 호주
+  'TW', // 대만
+  'SG', // 싱가포르
+  'IN', // 인도
+  'BR', // 브라질
+  'MX', // 멕시코
+  'IT', // 이탈리아
+  'ES', // 스페인
+  'NL', // 네덜란드
+  'SE', // 스웨덴
+  'RU', // 러시아
+  'TH', // 태국
+  'VN', // 베트남
+  'PH', // 필리핀
+  'ID', // 인도네시아
+  'MY', // 말레이시아
+];
+
+const countries: CountryOption[] = majorCountryCodes
   .map((code: string) => ({
     value: code,
-    label: getName(code),
-  }));
+    label: getName(code) || code,
+  }))
+  .filter((country) => country.label); // 유효한 국가만 필터링
 
 const formatOptionLabel = ({ value, label }: CountryOption) => (
   <div style={{ display: 'flex', alignItems: 'center' }}>
@@ -43,10 +71,11 @@ const formatOptionLabel = ({ value, label }: CountryOption) => (
   </div>
 );
 
-const ScoreSubmitModal: React.FC<ScoreSubmitModalProps> = ({ 
-  score, 
-  onClose, 
-  isOpen, 
+const ScoreSubmitModal: React.FC<ScoreSubmitModalProps> = ({
+  score,
+  timePlayed = 0,
+  onClose,
+  isOpen,
   systemLines = [],
   onCountrySelect,
   onRankingUpdate,
@@ -55,9 +84,27 @@ const ScoreSubmitModal: React.FC<ScoreSubmitModalProps> = ({
   const [country, setCountry] = useState<CountryOption | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [displayTime, setDisplayTime] = useState('00:00');
+
+  useEffect(() => {
+    const minutes = Math.floor(timePlayed / 60);
+    const seconds = timePlayed % 60;
+    setDisplayTime(`${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`);
+  }, [timePlayed]);
+
+  // 모달이 열릴 때마다 에러 상태 초기화
+  useEffect(() => {
+    if (isOpen) {
+      setError(null);
+    }
+  }, [isOpen]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    await submitScoreData();
+  };
+
+  const submitScoreData = async () => {
     if (!nickname || !country) {
       setError('모든 필드를 입력해주세요.');
       return;
@@ -74,12 +121,12 @@ const ScoreSubmitModal: React.FC<ScoreSubmitModalProps> = ({
 
     // 로컬 랭킹에 추가
     addRankingEntry(nickname, country.value, score);
-    
+
     // 국가 정보 전달
     if (onCountrySelect) {
       onCountrySelect(country.value);
     }
-    
+
     // 랭킹 업데이트 트리거
     if (onRankingUpdate) {
       onRankingUpdate();
@@ -98,220 +145,378 @@ const ScoreSubmitModal: React.FC<ScoreSubmitModalProps> = ({
     }
   };
 
-  return (
-    <Modal isOpen={isOpen}>
-      <div className="h-full w-full flex flex-col items-center justify-center">
-        <div className="max-w-[280px] w-full mx-auto">
-          <div className="text-center w-full mb-5">
-            <h2
-              className="text-2xl font-bold mb-2 text-white"
-              style={{
-                fontFamily: 'Montserrat, -apple-system, BlinkMacSystemFont, sans-serif',
-                letterSpacing: '-0.5px',
-              }}
-            >
-              GAME OVER
-            </h2>
-            <p
-              className="text-base text-gray-300"
-              style={{
-                fontFamily: 'Montserrat, -apple-system, BlinkMacSystemFont, sans-serif',
-                letterSpacing: '0.5px',
-              }}
-            >
-              Score: {score}
-            </p>
+  if (!isOpen) return null;
 
-            {systemLines.length > 0 && (
-              <div style={{ marginTop: 10, fontSize: 12, color: '#d1d5db', lineHeight: 1.4 }}>
-                {systemLines.map((l, idx) => (
-                  <div key={idx}>{l}</div>
-                ))}
-              </div>
-            )}
+  return (
+    <div
+      style={{
+        backgroundColor: 'rgba(0, 0, 0, 0.75)',
+        backdropFilter: 'blur(8px)',
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        zIndex: 9999,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+    >
+      <div
+        style={{
+          background: 'linear-gradient(135deg, #2d3561 0%, #1a1a1a 100%)',
+          borderRadius: '24px',
+          padding: '48px 40px',
+          width: '430px',
+          height: '730px',
+          display: 'flex',
+          flexDirection: 'column',
+          boxShadow: '0 20px 60px rgba(0, 0, 0, 0.5)',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+        }}
+      >
+        {/* Header Section */}
+        <div style={{ width: '100%', marginBottom: '32px' }}>
+          <h2
+            style={{
+              fontFamily: 'Montserrat, -apple-system, BlinkMacSystemFont, sans-serif',
+              fontSize: '48px',
+              fontWeight: '700',
+              color: '#FFFFFF',
+              letterSpacing: '3px',
+              marginBottom: '16px',
+              textAlign: 'center',
+            }}
+          >
+            GAME OVER
+          </h2>
+
+          {/* New High Score Badge */}
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '16px', marginBottom: '24px' }}>
+            <div
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px',
+                background: 'rgba(255, 193, 7, 0.15)',
+                borderRadius: '20px',
+                padding: '8px 16px',
+              }}
+            >
+              <span style={{ fontSize: '14px' }}>🏆</span>
+              <span
+                style={{
+                  fontFamily: 'Montserrat, -apple-system, BlinkMacSystemFont, sans-serif',
+                  fontSize: '12px',
+                  fontWeight: '600',
+                  color: '#FFC107',
+                  letterSpacing: '1px',
+                }}
+              >
+                NEW HIGH SCORE!
+              </span>
+
+              {systemLines.length > 0 && (
+                <div style={{ fontSize: '12px', color: '#FFC107', lineHeight: 1.6, textAlign: 'left' }}>
+                  {systemLines.map((l, idx) => (
+                    <div key={idx}>{l}</div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+
           </div>
 
-          <form onSubmit={handleSubmit} className="flex-1 flex flex-col gap-4 w-full items-center justify-center">
-            <div className="w-full">
-              <label
-                className="block text-xs font-medium mb-2 text-gray-300 text-center w-full"
-                style={{
-                  fontFamily: 'Montserrat, -apple-system, BlinkMacSystemFont, sans-serif',
-                  letterSpacing: '1px',
-                }}
-              >
-                Nickname
-              </label>
-              <input
-                type="text"
-                value={nickname}
-                onChange={(e) => setNickname(e.target.value)}
-                className="w-full px-3 py-2 text-sm rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white text-center"
-                style={{
-                  fontFamily: 'Montserrat, -apple-system, BlinkMacSystemFont, sans-serif',
-                  backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
-                  transition: 'all 0.2s ease-in-out',
-                  letterSpacing: '0.5px',
-                }}
-                placeholder="Enter nickname"
-                autoFocus
-              />
-            </div>
+          {/* Final Score */}
+          <div style={{ marginBottom: '30px' }}>
+            <p
+              className="text-xs"
+              style={{
+                fontFamily: 'Montserrat, -apple-system, BlinkMacSystemFont, sans-serif',
+                color: '#9CA3AF',
+                letterSpacing: '2px',
+                fontWeight: '500',
+                textAlign: 'center',
+                marginBottom: '0',
+                lineHeight: '1',
+              }}
+            >
+              FINAL SCORE
+            </p>
+            <p
+              style={{
+                fontFamily: 'Montserrat, -apple-system, BlinkMacSystemFont, sans-serif',
+                fontSize: '72px',
+                fontWeight: '700',
+                color: '#818CF8',
+                letterSpacing: '-2px',
+                textAlign: 'center',
+                marginTop: '30px',
+                lineHeight: '1',
+              }}
+            >
+              {score}
+            </p>
+          </div>
 
-            <div className="w-full">
-              <label
-                className="block text-xs font-medium mb-2 text-gray-300 text-center w-full"
-                style={{
-                  fontFamily: 'Montserrat, -apple-system, BlinkMacSystemFont, sans-serif',
-                  letterSpacing: '1px',
-                }}
-              >
-                Country
-              </label>
-              <div className="flex justify-center">
-                <div className="w-full">
-                  <Select
-                    options={countries}
-                    value={country}
-                    onChange={(option) => setCountry(option as CountryOption)}
-                    placeholder="Select country"
-                    formatOptionLabel={formatOptionLabel}
-                    isSearchable={false}
-                    components={{
-                      SingleValue: (props) => (
-                        <div style={{ display: 'flex', alignItems: 'center' }}>
-                          <span
-                            style={{
-                              fontFamily: 'Montserrat, -apple-system, BlinkMacSystemFont, sans-serif',
-                              fontSize: '11px',
-                              color: 'white',
-                            }}
-                          >
-                            {props.children}
-                          </span>
-                        </div>
-                      ),
-                    }}
-                    styles={{
-                      control: (base) => ({
-                        ...base,
-                        minHeight: '24px',
-                        maxHeight: '24px',
-                        backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                        borderColor: 'rgba(255, 255, 255, 0.1)',
-                        borderRadius: '8px',
-                        boxShadow: 'none',
-                        '&:hover': {
-                          borderColor: 'rgba(255, 255, 255, 0.2)',
-                        },
-                        paddingLeft: '6px',
-                        paddingRight: '6px',
-                      }),
-                      valueContainer: (base) => ({
-                        ...base,
-                        padding: '0',
-                        display: 'flex',
-                        justifyContent: 'flex-start',
-                        maxHeight: '24px',
-                      }),
-                      option: (base, state) => ({
-                        ...base,
-                        padding: '4px 6px',
-                        height: '22px',
-                        backgroundColor: state.isSelected
-                          ? '#3b82f6'
-                          : state.isFocused
-                          ? 'rgba(59, 130, 246, 0.2)'
-                          : '#1a1a1a',
-                        color: state.isSelected ? 'white' : '#e5e5e5',
-                        cursor: 'pointer',
-                        textAlign: 'left',
-                      }),
-                      menu: (base) => ({
-                        ...base,
-                        backgroundColor: '#1a1a1a',
-                        borderRadius: '8px',
-                        border: '1px solid rgba(255, 255, 255, 0.1)',
-                        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)',
-                        overflow: 'hidden',
-                      }),
-                      menuList: (base) => ({
-                        ...base,
-                        padding: '2px',
-                      }),
-                      placeholder: (base) => ({
-                        ...base,
-                        color: 'rgba(255, 255, 255, 0.5)',
-                        fontSize: '11px',
-                        margin: 0,
-                      }),
-                      dropdownIndicator: (base) => ({
-                        ...base,
-                        padding: '0 4px',
-                      }),
-                      indicatorSeparator: () => ({
-                        display: 'none',
-                      }),
-                    }}
-                  />
-                </div>
-              </div>
-            </div>
-
-            {error && (
-              <div className="w-full text-center">
-                <p
-                  className="text-red-500 text-sm"
+          {/* Input Row */}
+          <form onSubmit={handleSubmit} className="flex flex-col gap-5 mb-8">
+            <div className="flex flex-col gap-5">
+              <div className="flex-1">
+                <label
                   style={{
+                    display: 'block',
                     fontFamily: 'Montserrat, -apple-system, BlinkMacSystemFont, sans-serif',
-                    letterSpacing: '0.5px',
+                    fontSize: '10px',
+                    fontWeight: '500',
+                    color: '#9CA3AF',
+                    letterSpacing: '1px',
+                    marginBottom: '8px',
                   }}
                 >
-                  {error}
-                </p>
+                  NICKNAME
+                </label>
+                <input
+                  type="text"
+                  value={nickname}
+                  onChange={(e) => setNickname(e.target.value)}
+                  style={{
+                    width: '100%',
+                    fontFamily: 'Montserrat, -apple-system, BlinkMacSystemFont, sans-serif',
+                    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+                    border: 'none',
+                    borderRadius: '12px',
+                    height: '48px',
+                    minHeight: '48px',
+                    fontSize: '14px',
+                    color: 'white',
+                    padding: '0 16px',
+                    outline: 'none',
+                    boxSizing: 'border-box',
+                  }}
+                  placeholder="Enter your name..."
+                  autoFocus
+                />
               </div>
-            )}
 
-            <div className="w-full mt-4" style={{ display: 'flex', gap: 8 }}>
-              <button
-                type="button"
-                onClick={onClose}
-                className="w-full py-2 rounded-xl font-semibold transition-all duration-200"
-                style={{
-                  background: 'rgba(255,255,255,0.06)',
-                  color: '#e0e0e0',
-                  fontFamily: 'Montserrat, -apple-system, BlinkMacSystemFont, sans-serif',
-                  fontSize: '13px',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
-                  letterSpacing: '1px',
-                }}
-              >
-                Restart
-              </button>
-
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="w-full py-2 rounded-xl font-semibold transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                style={{
-                  background: 'linear-gradient(135deg, #323232 0%, #1a1a1a 100%)',
-                  color: '#e0e0e0',
-                  fontFamily: 'Montserrat, -apple-system, BlinkMacSystemFont, sans-serif',
-                  fontSize: '13px',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
-                  transform: 'translateY(0)',
-                  transition: 'all 0.2s ease-in-out',
-                  letterSpacing: '1px',
-                }}
-              >
-                {isSubmitting ? 'Submitting...' : 'Submit'}
-              </button>
+              <div className="flex-1" style={{ marginTop: '20px' }}>
+                <label
+                  style={{
+                    display: 'block',
+                    fontFamily: 'Montserrat, -apple-system, BlinkMacSystemFont, sans-serif',
+                    fontSize: '10px',
+                    fontWeight: '500',
+                    color: '#9CA3AF',
+                    letterSpacing: '1px',
+                    marginBottom: '8px',
+                  }}
+                >
+                  COUNTRY
+                </label>
+                <Select
+                  options={countries}
+                  value={country}
+                  onChange={(option: CountryOption | null) => setCountry(option)}
+                  placeholder="Select..."
+                  formatOptionLabel={formatOptionLabel}
+                  isSearchable={true}
+                  components={{
+                    SingleValue: (props: any) => (
+                      <div style={{ display: 'flex', alignItems: 'center', height: '100%' }}>
+                        <span
+                          style={{
+                            fontFamily: 'Montserrat, -apple-system, BlinkMacSystemFont, sans-serif',
+                            fontSize: '14px',
+                            color: 'white',
+                            lineHeight: '1',
+                          }}
+                        >
+                          {props.children}
+                        </span>
+                      </div>
+                    ),
+                  }}
+                  styles={{
+                    control: (base: any) => ({
+                      ...base,
+                      height: '48px',
+                      minHeight: '48px',
+                      backgroundColor: 'rgba(0, 0, 0, 0.3)',
+                      borderColor: 'transparent',
+                      borderRadius: '12px',
+                      boxShadow: 'none',
+                      '&:hover': {
+                        borderColor: 'transparent',
+                      },
+                      paddingLeft: '6px',
+                      paddingRight: '6px',
+                    }),
+                    valueContainer: (base: any) => ({
+                      ...base,
+                      padding: '0 10px',
+                      display: 'flex',
+                      justifyContent: 'flex-start',
+                      height: '46px',
+                    }),
+                    input: (base: any) => ({
+                      ...base,
+                      color: 'white',
+                      fontFamily: 'Montserrat, -apple-system, BlinkMacSystemFont, sans-serif',
+                      fontSize: '14px',
+                    }),
+                    option: (base: any, state: any) => ({
+                      ...base,
+                      padding: '12px 16px',
+                      backgroundColor: state.isSelected
+                        ? '#818CF8'
+                        : state.isFocused
+                          ? 'rgba(129, 140, 248, 0.2)'
+                          : 'rgba(30, 35, 45, 1)',
+                      color: 'white',
+                      cursor: 'pointer',
+                      fontFamily: 'Montserrat, -apple-system, BlinkMacSystemFont, sans-serif',
+                      fontSize: '14px',
+                    }),
+                    menu: (base: any) => ({
+                      ...base,
+                      backgroundColor: 'rgba(30, 35, 45, 1)',
+                      borderRadius: '12px',
+                      border: '1px solid rgba(255, 255, 255, 0.1)',
+                      boxShadow: '0 4px 16px rgba(0, 0, 0, 0.4)',
+                      overflow: 'hidden',
+                    }),
+                    menuList: (base: any) => ({
+                      ...base,
+                      padding: '4px',
+                      maxHeight: '280px',
+                    }),
+                    placeholder: (base: any) => ({
+                      ...base,
+                      color: '#6B7280',
+                      fontSize: '14px',
+                      fontFamily: 'Montserrat, -apple-system, BlinkMacSystemFont, sans-serif',
+                      margin: 0,
+                    }),
+                    dropdownIndicator: (base: any) => ({
+                      ...base,
+                      padding: '0',
+                      paddingRight: '8px',
+                      color: '#9CA3AF',
+                      display: 'flex',
+                      alignItems: 'center',
+                    }),
+                    indicatorSeparator: () => ({
+                      display: 'none',
+                    }),
+                    singleValue: (base: any) => ({
+                      ...base,
+                      margin: 0,
+                    }),
+                  }}
+                />
+              </div>
             </div>
+
           </form>
+
+        </div>
+
+        {/* Bottom Section - Fixed to bottom */}
+        <div style={{ marginTop: 'auto', width: '100%' }}>
+          {error && (
+            <div style={{ textAlign: 'center', marginBottom: '16px' }}>
+              <p
+                style={{
+                  fontFamily: 'Montserrat, -apple-system, BlinkMacSystemFont, sans-serif',
+                  fontSize: '14px',
+                  color: '#EF4444',
+                  letterSpacing: '0.5px',
+                }}
+              >
+                {error}
+              </p>
+            </div>
+          )}
+
+          <button
+            onClick={submitScoreData}
+            disabled={isSubmitting}
+            style={{
+              width: '100%',
+              background: '#818CF8',
+              color: '#FFFFFF',
+              fontFamily: 'Montserrat, -apple-system, BlinkMacSystemFont, sans-serif',
+              fontSize: '15px',
+              fontWeight: '600',
+              border: 'none',
+              borderRadius: '12px',
+              height: '52px',
+              cursor: isSubmitting ? 'not-allowed' : 'pointer',
+              opacity: isSubmitting ? 0.5 : 1,
+              transition: 'all 0.2s',
+            }}
+          >
+            {isSubmitting ? 'Submitting...' : 'Submit Score (제출하기)'}
+          </button>
+
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', marginTop: '16px' }}>
+            <button
+              type="button"
+              onClick={onClose}
+              style={{
+                background: 'transparent',
+                color: '#9CA3AF',
+                fontFamily: 'Montserrat, -apple-system, BlinkMacSystemFont, sans-serif',
+                fontSize: '14px',
+                fontWeight: '500',
+                border: 'none',
+                cursor: 'pointer',
+                transition: 'color 0.2s',
+              }}
+            >
+              Restart (재시작)
+            </button>
+            <button
+              type="button"
+              onClick={onClose}
+              style={{
+                background: 'rgba(255, 255, 255, 0.1)',
+                color: '#FFFFFF',
+                border: 'none',
+                borderRadius: '16px',
+                width: '32px',
+                height: '32px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                fontSize: '16px',
+                transition: 'background 0.2s',
+              }}
+            >
+              ↻
+            </button>
+          </div>
+
+          {/* Footer */}
+          <div style={{ textAlign: 'center', marginTop: '48px' }}>
+            <p
+              style={{
+                fontFamily: 'Montserrat, -apple-system, BlinkMacSystemFont, sans-serif',
+                fontSize: '10px',
+                fontWeight: '500',
+                color: '#6B7280',
+                letterSpacing: '1.5px',
+              }}
+            >
+              ONE MORE SECOND • WEB GAME EDITION
+            </p>
+          </div>
         </div>
       </div>
-    </Modal>
+    </div>
   );
 };
 

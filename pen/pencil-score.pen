@@ -1,0 +1,444 @@
+{
+  "version": "2.7",
+  "children": [
+    {
+      "type": "frame",
+      "id": "bi8Au",
+      "x": 222,
+      "y": -315,
+      "name": "Window_score",
+      "clip": true,
+      "width": 859,
+      "height": 901,
+      "fill": {
+        "type": "gradient",
+        "gradientType": "linear",
+        "enabled": true,
+        "rotation": 135,
+        "size": {
+          "height": 1
+        },
+        "colors": [
+          {
+            "color": "#2d3561",
+            "position": 0
+          },
+          {
+            "color": "#1a1a1a",
+            "position": 1
+          }
+        ]
+      },
+      "layout": "vertical",
+      "justifyContent": "center",
+      "alignItems": "center",
+      "children": [
+        {
+          "type": "frame",
+          "id": "Ng06T",
+          "name": "mainContainer",
+          "width": 430,
+          "fill": "rgba(30, 35, 45, 0.95)",
+          "cornerRadius": 24,
+          "layout": "vertical",
+          "gap": 32,
+          "padding": [
+            48,
+            40
+          ],
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "ui1oB",
+              "name": "headerSection",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 16,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "YLvGZ",
+                  "name": "gameOverTitle",
+                  "fill": "#FFFFFF",
+                  "content": "GAME OVER",
+                  "textAlign": "center",
+                  "fontFamily": "Montserrat",
+                  "fontSize": 48,
+                  "fontWeight": "700",
+                  "letterSpacing": 2
+                },
+                {
+                  "type": "frame",
+                  "id": "an6AP",
+                  "name": "newHighScoreBadge",
+                  "fill": "rgba(255, 193, 7, 0.15)",
+                  "cornerRadius": 20,
+                  "gap": 8,
+                  "padding": [
+                    8,
+                    16
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "iYjpj",
+                      "name": "badgeIcon",
+                      "fill": "#FFC107",
+                      "content": "😊",
+                      "fontFamily": "Inter",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "Vpwc7",
+                      "name": "badgeText",
+                      "fill": "#FFC107",
+                      "content": "NEW HIGH SCORE!",
+                      "fontFamily": "Montserrat",
+                      "fontSize": 12,
+                      "fontWeight": "600",
+                      "letterSpacing": 1
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "3DDUK",
+              "name": "finalScoreSection",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 12,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "hkPDq",
+                  "name": "finalScoreLabel",
+                  "fill": "#9CA3AF",
+                  "content": "FINAL SCORE",
+                  "textAlign": "center",
+                  "fontFamily": "Montserrat",
+                  "fontSize": 11,
+                  "fontWeight": "500",
+                  "letterSpacing": 2
+                },
+                {
+                  "type": "text",
+                  "id": "yAGtB",
+                  "name": "scoreValue",
+                  "fill": "#818CF8",
+                  "content": "1234",
+                  "textAlign": "center",
+                  "fontFamily": "Montserrat",
+                  "fontSize": 72,
+                  "fontWeight": "700",
+                  "letterSpacing": -2
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "vNhr8",
+              "name": "statsRow",
+              "width": "fill_container",
+              "gap": 16,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "XTOAX",
+                  "name": "timeCard",
+                  "width": "fill_container",
+                  "fill": "rgba(0, 0, 0, 0.3)",
+                  "cornerRadius": 12,
+                  "layout": "vertical",
+                  "gap": 8,
+                  "padding": [
+                    16,
+                    20
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "0CTWZ",
+                      "name": "timeLabel",
+                      "fill": "#9CA3AF",
+                      "content": "TIME PLAYED",
+                      "textAlign": "center",
+                      "fontFamily": "Montserrat",
+                      "fontSize": 10,
+                      "fontWeight": "500",
+                      "letterSpacing": 1
+                    },
+                    {
+                      "type": "text",
+                      "id": "K2Ned",
+                      "name": "timeValue",
+                      "fill": "#FFFFFF",
+                      "content": "04:22",
+                      "textAlign": "center",
+                      "fontFamily": "Montserrat",
+                      "fontSize": 20,
+                      "fontWeight": "600"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "HRL4E",
+                  "name": "accuracyCard",
+                  "width": "fill_container",
+                  "fill": "rgba(0, 0, 0, 0.3)",
+                  "cornerRadius": 12,
+                  "layout": "vertical",
+                  "gap": 8,
+                  "padding": [
+                    16,
+                    20
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "klR8l",
+                      "name": "accuracyLabel",
+                      "fill": "#9CA3AF",
+                      "content": "ACCURACY",
+                      "textAlign": "center",
+                      "fontFamily": "Montserrat",
+                      "fontSize": 10,
+                      "fontWeight": "500",
+                      "letterSpacing": 1
+                    },
+                    {
+                      "type": "text",
+                      "id": "Y91Xc",
+                      "name": "accuracyValue",
+                      "fill": "#FFFFFF",
+                      "content": "98.4%",
+                      "textAlign": "center",
+                      "fontFamily": "Montserrat",
+                      "fontSize": 20,
+                      "fontWeight": "600"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "PpCnv",
+              "name": "formSection",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 20,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "oCN4x",
+                  "name": "nicknameField",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 8,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "l4MTO",
+                      "name": "nicknameLabel",
+                      "fill": "#9CA3AF",
+                      "content": "NICKNAME (닉네임)",
+                      "fontFamily": "Montserrat",
+                      "fontSize": 11,
+                      "fontWeight": "500",
+                      "letterSpacing": 1
+                    },
+                    {
+                      "type": "frame",
+                      "id": "kBG6k",
+                      "name": "nicknameInput",
+                      "width": "fill_container",
+                      "height": 48,
+                      "fill": "rgba(0, 0, 0, 0.3)",
+                      "cornerRadius": 12,
+                      "padding": [
+                        0,
+                        16
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "Czxp8",
+                          "name": "nicknamePlaceholder",
+                          "fill": "#6B7280",
+                          "content": "Enter your name...",
+                          "fontFamily": "Montserrat",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "MkXdx",
+                  "name": "countryField",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 8,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "Rils1",
+                      "name": "countryLabel",
+                      "fill": "#9CA3AF",
+                      "content": "COUNTRY (국가)",
+                      "fontFamily": "Montserrat",
+                      "fontSize": 11,
+                      "fontWeight": "500",
+                      "letterSpacing": 1
+                    },
+                    {
+                      "type": "frame",
+                      "id": "9L4Ls",
+                      "name": "countrySelect",
+                      "width": "fill_container",
+                      "height": 48,
+                      "fill": "rgba(0, 0, 0, 0.3)",
+                      "cornerRadius": 12,
+                      "padding": [
+                        0,
+                        16
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "qRyTO",
+                          "name": "countryText",
+                          "fill": "#FFFFFF",
+                          "content": "South Korea",
+                          "fontFamily": "Montserrat",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "nrAIj",
+                          "name": "dropdownIcon",
+                          "fill": "#9CA3AF",
+                          "content": "▼",
+                          "fontFamily": "Inter",
+                          "fontSize": 10,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "DcLWr",
+                  "name": "submitButton",
+                  "width": "fill_container",
+                  "height": 52,
+                  "fill": "#818CF8",
+                  "cornerRadius": 12,
+                  "layout": "vertical",
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "SNNB0",
+                      "name": "submitText",
+                      "fill": "#FFFFFF",
+                      "content": "Submit Score (제출하기)",
+                      "fontFamily": "Montserrat",
+                      "fontSize": 15,
+                      "fontWeight": "600"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "sHFFU",
+                  "name": "cancelSection",
+                  "width": "fill_container",
+                  "gap": 12,
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "Tx0yh",
+                      "name": "cancelText",
+                      "fill": "#9CA3AF",
+                      "content": "Cancel (취소)",
+                      "fontFamily": "Montserrat",
+                      "fontSize": 14,
+                      "fontWeight": "500"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "EABSz",
+                      "name": "retryIcon",
+                      "width": 32,
+                      "height": 32,
+                      "fill": "rgba(255, 255, 255, 0.1)",
+                      "cornerRadius": 16,
+                      "layout": "vertical",
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "AeDA4",
+                          "name": "retryIconText",
+                          "fill": "#FFFFFF",
+                          "content": "↻",
+                          "fontFamily": "Inter",
+                          "fontSize": 16,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "SOaBI",
+              "name": "footer",
+              "fill": "#6B7280",
+              "content": "ONE MORE SECOND • WEB GAME EDITION",
+              "textAlign": "center",
+              "fontFamily": "Montserrat",
+              "fontSize": 10,
+              "fontWeight": "500",
+              "letterSpacing": 1.5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "prompt",
+      "id": "OsY6p",
+      "x": 213,
+      "y": -641,
+      "model": "claude-4.5-sonnet",
+      "width": 493,
+      "height": 188,
+      "content": "@src/pages/GameOver/components/ScoreSubmitModal.tsx 의 디자인 가져와서 \"Window_score\" 에 스캐치해줘."
+    }
+  ]
+}
