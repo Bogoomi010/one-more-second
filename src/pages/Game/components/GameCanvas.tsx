@@ -363,7 +363,7 @@ function GameCanvasComponent({
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
     };
-  }, [playerColor, bulletColor]); // 색상만 의존성으로
+  }, [playerColor, bulletColor, isModalOpen]);
 
   return (
     <canvas

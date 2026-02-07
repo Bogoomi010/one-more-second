@@ -84,13 +84,6 @@ const ScoreSubmitModal: React.FC<ScoreSubmitModalProps> = ({
   const [country, setCountry] = useState<CountryOption | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [displayTime, setDisplayTime] = useState('00:00');
-
-  useEffect(() => {
-    const minutes = Math.floor(timePlayed / 60);
-    const seconds = timePlayed % 60;
-    setDisplayTime(`${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`);
-  }, [timePlayed]);
 
   // 모달이 열릴 때마다 에러 상태 초기화
   useEffect(() => {
