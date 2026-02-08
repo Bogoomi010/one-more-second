@@ -1,0 +1,2202 @@
+{
+  "version": "2.7",
+  "children": [
+    {
+      "type": "frame",
+      "id": "bi8Au",
+      "x": 225,
+      "y": -123,
+      "name": "main-page",
+      "clip": true,
+      "width": 1440,
+      "height": 1250,
+      "fill": "#0f172a",
+      "layout": "vertical",
+      "children": [
+        {
+          "type": "frame",
+          "id": "VkUpq",
+          "name": "header",
+          "width": "fill_container",
+          "fill": "#1e293b99",
+          "stroke": {
+            "align": "inside",
+            "thickness": 1,
+            "fill": "#ffffff1a"
+          },
+          "padding": [
+            16,
+            24
+          ],
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "qqthp",
+              "name": "logoSection",
+              "gap": 12,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "AA1qR",
+                  "name": "logoIcon",
+                  "width": 40,
+                  "height": 40,
+                  "cornerRadius": 12,
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "MBHe6",
+                      "name": "logoBolt",
+                      "fill": "#0f172a",
+                      "content": "⚡",
+                      "fontFamily": "Inter",
+                      "fontSize": 24,
+                      "fontWeight": "bold"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "SvafC",
+                  "name": "logoText",
+                  "gap": 4,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "RGmz4",
+                      "name": "logoOne",
+                      "fill": "#ffffff",
+                      "content": "ONE",
+                      "fontFamily": "Quicksand",
+                      "fontSize": 24,
+                      "fontWeight": "bold",
+                      "fontStyle": "italic"
+                    },
+                    {
+                      "type": "text",
+                      "id": "dooyj",
+                      "name": "logoMore",
+                      "fill": "#4ade80",
+                      "content": "MORE",
+                      "fontFamily": "Quicksand",
+                      "fontSize": 24,
+                      "fontWeight": "bold",
+                      "fontStyle": "italic"
+                    },
+                    {
+                      "type": "text",
+                      "id": "JkCWb",
+                      "name": "logoSecond",
+                      "fill": "#ffffff",
+                      "content": "SECOND",
+                      "fontFamily": "Quicksand",
+                      "fontSize": 24,
+                      "fontWeight": "bold",
+                      "fontStyle": "italic"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "7HkX7",
+              "name": "rightSection",
+              "gap": 24,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "CNMqb",
+                  "name": "navSection",
+                  "gap": 32,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "Eqwua",
+                      "name": "navGame",
+                      "fill": "#4ade80",
+                      "content": "Game",
+                      "fontFamily": "Quicksand",
+                      "fontSize": 14,
+                      "fontWeight": "bold"
+                    },
+                    {
+                      "type": "text",
+                      "id": "6jHhr",
+                      "name": "navMarket",
+                      "fill": "#cbd5e1",
+                      "content": "Market",
+                      "fontFamily": "Quicksand",
+                      "fontSize": 14,
+                      "fontWeight": "bold"
+                    },
+                    {
+                      "type": "text",
+                      "id": "mSDj6",
+                      "name": "navWall",
+                      "fill": "#cbd5e1",
+                      "content": "Global Wall",
+                      "fontFamily": "Quicksand",
+                      "fontSize": 14,
+                      "fontWeight": "bold"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "sZWCC",
+                  "name": "divider",
+                  "width": 1,
+                  "height": 24,
+                  "fill": "#ffffff1a"
+                },
+                {
+                  "type": "frame",
+                  "id": "nkXGK",
+                  "name": "langBtn",
+                  "cornerRadius": 8,
+                  "gap": 8,
+                  "padding": [
+                    8,
+                    12
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "WlcfK",
+                      "name": "langIcon",
+                      "content": "🌐",
+                      "fontFamily": "Inter",
+                      "fontSize": 16,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "zDilu",
+                      "name": "langText",
+                      "fill": "#cbd5e1",
+                      "content": "EN",
+                      "fontFamily": "Quicksand",
+                      "fontSize": 14,
+                      "fontWeight": "semibold"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "VFqFB",
+                  "name": "userBtn",
+                  "width": 40,
+                  "height": 40,
+                  "fill": "#ffffff0d",
+                  "cornerRadius": 12,
+                  "stroke": {
+                    "align": "inside",
+                    "thickness": 1,
+                    "fill": "#ffffff1a"
+                  },
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "ZQ3fx",
+                      "name": "userIcon",
+                      "content": "👤",
+                      "fontFamily": "Inter",
+                      "fontSize": 20,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "z2W52",
+          "name": "mainContent",
+          "width": "fill_container",
+          "gap": 32,
+          "padding": 40,
+          "children": [
+            {
+              "type": "frame",
+              "id": "4LQwf",
+              "name": "rankingPanel",
+              "width": 320,
+              "fill": "#1e293b99",
+              "cornerRadius": 24,
+              "stroke": {
+                "align": "inside",
+                "thickness": 1,
+                "fill": "#ffffff1a"
+              },
+              "layout": "vertical",
+              "gap": 24,
+              "padding": 24,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "Jkq6A",
+                  "name": "rankHeader",
+                  "gap": 8,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "7FHoE",
+                      "name": "rankIcon",
+                      "content": "📊",
+                      "fontFamily": "Inter",
+                      "fontSize": 20,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "4TMb1",
+                      "name": "rankTitle",
+                      "fill": "#ffffff",
+                      "content": "Ranking",
+                      "fontFamily": "Quicksand",
+                      "fontSize": 20,
+                      "fontWeight": "bold"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "hixVf",
+                  "name": "tabsContainer",
+                  "width": "fill_container",
+                  "fill": "#ffffff0d",
+                  "cornerRadius": 16,
+                  "gap": 4,
+                  "padding": 6,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "Zr9Ym",
+                      "name": "tabGlobal",
+                      "width": "fill_container",
+                      "cornerRadius": 12,
+                      "padding": [
+                        8,
+                        0
+                      ],
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "V26Wb",
+                          "name": "tabGlobalText",
+                          "fill": "#0f172a",
+                          "content": "Global",
+                          "fontFamily": "Quicksand",
+                          "fontSize": 12,
+                          "fontWeight": "bold"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "oio6I",
+                      "name": "tabLocal",
+                      "width": "fill_container",
+                      "cornerRadius": 12,
+                      "padding": [
+                        8,
+                        0
+                      ],
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "PFONu",
+                          "name": "tabLocalText",
+                          "fill": "#94a3b8",
+                          "content": "Local",
+                          "fontFamily": "Quicksand",
+                          "fontSize": 12,
+                          "fontWeight": "bold"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "7ENVb",
+                      "name": "tabDaily",
+                      "width": "fill_container",
+                      "cornerRadius": 12,
+                      "padding": [
+                        8,
+                        0
+                      ],
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "BbvbF",
+                          "name": "tabDailyText",
+                          "fill": "#94a3b8",
+                          "content": "Daily",
+                          "fontFamily": "Quicksand",
+                          "fontSize": 12,
+                          "fontWeight": "bold"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "Hrnto",
+                  "name": "emptyState",
+                  "width": "fill_container",
+                  "height": 400,
+                  "layout": "vertical",
+                  "gap": 16,
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "TcOZ0",
+                      "name": "emptyIcon",
+                      "width": 64,
+                      "height": 64,
+                      "fill": "#ffffff0d",
+                      "cornerRadius": 32,
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "2cZrI",
+                          "name": "emptyIconText",
+                          "fill": "#ffffff66",
+                          "content": "⏱",
+                          "fontFamily": "Inter",
+                          "fontSize": 32,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "80qEU",
+                      "name": "emptyText1",
+                      "fill": "#64748b",
+                      "content": "No records available yet.",
+                      "fontFamily": "Quicksand",
+                      "fontSize": 14,
+                      "fontWeight": "medium"
+                    },
+                    {
+                      "type": "text",
+                      "id": "ZlWoy",
+                      "name": "emptyText2",
+                      "fill": "#38bdf899",
+                      "content": "START PLAYING TO RANK UP",
+                      "fontFamily": "Fira Code",
+                      "fontSize": 10,
+                      "fontWeight": "bold"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "NS7eT",
+                  "name": "rankFooter",
+                  "width": "fill_container",
+                  "stroke": {
+                    "align": "inside",
+                    "thickness": 1,
+                    "fill": "#ffffff0d"
+                  },
+                  "padding": [
+                    16,
+                    0,
+                    0,
+                    0
+                  ],
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "HyMTQ",
+                      "name": "rankFooterText",
+                      "fill": "#64748b",
+                      "content": "TOTAL 0 RECORDS",
+                      "fontFamily": "Fira Code",
+                      "fontSize": 10,
+                      "fontWeight": "medium"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "IC3Z8",
+              "name": "gamePanel",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 24,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "ixMoA",
+                  "name": "gameCanvas",
+                  "width": "fill_container",
+                  "height": 600,
+                  "fill": "#080c16",
+                  "cornerRadius": 24,
+                  "stroke": {
+                    "align": "inside",
+                    "thickness": 2,
+                    "fill": "#ffffff1a"
+                  },
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "nHZ1w",
+                      "name": "startOverlay",
+                      "width": "fill_container",
+                      "height": "fill_container",
+                      "fill": "#0f172a99",
+                      "layout": "vertical",
+                      "gap": 48,
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "JNaam",
+                          "name": "startText",
+                          "gap": 8,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "25pKz",
+                              "name": "pressText",
+                              "fill": "#ffffff",
+                              "content": "PRESS",
+                              "fontFamily": "Fira Code",
+                              "fontSize": 24,
+                              "fontWeight": "bold"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "KSIUu",
+                              "name": "enterBtn",
+                              "cornerRadius": 8,
+                              "padding": [
+                                4,
+                                16
+                              ],
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "nJQVO",
+                                  "name": "enterText",
+                                  "fill": "#0f172a",
+                                  "content": "ENTER",
+                                  "fontFamily": "Fira Code",
+                                  "fontSize": 24,
+                                  "fontWeight": "bold"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "text",
+                              "id": "cSzIS",
+                              "name": "toStartText",
+                              "fill": "#ffffff",
+                              "content": "TO START",
+                              "fontFamily": "Fira Code",
+                              "fontSize": 24,
+                              "fontWeight": "bold"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "q8pIe",
+                          "name": "controlsRow",
+                          "gap": 48,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "5862K",
+                              "name": "moveControl",
+                              "layout": "vertical",
+                              "gap": 12,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "FCjNY",
+                                  "name": "moveLabel",
+                                  "fill": "#38bdf899",
+                                  "content": "MOVE",
+                                  "fontFamily": "Fira Code",
+                                  "fontSize": 10,
+                                  "fontWeight": "bold"
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "h77h3",
+                                  "name": "moveKeys",
+                                  "fill": "#ffffff0d",
+                                  "cornerRadius": 12,
+                                  "stroke": {
+                                    "align": "inside",
+                                    "thickness": 1,
+                                    "fill": "#ffffff1a"
+                                  },
+                                  "padding": [
+                                    8,
+                                    16
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "IGJE4",
+                                      "name": "moveKeysText",
+                                      "fill": "#ffffffe6",
+                                      "content": "WASD / ARROWS",
+                                      "fontFamily": "Fira Code",
+                                      "fontSize": 12,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "fPr15",
+                              "name": "slowmoControl",
+                              "layout": "vertical",
+                              "gap": 12,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "Avhfu",
+                                  "name": "slowmoLabel",
+                                  "fill": "#fb718599",
+                                  "content": "SLOWMO",
+                                  "fontFamily": "Fira Code",
+                                  "fontSize": 10,
+                                  "fontWeight": "bold"
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "fabwo",
+                                  "name": "slowmoKeys",
+                                  "fill": "#ffffff0d",
+                                  "cornerRadius": 12,
+                                  "stroke": {
+                                    "align": "inside",
+                                    "thickness": 1,
+                                    "fill": "#ffffff1a"
+                                  },
+                                  "padding": [
+                                    8,
+                                    16
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "vzEbI",
+                                      "name": "slowmoKeysText",
+                                      "fill": "#ffffffe6",
+                                      "content": "SHIFT",
+                                      "fontFamily": "Fira Code",
+                                      "fontSize": 12,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "p4vxx",
+                      "name": "playerSquare",
+                      "width": 56,
+                      "height": 56,
+                      "cornerRadius": 16
+                    },
+                    {
+                      "type": "frame",
+                      "id": "Pp3XI",
+                      "name": "gameOverlayContainer",
+                      "width": "fill_container",
+                      "height": "fill_container",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "l7qbx",
+                          "name": "topGradient",
+                          "width": "fill_container",
+                          "height": 4
+                        },
+                        {
+                          "type": "frame",
+                          "id": "gAvw5",
+                          "name": "bottomGradient",
+                          "width": "fill_container",
+                          "height": 4
+                        },
+                        {
+                          "type": "frame",
+                          "id": "QA1IQ",
+                          "name": "statsBox",
+                          "fill": "#00000033",
+                          "cornerRadius": 16,
+                          "stroke": {
+                            "align": "inside",
+                            "thickness": 1,
+                            "fill": "#ffffff0d"
+                          },
+                          "layout": "vertical",
+                          "gap": 8,
+                          "padding": 12,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "7c9k4",
+                              "name": "scoreInfo",
+                              "fill": "#ffffff99",
+                              "content": "Score: 0s",
+                              "fontFamily": "Fira Code",
+                              "fontSize": 11,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "text",
+                              "id": "uPWst",
+                              "name": "bestInfo",
+                              "fill": "#ffffff66",
+                              "content": "Best: 42s • Coins: 12",
+                              "fontFamily": "Fira Code",
+                              "fontSize": 11,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "Z5Znc",
+                          "name": "heartsBox",
+                          "layout": "vertical",
+                          "gap": 12,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "yuuVQ",
+                              "name": "heartsGroup",
+                              "gap": 6,
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "ptr4n",
+                                  "name": "h1",
+                                  "content": "❤️",
+                                  "fontFamily": "Inter",
+                                  "fontSize": 14,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "6YF7Y",
+                                  "name": "h2",
+                                  "content": "❤️",
+                                  "fontFamily": "Inter",
+                                  "fontSize": 14,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "Id1WE",
+                                  "name": "h3",
+                                  "content": "❤️",
+                                  "fontFamily": "Inter",
+                                  "fontSize": 14,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "3qGsu",
+                              "name": "intervalBox",
+                              "fill": "#00000033",
+                              "cornerRadius": 12,
+                              "stroke": {
+                                "align": "inside",
+                                "thickness": 1,
+                                "fill": "#ffffff0d"
+                              },
+                              "padding": [
+                                4,
+                                12
+                              ],
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "djhAJ",
+                                  "name": "intervalLabel",
+                                  "fill": "#ffffff66",
+                                  "content": "Interval: 500ms",
+                                  "fontFamily": "Fira Code",
+                                  "fontSize": 11,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "Mvc1h",
+                          "name": "settingsBtnNew",
+                          "width": 40,
+                          "height": 40,
+                          "fill": "#ffffff1a",
+                          "cornerRadius": 16,
+                          "stroke": {
+                            "align": "inside",
+                            "thickness": 1,
+                            "fill": "#ffffff33"
+                          },
+                          "padding": 10,
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "LeD7Z",
+                              "name": "settingsIconNew",
+                              "content": "⚙️",
+                              "fontFamily": "Inter",
+                              "fontSize": 20,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "hBnKR",
+                  "name": "infoBar",
+                  "width": "fill_container",
+                  "fill": "#1e293b99",
+                  "cornerRadius": 16,
+                  "stroke": {
+                    "align": "inside",
+                    "thickness": 1,
+                    "fill": "#ffffff1a"
+                  },
+                  "padding": 20,
+                  "justifyContent": "space_between",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "bmOTo",
+                      "name": "leftInfo",
+                      "gap": 24,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "K2xSy",
+                          "name": "latencyInfo",
+                          "gap": 8,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "F3bRP",
+                              "name": "latencyIcon",
+                              "content": "📡",
+                              "fontFamily": "Inter",
+                              "fontSize": 16,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "text",
+                              "id": "ApeOX",
+                              "name": "latencyText",
+                              "fill": "#94a3b8",
+                              "content": "Latency: 12ms",
+                              "fontFamily": "Fira Code",
+                              "fontSize": 11,
+                              "fontWeight": "medium"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "pYMA8",
+                          "name": "onlineInfo",
+                          "gap": 8,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "8RQ0f",
+                              "name": "onlineIcon",
+                              "content": "👥",
+                              "fontFamily": "Inter",
+                              "fontSize": 16,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "text",
+                              "id": "yPQc6",
+                              "name": "onlineText",
+                              "fill": "#94a3b8",
+                              "content": "1,204 online",
+                              "fontFamily": "Fira Code",
+                              "fontSize": 11,
+                              "fontWeight": "medium"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "ZGpvc",
+                      "name": "rightInfo",
+                      "gap": 24,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "OdAsd",
+                          "name": "tutorialBtn",
+                          "fill": "#94a3b8",
+                          "content": "TUTORIAL",
+                          "fontFamily": "Fira Code",
+                          "fontSize": 11,
+                          "fontWeight": "medium"
+                        },
+                        {
+                          "type": "text",
+                          "id": "o0lHY",
+                          "name": "settingsText",
+                          "fill": "#94a3b8",
+                          "content": "SETTINGS",
+                          "fontFamily": "Fira Code",
+                          "fontSize": 11,
+                          "fontWeight": "medium"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "YLb1R",
+              "name": "statsPanel",
+              "width": 320,
+              "fill": "#1e293b99",
+              "cornerRadius": 24,
+              "stroke": {
+                "align": "inside",
+                "thickness": 1,
+                "fill": "#ffffff1a"
+              },
+              "layout": "vertical",
+              "gap": 24,
+              "padding": 24,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "vDIGt",
+                  "name": "statsHeader",
+                  "gap": 8,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "9Ewtn",
+                      "name": "statsIcon",
+                      "content": "📈",
+                      "fontFamily": "Inter",
+                      "fontSize": 20,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "yPAoT",
+                      "name": "statsTitle",
+                      "fill": "#ffffff",
+                      "content": "Stats & Achievements",
+                      "fontFamily": "Quicksand",
+                      "fontSize": 20,
+                      "fontWeight": "bold"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "iFYww",
+                  "name": "statsTabsContainer",
+                  "width": "fill_container",
+                  "fill": "#ffffff0d",
+                  "cornerRadius": 16,
+                  "gap": 4,
+                  "padding": 6,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "VeHmO",
+                      "name": "statsTab",
+                      "width": "fill_container",
+                      "cornerRadius": 12,
+                      "padding": [
+                        8,
+                        0
+                      ],
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "Nb7Xv",
+                          "name": "statsTabText",
+                          "fill": "#0f172a",
+                          "content": "Stats",
+                          "fontFamily": "Quicksand",
+                          "fontSize": 12,
+                          "fontWeight": "bold"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "rVeBU",
+                      "name": "trophyTab",
+                      "width": "fill_container",
+                      "cornerRadius": 12,
+                      "padding": [
+                        8,
+                        0
+                      ],
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "hqGDT",
+                          "name": "trophyTabText",
+                          "fill": "#94a3b8",
+                          "content": "Trophy (1/12)",
+                          "fontFamily": "Quicksand",
+                          "fontSize": 12,
+                          "fontWeight": "bold"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "E0AeG",
+                  "name": "bestCard",
+                  "width": "fill_container",
+                  "cornerRadius": 16,
+                  "stroke": {
+                    "align": "inside",
+                    "thickness": 1,
+                    "fill": "#ffffff1a"
+                  },
+                  "layout": "vertical",
+                  "gap": 8,
+                  "padding": 24,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "YRTpv",
+                      "name": "bestLabel",
+                      "fill": "#4ade80",
+                      "content": "PERSONAL BEST",
+                      "fontFamily": "Fira Code",
+                      "fontSize": 10,
+                      "fontWeight": "black"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "dlJXL",
+                      "name": "bestValue",
+                      "gap": 4,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "sfT1N",
+                          "name": "bestNumber",
+                          "fill": "#ffffff",
+                          "content": "42.8",
+                          "fontFamily": "Fira Code",
+                          "fontSize": 48,
+                          "fontWeight": "bold"
+                        },
+                        {
+                          "type": "text",
+                          "id": "3819Q",
+                          "name": "bestUnit",
+                          "fill": "#38bdf8",
+                          "content": "s",
+                          "fontFamily": "Fira Code",
+                          "fontSize": 20,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "cJVOY",
+                  "name": "statsGrid",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 16,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "98I74",
+                      "name": "statsRow1",
+                      "width": "fill_container",
+                      "gap": 16,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "Q8GtQ",
+                          "name": "playsCard",
+                          "width": "fill_container",
+                          "fill": "#ffffff0d",
+                          "cornerRadius": 16,
+                          "stroke": {
+                            "align": "inside",
+                            "thickness": 1,
+                            "fill": "#ffffff0d"
+                          },
+                          "layout": "vertical",
+                          "gap": 8,
+                          "padding": 16,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "bieYU",
+                              "name": "playsLabel",
+                              "fill": "#64748b",
+                              "content": "PLAYS",
+                              "fontFamily": "Fira Code",
+                              "fontSize": 9,
+                              "fontWeight": "black"
+                            },
+                            {
+                              "type": "text",
+                              "id": "f5CnJ",
+                              "name": "playsValue",
+                              "fill": "#4ade80",
+                              "content": "152",
+                              "fontFamily": "Fira Code",
+                              "fontSize": 20,
+                              "fontWeight": "bold"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "WF2JX",
+                          "name": "coinsCard",
+                          "width": "fill_container",
+                          "fill": "#ffffff0d",
+                          "cornerRadius": 16,
+                          "stroke": {
+                            "align": "inside",
+                            "thickness": 1,
+                            "fill": "#ffffff0d"
+                          },
+                          "layout": "vertical",
+                          "gap": 8,
+                          "padding": 16,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "B61yg",
+                              "name": "coinsHeader",
+                              "gap": 6,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "ui2IQ",
+                                  "name": "coinsIcon",
+                                  "content": "💎",
+                                  "fontFamily": "Inter",
+                                  "fontSize": 16,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "96rcr",
+                                  "name": "coinsLabel",
+                                  "fill": "#64748b",
+                                  "content": "COINS",
+                                  "fontFamily": "Fira Code",
+                                  "fontSize": 9,
+                                  "fontWeight": "black"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "text",
+                              "id": "kZRab",
+                              "name": "coinsValue",
+                              "fill": "#fb7185",
+                              "content": "1,204",
+                              "fontFamily": "Fira Code",
+                              "fontSize": 20,
+                              "fontWeight": "bold"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "nYXru",
+                      "name": "statsRow2",
+                      "width": "fill_container",
+                      "gap": 16,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "dkRGU",
+                          "name": "timeCard",
+                          "width": "fill_container",
+                          "fill": "#ffffff0d",
+                          "cornerRadius": 16,
+                          "stroke": {
+                            "align": "inside",
+                            "thickness": 1,
+                            "fill": "#ffffff0d"
+                          },
+                          "layout": "vertical",
+                          "gap": 8,
+                          "padding": 16,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "Bygmr",
+                              "name": "timeLabel",
+                              "fill": "#64748b",
+                              "content": "TOTAL TIME",
+                              "fontFamily": "Fira Code",
+                              "fontSize": 9,
+                              "fontWeight": "black"
+                            },
+                            {
+                              "type": "text",
+                              "id": "BEOcz",
+                              "name": "timeValue",
+                              "fill": "#38bdf8",
+                              "content": "4.2h",
+                              "fontFamily": "Fira Code",
+                              "fontSize": 20,
+                              "fontWeight": "bold"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "sj9xx",
+                          "name": "avgCard",
+                          "width": "fill_container",
+                          "fill": "#ffffff0d",
+                          "cornerRadius": 16,
+                          "stroke": {
+                            "align": "inside",
+                            "thickness": 1,
+                            "fill": "#ffffff0d"
+                          },
+                          "layout": "vertical",
+                          "gap": 8,
+                          "padding": 16,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "OEUvB",
+                              "name": "avgLabel",
+                              "fill": "#64748b",
+                              "content": "AVG LIFE",
+                              "fontFamily": "Fira Code",
+                              "fontSize": 9,
+                              "fontWeight": "black"
+                            },
+                            {
+                              "type": "text",
+                              "id": "LFBTq",
+                              "name": "avgValue",
+                              "fill": "#ffffff",
+                              "content": "12.4s",
+                              "fontFamily": "Fira Code",
+                              "fontSize": 20,
+                              "fontWeight": "bold"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "YeHj5",
+                  "name": "challengeCard",
+                  "width": "fill_container",
+                  "cornerRadius": 16,
+                  "stroke": {
+                    "align": "inside",
+                    "thickness": 4,
+                    "fill": "#38bdf8"
+                  },
+                  "layout": "vertical",
+                  "gap": 12,
+                  "padding": 20,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "XtUlT",
+                      "name": "challengeHeader",
+                      "gap": 8,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "6MhRA",
+                          "name": "challengeIcon",
+                          "content": "🛡️",
+                          "fontFamily": "Inter",
+                          "fontSize": 18,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "gji0J",
+                          "name": "challengeTitle",
+                          "fill": "#38bdf8",
+                          "content": "DAILY CHALLENGE",
+                          "fontFamily": "Fira Code",
+                          "fontSize": 10,
+                          "fontWeight": "black"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "FhCIz",
+                      "name": "challengeDesc",
+                      "fill": "#f1f5f9",
+                      "content": "Survive 60s in one run",
+                      "fontFamily": "Quicksand",
+                      "fontSize": 14,
+                      "fontWeight": "bold"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "zoQRH",
+                      "name": "challengeFooter",
+                      "width": "fill_container",
+                      "justifyContent": "space_between",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "5Px5L",
+                          "name": "rewardBadge",
+                          "fill": "#4ade801a",
+                          "cornerRadius": 4,
+                          "stroke": {
+                            "align": "inside",
+                            "thickness": 1,
+                            "fill": "#4ade8033"
+                          },
+                          "padding": [
+                            4,
+                            8
+                          ],
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "Lw791",
+                              "name": "rewardText",
+                              "fill": "#4ade80",
+                              "content": "REWARD: 100 COINS",
+                              "fontFamily": "Fira Code",
+                              "fontSize": 9,
+                              "fontWeight": "black"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "id": "CgR0k",
+                          "name": "timeRemaining",
+                          "fill": "#64748b",
+                          "content": "22:14 REMAINING",
+                          "fontFamily": "Fira Code",
+                          "fontSize": 9,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "d8LjG",
+                      "name": "progressBar",
+                      "width": "fill_container",
+                      "height": 6,
+                      "fill": "#ffffff0d",
+                      "cornerRadius": 3,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "7bob4",
+                          "name": "progressFillNew",
+                          "width": 420,
+                          "height": "fill_container",
+                          "cornerRadius": 3
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "Fu8k7",
+          "name": "footer",
+          "width": "fill_container",
+          "stroke": {
+            "align": "inside",
+            "thickness": 1,
+            "fill": "#ffffff0d"
+          },
+          "layout": "vertical",
+          "padding": [
+            48,
+            0
+          ],
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "pZ0qB",
+              "name": "footerText",
+              "gap": 4,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "9CQ4w",
+                  "name": "copyrightText",
+                  "fill": "#64748b",
+                  "content": "© 2024",
+                  "fontFamily": "Fira Code",
+                  "fontSize": 10,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "nYtTw",
+                  "name": "brandText",
+                  "fill": "#38bdf8",
+                  "content": "ONE MORE SECOND",
+                  "fontFamily": "Fira Code",
+                  "fontSize": 10,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "6qrNK",
+                  "name": "taglineText",
+                  "fill": "#64748b",
+                  "content": ". STAY FOCUSED.",
+                  "fontFamily": "Fira Code",
+                  "fontSize": 10,
+                  "fontWeight": "normal"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "1UcSA",
+      "x": 880,
+      "y": -973,
+      "name": "Ranking",
+      "clip": true,
+      "width": 400,
+      "fill": "#0f172a",
+      "layout": "vertical",
+      "padding": 40,
+      "children": [
+        {
+          "type": "frame",
+          "id": "QVVnr",
+          "name": "RankingComponent",
+          "width": 320,
+          "fill": "#1e293b99",
+          "cornerRadius": 24,
+          "stroke": {
+            "align": "inside",
+            "thickness": 1,
+            "fill": "#ffffff1a"
+          },
+          "layout": "vertical",
+          "gap": 24,
+          "padding": 24,
+          "children": [
+            {
+              "type": "frame",
+              "id": "YJoXw",
+              "name": "header",
+              "gap": 8,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "OsB4l",
+                  "name": "icon",
+                  "content": "📊",
+                  "fontFamily": "Inter",
+                  "fontSize": 20,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "WYvLy",
+                  "name": "title",
+                  "fill": "#ffffff",
+                  "content": "Ranking",
+                  "fontFamily": "Quicksand",
+                  "fontSize": 20,
+                  "fontWeight": "bold"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "rQzwu",
+              "name": "tabs",
+              "width": "fill_container",
+              "fill": "#ffffff0d",
+              "cornerRadius": 16,
+              "gap": 4,
+              "padding": 6,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "foJFr",
+                  "name": "globalTab",
+                  "width": "fill_container",
+                  "cornerRadius": 12,
+                  "padding": [
+                    8,
+                    0
+                  ],
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "Ei7Vt",
+                      "name": "globalText",
+                      "fill": "#0f172a",
+                      "content": "Global",
+                      "fontFamily": "Quicksand",
+                      "fontSize": 12,
+                      "fontWeight": "bold"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "nNkpY",
+                  "name": "localTab",
+                  "width": "fill_container",
+                  "cornerRadius": 12,
+                  "padding": [
+                    8,
+                    0
+                  ],
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "ufkDz",
+                      "name": "localText",
+                      "fill": "#94a3b8",
+                      "content": "Local",
+                      "fontFamily": "Quicksand",
+                      "fontSize": 12,
+                      "fontWeight": "bold"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "N79uX",
+                  "name": "dailyTab",
+                  "width": "fill_container",
+                  "cornerRadius": 12,
+                  "padding": [
+                    8,
+                    0
+                  ],
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "2dJI2",
+                      "name": "dailyText",
+                      "fill": "#94a3b8",
+                      "content": "Daily",
+                      "fontFamily": "Quicksand",
+                      "fontSize": 12,
+                      "fontWeight": "bold"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "AAV4c",
+              "name": "empty",
+              "width": "fill_container",
+              "height": 400,
+              "layout": "vertical",
+              "gap": 16,
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "tpWTs",
+                  "name": "emptyIconFrame",
+                  "width": 64,
+                  "height": 64,
+                  "fill": "#ffffff0d",
+                  "cornerRadius": 32,
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "NqTa6",
+                      "name": "emptyIconTxt",
+                      "fill": "#ffffff66",
+                      "content": "⏱",
+                      "fontFamily": "Inter",
+                      "fontSize": 32,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "ta1Im",
+                  "name": "emptyTxt1",
+                  "fill": "#64748b",
+                  "content": "No records available yet.",
+                  "fontFamily": "Quicksand",
+                  "fontSize": 14,
+                  "fontWeight": "medium"
+                },
+                {
+                  "type": "text",
+                  "id": "kwrM3",
+                  "name": "emptyTxt2",
+                  "fill": "#38bdf899",
+                  "content": "START PLAYING TO RANK UP",
+                  "fontFamily": "Fira Code",
+                  "fontSize": 10,
+                  "fontWeight": "bold"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "Od1Vl",
+              "name": "footer",
+              "width": "fill_container",
+              "stroke": {
+                "align": "inside",
+                "thickness": 1,
+                "fill": "#ffffff0d"
+              },
+              "padding": [
+                16,
+                0,
+                0,
+                0
+              ],
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "3Bqgw",
+                  "name": "footerTxt",
+                  "fill": "#64748b",
+                  "content": "TOTAL 0 RECORDS",
+                  "fontFamily": "Fira Code",
+                  "fontSize": 10,
+                  "fontWeight": "medium"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "L6uTA",
+      "x": 225,
+      "y": -973,
+      "name": "StatsAchievementsComponent",
+      "width": 400,
+      "fill": "#0f172a",
+      "layout": "vertical",
+      "padding": 40,
+      "children": [
+        {
+          "type": "frame",
+          "id": "8EsvC",
+          "name": "statsPanel",
+          "width": 320,
+          "fill": "#1e293b99",
+          "cornerRadius": 24,
+          "stroke": {
+            "align": "inside",
+            "thickness": 1,
+            "fill": "#ffffff1a"
+          },
+          "layout": "vertical",
+          "gap": 24,
+          "padding": 24,
+          "children": [
+            {
+              "type": "frame",
+              "id": "fm9Nh",
+              "name": "statsHdr",
+              "gap": 8,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "KzEod",
+                  "name": "statsIco",
+                  "content": "📈",
+                  "fontFamily": "Inter",
+                  "fontSize": 20,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "O2DQj",
+                  "name": "statsTtl",
+                  "fill": "#ffffff",
+                  "content": "Stats & Achievements",
+                  "fontFamily": "Quicksand",
+                  "fontSize": 20,
+                  "fontWeight": "bold"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "mkaWC",
+              "name": "statsTabs",
+              "width": "fill_container",
+              "fill": "#ffffff0d",
+              "cornerRadius": 16,
+              "gap": 4,
+              "padding": 6,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "C5mlq",
+                  "name": "statsTabActive",
+                  "width": "fill_container",
+                  "cornerRadius": 12,
+                  "padding": [
+                    8,
+                    0
+                  ],
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "s9yIv",
+                      "name": "statsTabTxt",
+                      "fill": "#0f172a",
+                      "content": "Stats",
+                      "fontFamily": "Quicksand",
+                      "fontSize": 12,
+                      "fontWeight": "bold"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "BKgxJ",
+                  "name": "trophyTabInactive",
+                  "width": "fill_container",
+                  "cornerRadius": 12,
+                  "padding": [
+                    8,
+                    0
+                  ],
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "2DTJY",
+                      "name": "trophyTabTxt",
+                      "fill": "#94a3b8",
+                      "content": "Trophy (1/12)",
+                      "fontFamily": "Quicksand",
+                      "fontSize": 12,
+                      "fontWeight": "bold"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "zy6qT",
+              "name": "bestCardComp",
+              "width": "fill_container",
+              "cornerRadius": 16,
+              "stroke": {
+                "align": "inside",
+                "thickness": 1,
+                "fill": "#ffffff1a"
+              },
+              "layout": "vertical",
+              "gap": 8,
+              "padding": 24,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "Oep0J",
+                  "name": "bestLbl",
+                  "fill": "#4ade80",
+                  "content": "PERSONAL BEST",
+                  "fontFamily": "Fira Code",
+                  "fontSize": 10,
+                  "fontWeight": "black"
+                },
+                {
+                  "type": "frame",
+                  "id": "hofX9",
+                  "name": "bestVal",
+                  "gap": 4,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "VJKCy",
+                      "name": "bestNum",
+                      "fill": "#ffffff",
+                      "content": "42.8",
+                      "fontFamily": "Fira Code",
+                      "fontSize": 48,
+                      "fontWeight": "bold"
+                    },
+                    {
+                      "type": "text",
+                      "id": "BZAjC",
+                      "name": "bestUnt",
+                      "fill": "#38bdf8",
+                      "content": "s",
+                      "fontFamily": "Fira Code",
+                      "fontSize": 20,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "SlcTS",
+              "name": "statsGridComp",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 16,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "5iidM",
+                  "name": "row1",
+                  "width": "fill_container",
+                  "gap": 16,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "Vsqsk",
+                      "name": "playsCardComp",
+                      "width": "fill_container",
+                      "fill": "#ffffff0d",
+                      "cornerRadius": 16,
+                      "stroke": {
+                        "align": "inside",
+                        "thickness": 1,
+                        "fill": "#ffffff0d"
+                      },
+                      "layout": "vertical",
+                      "gap": 8,
+                      "padding": 16,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "oXrec",
+                          "name": "playsLbl",
+                          "fill": "#64748b",
+                          "content": "PLAYS",
+                          "fontFamily": "Fira Code",
+                          "fontSize": 9,
+                          "fontWeight": "black"
+                        },
+                        {
+                          "type": "text",
+                          "id": "llJ55",
+                          "name": "playsVal",
+                          "fill": "#4ade80",
+                          "content": "152",
+                          "fontFamily": "Fira Code",
+                          "fontSize": 20,
+                          "fontWeight": "bold"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "nV9Tl",
+                      "name": "coinsCardComp",
+                      "width": "fill_container",
+                      "fill": "#ffffff0d",
+                      "cornerRadius": 16,
+                      "stroke": {
+                        "align": "inside",
+                        "thickness": 1,
+                        "fill": "#ffffff0d"
+                      },
+                      "layout": "vertical",
+                      "gap": 8,
+                      "padding": 16,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "eQkIN",
+                          "name": "coinsHdr",
+                          "gap": 6,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "xg826",
+                              "name": "coinsIco",
+                              "content": "💎",
+                              "fontFamily": "Inter",
+                              "fontSize": 16,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "text",
+                              "id": "QWJIw",
+                              "name": "coinsLbl",
+                              "fill": "#64748b",
+                              "content": "COINS",
+                              "fontFamily": "Fira Code",
+                              "fontSize": 9,
+                              "fontWeight": "black"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "id": "cwpAc",
+                          "name": "coinsVal",
+                          "fill": "#fb7185",
+                          "content": "1,204",
+                          "fontFamily": "Fira Code",
+                          "fontSize": 20,
+                          "fontWeight": "bold"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "8hgTR",
+                  "name": "row2",
+                  "width": "fill_container",
+                  "gap": 16,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "ofBIs",
+                      "name": "timeCardComp",
+                      "width": "fill_container",
+                      "fill": "#ffffff0d",
+                      "cornerRadius": 16,
+                      "stroke": {
+                        "align": "inside",
+                        "thickness": 1,
+                        "fill": "#ffffff0d"
+                      },
+                      "layout": "vertical",
+                      "gap": 8,
+                      "padding": 16,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "rRXxv",
+                          "name": "timeLbl",
+                          "fill": "#64748b",
+                          "content": "TOTAL TIME",
+                          "fontFamily": "Fira Code",
+                          "fontSize": 9,
+                          "fontWeight": "black"
+                        },
+                        {
+                          "type": "text",
+                          "id": "qFUrr",
+                          "name": "timeVal",
+                          "fill": "#38bdf8",
+                          "content": "4.2h",
+                          "fontFamily": "Fira Code",
+                          "fontSize": 20,
+                          "fontWeight": "bold"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "zLLHO",
+                      "name": "avgCardComp",
+                      "width": "fill_container",
+                      "fill": "#ffffff0d",
+                      "cornerRadius": 16,
+                      "stroke": {
+                        "align": "inside",
+                        "thickness": 1,
+                        "fill": "#ffffff0d"
+                      },
+                      "layout": "vertical",
+                      "gap": 8,
+                      "padding": 16,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "j5iE9",
+                          "name": "avgLbl",
+                          "fill": "#64748b",
+                          "content": "AVG LIFE",
+                          "fontFamily": "Fira Code",
+                          "fontSize": 9,
+                          "fontWeight": "black"
+                        },
+                        {
+                          "type": "text",
+                          "id": "iqU49",
+                          "name": "avgVal",
+                          "fill": "#ffffff",
+                          "content": "12.4s",
+                          "fontFamily": "Fira Code",
+                          "fontSize": 20,
+                          "fontWeight": "bold"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "Ck5EH",
+              "name": "challengeCardComp",
+              "width": "fill_container",
+              "cornerRadius": 16,
+              "stroke": {
+                "align": "inside",
+                "thickness": 4,
+                "fill": "#38bdf8"
+              },
+              "layout": "vertical",
+              "gap": 12,
+              "padding": 20,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "TEIsF",
+                  "name": "challengeHdr",
+                  "gap": 8,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "fCV12",
+                      "name": "challengeIco",
+                      "content": "🛡️",
+                      "fontFamily": "Inter",
+                      "fontSize": 18,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "vOben",
+                      "name": "challengeTtl",
+                      "fill": "#38bdf8",
+                      "content": "DAILY CHALLENGE",
+                      "fontFamily": "Fira Code",
+                      "fontSize": 10,
+                      "fontWeight": "black"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "VEFiM",
+                  "name": "challengeDesc",
+                  "fill": "#f1f5f9",
+                  "content": "Survive 60s in one run",
+                  "fontFamily": "Quicksand",
+                  "fontSize": 14,
+                  "fontWeight": "bold"
+                },
+                {
+                  "type": "frame",
+                  "id": "v3XxT",
+                  "name": "challengeFtr",
+                  "width": "fill_container",
+                  "justifyContent": "space_between",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "GUUkL",
+                      "name": "rewardBdg",
+                      "fill": "#4ade801a",
+                      "cornerRadius": 4,
+                      "stroke": {
+                        "align": "inside",
+                        "thickness": 1,
+                        "fill": "#4ade8033"
+                      },
+                      "padding": [
+                        4,
+                        8
+                      ],
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "FEg2Y",
+                          "name": "rewardTxt",
+                          "fill": "#4ade80",
+                          "content": "REWARD: 100 COINS",
+                          "fontFamily": "Fira Code",
+                          "fontSize": 9,
+                          "fontWeight": "black"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "RTJWK",
+                      "name": "timeRem",
+                      "fill": "#64748b",
+                      "content": "22:14 REMAINING",
+                      "fontFamily": "Fira Code",
+                      "fontSize": 9,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "2T5Xm",
+                  "name": "progressBarComp",
+                  "width": "fill_container",
+                  "height": 6,
+                  "fill": "#ffffff0d",
+                  "cornerRadius": 3,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "MjNyn",
+                      "name": "progressFillComp",
+                      "width": 190,
+                      "height": "fill_container",
+                      "cornerRadius": 3
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
