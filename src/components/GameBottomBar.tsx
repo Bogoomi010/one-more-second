@@ -12,7 +12,7 @@ export default function GameBottomBar({
   onSettingsClick,
 }: GameBottomBarProps) {
   const [currentLatency, setCurrentLatency] = useState(latency);
-  const [currentOnlineUsers, setCurrentOnlineUsers] = useState(onlineUsers);
+  const [currentOnlineUsers] = useState(onlineUsers);
 
   // Latency 업데이트 시뮬레이션 (실제로는 WebSocket이나 API에서 받아올 수 있음)
   useEffect(() => {

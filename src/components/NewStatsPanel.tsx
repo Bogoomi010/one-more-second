@@ -13,8 +13,6 @@ export default function NewStatsPanel({ profile }: NewStatsPanelProps) {
   const [timeRemaining, setTimeRemaining] = useState<string>('');
 
   const unlockedAchievements = ACHIEVEMENTS.filter((ach) => profile.achievements[ach.id]);
-  const achievementProgress = (unlockedAchievements.length / ACHIEVEMENTS.length) * 100;
-
   // Daily challenge 남은 시간 계산
   useEffect(() => {
     const updateTimeRemaining = () => {
