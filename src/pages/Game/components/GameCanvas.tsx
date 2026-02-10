@@ -183,6 +183,7 @@ function GameCanvasComponent({
         state.gameOver = true;
         const finalScore = Math.floor((Date.now() - state.startTime) / 1000);
         console.log(`☠️ Game Over! Score: ${finalScore}s, Hits: ${state.hits}`);
+        audioManager.stopBGM(); // BGM 중지
         audioManager.playGameOverSound();
         onGameOverRef.current({ scoreSeconds: finalScore, hitsTaken: state.hits });
       }
@@ -231,7 +232,7 @@ function GameCanvasComponent({
         state.lastScoreSec = elapsedSec;
         console.log(`⏱️ Score: ${elapsedSec}s`);
         onScoreChangeRef.current(elapsedSec);
-        audioManager.playScoreSound();
+        // TODO: 10초 또는 20초 돌파 시 효과음 추가 예정
       }
 
       // 난이도 증가
@@ -337,6 +338,8 @@ function GameCanvasComponent({
         console.log('🎮 Game started!');
         state.gameStarted = true;
         state.startTime = Date.now();
+        // 게임 시작 시 BGM 재생
+        audioManager.playBGM();
       }
 
       if (state.gameOver && (e.key === 'r' || e.key === 'R' || e.key === 'ㄱ')) {
@@ -370,14 +373,7 @@ function GameCanvasComponent({
       ref={canvasRef}
       width={CANVAS_WIDTH}
       height={CANVAS_HEIGHT}
-      style={{
-        display: 'block',
-        margin: '0 auto',
-        background: '#18181b',
-        border: '2px solid #222',
-        maxWidth: 400,
-        height: 500,
-      }}
+      className="block mx-auto bg-zinc-900 border-2 border-zinc-800 max-w-[400px] h-[500px]"
     />
   );
 }

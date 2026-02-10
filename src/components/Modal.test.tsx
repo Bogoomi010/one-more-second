@@ -30,7 +30,7 @@ describe('Modal Component', () => {
       </Modal>
     );
     
-    const overlay = container.querySelector('div[style*="position: fixed"]');
+    const overlay = container.querySelector('div.fixed.inset-0');
     expect(overlay).toBeInTheDocument();
   });
 });

@@ -1,8 +1,6 @@
 import React, { useMemo, useState } from 'react';
-import GameCanvas from './components/GameCanvas';
-import PlayerStatus from './components/PlayerStatus';
+import NewGamePanel from './components/NewGamePanel';
 import ScoreSubmitModal from './components/ScoreSubmitModal';
-import SystemMenuModal from './components/SystemMenuModal';
 import {
   applyAchievements,
   applyDailyChallengeResult,
@@ -18,14 +16,12 @@ interface GameProps {
   setProfile: (profile: PlayerProfile) => void;
   setUserCountry: (country: string) => void;
   onRankingUpdate: () => void;
+  isSystemMenuOpen?: boolean;
 }
 
-export default function Game({ profile, setProfile, setUserCountry, onRankingUpdate }: GameProps) {
-  const [lives, setLives] = useState(3);
-  const [spawnInterval, setSpawnInterval] = useState(500);
+export default function Game({ profile, setProfile, setUserCountry, onRankingUpdate, isSystemMenuOpen = false }: GameProps) {
   const [score, setScore] = useState(0);
   const [showScoreModal, setShowScoreModal] = useState(false);
-  const [systemMenuOpen, setSystemMenuOpen] = useState(false);
   const [lastRunMessage, setLastRunMessage] = useState<string[]>([]);
 
   const skin = useMemo(() => getSkin(profile.selectedSkinId), [profile.selectedSkinId]);
@@ -56,8 +52,6 @@ export default function Game({ profile, setProfile, setUserCountry, onRankingUpd
   };
 
   const handleRestartGame = () => {
-    setLives(3);
-    setSpawnInterval(500);
     setScore(0);
     setShowScoreModal(false);
     setLastRunMessage([]);
@@ -65,43 +59,12 @@ export default function Game({ profile, setProfile, setUserCountry, onRankingUpd
 
   return (
     <>
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: 20,
-          padding: 20,
-          height: '600px',
-          background: 'black',
-          position: 'relative',
-        }}
-      >
-        <PlayerStatus
-          lives={lives}
-          spawnInterval={spawnInterval}
-          score={score}
-          coins={profile.coins}
-          bestScore={profile.bestScore}
-          onOpenMenu={() => setSystemMenuOpen(true)}
-        />
-
-        <GameCanvas
-          onGameOver={handleGameOver}
-          onLivesChange={setLives}
-          onScoreChange={setScore}
-          onSpawnIntervalChange={setSpawnInterval}
-          playerColor={skin.playerColor}
-          bulletColor={skin.bulletColor}
-          isModalOpen={showScoreModal || systemMenuOpen}
-        />
-      </div>
-
-      <SystemMenuModal
-        isOpen={systemMenuOpen}
-        onClose={() => setSystemMenuOpen(false)}
+      <NewGamePanel
         profile={profile}
-        setProfile={setProfile}
+        playerColor={skin.playerColor}
+        bulletColor={skin.bulletColor}
+        onGameOver={handleGameOver}
+        isModalOpen={showScoreModal || isSystemMenuOpen}
       />
 
       <ScoreSubmitModal

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import Select from 'react-select';
 import { getName } from 'country-list';
 import Flag from 'react-world-flags';
@@ -57,23 +57,15 @@ const countries: CountryOption[] = majorCountryCodes
   .filter((country) => country.label); // 유효한 국가만 필터링
 
 const formatOptionLabel = ({ value, label }: CountryOption) => (
-  <div style={{ display: 'flex', alignItems: 'center' }}>
+  <div className="flex items-center">
     <Flag code={value} height="12" />
-    <span
-      style={{
-        marginLeft: '6px',
-        fontFamily: 'Montserrat, -apple-system, BlinkMacSystemFont, sans-serif',
-        fontSize: '11px',
-      }}
-    >
-      {label}
-    </span>
+    <span className="ml-1.5 font-primary text-[11px]">{label}</span>
   </div>
 );
 
 const ScoreSubmitModal: React.FC<ScoreSubmitModalProps> = ({
   score,
-  timePlayed = 0,
+  timePlayed: _timePlayed = 0,
   onClose,
   isOpen,
   systemLines = [],
@@ -141,171 +133,56 @@ const ScoreSubmitModal: React.FC<ScoreSubmitModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div
-      style={{
-        backgroundColor: 'rgba(0, 0, 0, 0.75)',
-        backdropFilter: 'blur(8px)',
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        zIndex: 9999,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-      }}
-    >
-      <div
-        style={{
-          background: 'linear-gradient(135deg, #2d3561 0%, #1a1a1a 100%)',
-          borderRadius: '24px',
-          padding: '48px 40px',
-          width: '430px',
-          height: '730px',
-          display: 'flex',
-          flexDirection: 'column',
-          boxShadow: '0 20px 60px rgba(0, 0, 0, 0.5)',
-          border: '1px solid rgba(255, 255, 255, 0.1)',
-        }}
-      >
-        {/* Header Section */}
-        <div style={{ width: '100%', marginBottom: '32px' }}>
-          <h2
-            style={{
-              fontFamily: 'Montserrat, -apple-system, BlinkMacSystemFont, sans-serif',
-              fontSize: '48px',
-              fontWeight: '700',
-              color: '#FFFFFF',
-              letterSpacing: '3px',
-              marginBottom: '16px',
-              textAlign: 'center',
-            }}
-          >
+    <div className="fixed inset-0 z-[9999] bg-black/75 backdrop-blur-lg flex items-center justify-center">
+      <div className="w-[min(520px,calc(100vw-24px))] h-[min(860px,calc(100vh-16px))] rounded-[24px] border border-border-primary shadow-[0_20px_60px_rgba(0,0,0,0.5)] bg-bg-primary px-5 sm:px-8 md:px-10 py-8 sm:py-10 md:py-12 flex flex-col overflow-y-auto overflow-x-visible">
+        <div className="w-full mb-8">
+          <h2 className="font-primary text-[48px] font-bold text-green-500 tracking-[3px] mb-4 text-center drop-shadow-[0_0_12px_rgba(34,197,94,0.6)]">
             GAME OVER
           </h2>
 
-          {/* New High Score Badge */}
-          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '16px', marginBottom: '24px' }}>
-            <div
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '8px',
-                background: 'rgba(255, 193, 7, 0.15)',
-                borderRadius: '20px',
-                padding: '8px 16px',
-              }}
-            >
-              <span style={{ fontSize: '14px' }}>🏆</span>
-              <span
-                style={{
-                  fontFamily: 'Montserrat, -apple-system, BlinkMacSystemFont, sans-serif',
-                  fontSize: '12px',
-                  fontWeight: '600',
-                  color: '#FFC107',
-                  letterSpacing: '1px',
-                }}
-              >
+          <div className="flex justify-center items-center gap-4 mb-6">
+            <div className="inline-flex flex-wrap items-center justify-center gap-2 rounded-[20px] px-4 py-2 bg-accent-green-alpha border border-accent-green/30 max-w-full">
+              <span className="text-sm">🏆</span>
+              <span className="font-primary text-xs font-semibold text-accent-green tracking-[1px]">
                 NEW HIGH SCORE!
               </span>
-
               {systemLines.length > 0 && (
-                <div style={{ fontSize: '12px', color: '#FFC107', lineHeight: 1.6, textAlign: 'left' }}>
+                <div className="text-xs text-accent-green leading-relaxed text-left">
                   {systemLines.map((l, idx) => (
                     <div key={idx}>{l}</div>
                   ))}
                 </div>
               )}
             </div>
-
-
           </div>
 
-          {/* Final Score */}
-          <div style={{ marginBottom: '30px' }}>
-            <p
-              className="text-xs"
-              style={{
-                fontFamily: 'Montserrat, -apple-system, BlinkMacSystemFont, sans-serif',
-                color: '#9CA3AF',
-                letterSpacing: '2px',
-                fontWeight: '500',
-                textAlign: 'center',
-                marginBottom: '0',
-                lineHeight: '1',
-              }}
-            >
+          <div className="mb-[30px]">
+            <p className="font-primary text-xs text-text-disabled tracking-[2px] font-medium text-center mb-0 leading-none">
               FINAL SCORE
             </p>
-            <p
-              style={{
-                fontFamily: 'Montserrat, -apple-system, BlinkMacSystemFont, sans-serif',
-                fontSize: '72px',
-                fontWeight: '700',
-                color: '#818CF8',
-                letterSpacing: '-2px',
-                textAlign: 'center',
-                marginTop: '30px',
-                lineHeight: '1',
-              }}
-            >
+            <p className="font-primary text-[72px] font-bold text-accent-green tracking-[-2px] text-center mt-[30px] leading-none drop-shadow-[0_0_10px_rgba(74,222,128,0.55)]">
               {score}
             </p>
           </div>
 
-          {/* Input Row */}
           <form onSubmit={handleSubmit} className="flex flex-col gap-5 mb-8">
             <div className="flex flex-col gap-5">
               <div className="flex-1">
-                <label
-                  style={{
-                    display: 'block',
-                    fontFamily: 'Montserrat, -apple-system, BlinkMacSystemFont, sans-serif',
-                    fontSize: '10px',
-                    fontWeight: '500',
-                    color: '#9CA3AF',
-                    letterSpacing: '1px',
-                    marginBottom: '8px',
-                  }}
-                >
+                <label className="block font-primary text-[10px] font-medium text-text-disabled tracking-[1px] mb-2">
                   NICKNAME
                 </label>
                 <input
                   type="text"
                   value={nickname}
                   onChange={(e) => setNickname(e.target.value)}
-                  style={{
-                    width: '100%',
-                    fontFamily: 'Montserrat, -apple-system, BlinkMacSystemFont, sans-serif',
-                    backgroundColor: 'rgba(0, 0, 0, 0.3)',
-                    border: 'none',
-                    borderRadius: '12px',
-                    height: '48px',
-                    minHeight: '48px',
-                    fontSize: '14px',
-                    color: 'white',
-                    padding: '0 16px',
-                    outline: 'none',
-                    boxSizing: 'border-box',
-                  }}
+                  className="w-full h-12 min-h-12 box-border rounded-xl border border-border-secondary bg-bg-card text-text-primary text-sm font-primary px-4 outline-none"
                   placeholder="Enter your name..."
                   autoFocus
                 />
               </div>
 
-              <div className="flex-1" style={{ marginTop: '20px' }}>
-                <label
-                  style={{
-                    display: 'block',
-                    fontFamily: 'Montserrat, -apple-system, BlinkMacSystemFont, sans-serif',
-                    fontSize: '10px',
-                    fontWeight: '500',
-                    color: '#9CA3AF',
-                    letterSpacing: '1px',
-                    marginBottom: '8px',
-                  }}
-                >
+              <div className="flex-1 mt-5">
+                <label className="block font-primary text-[10px] font-medium text-text-disabled tracking-[1px] mb-2">
                   COUNTRY
                 </label>
                 <Select
@@ -314,18 +191,11 @@ const ScoreSubmitModal: React.FC<ScoreSubmitModalProps> = ({
                   onChange={(option: CountryOption | null) => setCountry(option)}
                   placeholder="Select..."
                   formatOptionLabel={formatOptionLabel}
-                  isSearchable={true}
+                  isSearchable
                   components={{
                     SingleValue: (props: any) => (
-                      <div style={{ display: 'flex', alignItems: 'center', height: '100%' }}>
-                        <span
-                          style={{
-                            fontFamily: 'Montserrat, -apple-system, BlinkMacSystemFont, sans-serif',
-                            fontSize: '14px',
-                            color: 'white',
-                            lineHeight: '1',
-                          }}
-                        >
+                      <div className="flex items-center h-full">
+                        <span className="font-primary text-sm text-white leading-none">
                           {props.children}
                         </span>
                       </div>
@@ -336,13 +206,11 @@ const ScoreSubmitModal: React.FC<ScoreSubmitModalProps> = ({
                       ...base,
                       height: '48px',
                       minHeight: '48px',
-                      backgroundColor: 'rgba(0, 0, 0, 0.3)',
-                      borderColor: 'transparent',
+                      backgroundColor: 'var(--color-bg-card)',
+                      borderColor: 'var(--color-border-secondary)',
                       borderRadius: '12px',
                       boxShadow: 'none',
-                      '&:hover': {
-                        borderColor: 'transparent',
-                      },
+                      '&:hover': { borderColor: 'transparent' },
                       paddingLeft: '6px',
                       paddingRight: '6px',
                     }),
@@ -355,28 +223,28 @@ const ScoreSubmitModal: React.FC<ScoreSubmitModalProps> = ({
                     }),
                     input: (base: any) => ({
                       ...base,
-                      color: 'white',
-                      fontFamily: 'Montserrat, -apple-system, BlinkMacSystemFont, sans-serif',
+                      color: 'var(--color-text-primary)',
+                      fontFamily: 'Quicksand, -apple-system, BlinkMacSystemFont, sans-serif',
                       fontSize: '14px',
                     }),
                     option: (base: any, state: any) => ({
                       ...base,
                       padding: '12px 16px',
                       backgroundColor: state.isSelected
-                        ? '#818CF8'
+                        ? 'var(--color-accent-blue)'
                         : state.isFocused
-                          ? 'rgba(129, 140, 248, 0.2)'
-                          : 'rgba(30, 35, 45, 1)',
-                      color: 'white',
+                          ? 'var(--color-accent-blue-alpha)'
+                          : 'var(--color-bg-secondary)',
+                      color: 'var(--color-text-primary)',
                       cursor: 'pointer',
-                      fontFamily: 'Montserrat, -apple-system, BlinkMacSystemFont, sans-serif',
+                      fontFamily: 'Quicksand, -apple-system, BlinkMacSystemFont, sans-serif',
                       fontSize: '14px',
                     }),
                     menu: (base: any) => ({
                       ...base,
-                      backgroundColor: 'rgba(30, 35, 45, 1)',
+                      backgroundColor: 'var(--color-bg-primary)',
                       borderRadius: '12px',
-                      border: '1px solid rgba(255, 255, 255, 0.1)',
+                      border: '1px solid var(--color-border-primary)',
                       boxShadow: '0 4px 16px rgba(0, 0, 0, 0.4)',
                       overflow: 'hidden',
                     }),
@@ -387,123 +255,66 @@ const ScoreSubmitModal: React.FC<ScoreSubmitModalProps> = ({
                     }),
                     placeholder: (base: any) => ({
                       ...base,
-                      color: '#6B7280',
+                      color: 'var(--color-text-placeholder)',
                       fontSize: '14px',
-                      fontFamily: 'Montserrat, -apple-system, BlinkMacSystemFont, sans-serif',
+                      fontFamily: 'Quicksand, -apple-system, BlinkMacSystemFont, sans-serif',
                       margin: 0,
                     }),
                     dropdownIndicator: (base: any) => ({
                       ...base,
                       padding: '0',
                       paddingRight: '8px',
-                      color: '#9CA3AF',
+                      color: 'var(--color-text-disabled)',
                       display: 'flex',
                       alignItems: 'center',
                     }),
-                    indicatorSeparator: () => ({
-                      display: 'none',
-                    }),
-                    singleValue: (base: any) => ({
-                      ...base,
-                      margin: 0,
-                    }),
+                    indicatorSeparator: () => ({ display: 'none' }),
+                    singleValue: (base: any) => ({ ...base, margin: 0 }),
                   }}
                 />
               </div>
             </div>
-
           </form>
-
         </div>
 
-        {/* Bottom Section - Fixed to bottom */}
-        <div style={{ marginTop: 'auto', width: '100%' }}>
+        <div className="mt-auto w-full">
           {error && (
-            <div style={{ textAlign: 'center', marginBottom: '16px' }}>
-              <p
-                style={{
-                  fontFamily: 'Montserrat, -apple-system, BlinkMacSystemFont, sans-serif',
-                  fontSize: '14px',
-                  color: '#EF4444',
-                  letterSpacing: '0.5px',
-                }}
-              >
-                {error}
-              </p>
+            <div className="text-center mb-4">
+              <p className="font-primary text-sm text-accent-green tracking-[0.5px]">{error}</p>
             </div>
           )}
 
           <button
             onClick={submitScoreData}
             disabled={isSubmitting}
-            style={{
-              width: '100%',
-              background: '#818CF8',
-              color: '#FFFFFF',
-              fontFamily: 'Montserrat, -apple-system, BlinkMacSystemFont, sans-serif',
-              fontSize: '15px',
-              fontWeight: '600',
-              border: 'none',
-              borderRadius: '12px',
-              height: '52px',
-              cursor: isSubmitting ? 'not-allowed' : 'pointer',
-              opacity: isSubmitting ? 0.5 : 1,
-              transition: 'all 0.2s',
-            }}
+            className={`w-full h-[52px] rounded-xl border-none font-primary text-[15px] font-semibold transition-all duration-200 ${
+              isSubmitting
+                ? 'bg-accent-green-alpha text-bg-primary cursor-not-allowed'
+                : 'bg-accent-green text-bg-primary cursor-pointer hover:brightness-110'
+            }`}
           >
             {isSubmitting ? 'Submitting...' : 'Submit Score (제출하기)'}
           </button>
 
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', marginTop: '16px' }}>
+          <div className="flex items-center justify-center gap-3 mt-4">
             <button
               type="button"
               onClick={onClose}
-              style={{
-                background: 'transparent',
-                color: '#9CA3AF',
-                fontFamily: 'Montserrat, -apple-system, BlinkMacSystemFont, sans-serif',
-                fontSize: '14px',
-                fontWeight: '500',
-                border: 'none',
-                cursor: 'pointer',
-                transition: 'color 0.2s',
-              }}
+              className="bg-transparent border-none text-text-disabled font-primary text-sm font-medium cursor-pointer transition-colors duration-200 hover:text-accent-green"
             >
               Restart (재시작)
             </button>
             <button
               type="button"
               onClick={onClose}
-              style={{
-                background: 'rgba(255, 255, 255, 0.1)',
-                color: '#FFFFFF',
-                border: 'none',
-                borderRadius: '16px',
-                width: '32px',
-                height: '32px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                cursor: 'pointer',
-                fontSize: '16px',
-                transition: 'background 0.2s',
-              }}
+              className="w-8 h-8 rounded-2xl bg-accent-green-alpha border border-accent-green/40 text-accent-green text-base cursor-pointer transition-all duration-200 hover:brightness-110 flex items-center justify-center"
             >
               ↻
             </button>
           </div>
 
-          {/* Footer */}
-          <div style={{ textAlign: 'center', marginTop: '48px' }}>
-            <p
-              style={{
-                fontFamily: 'Montserrat, -apple-system, BlinkMacSystemFont, sans-serif',
-                fontSize: '10px',
-                fontWeight: '500',
-                color: '#6B7280',
-                letterSpacing: '1.5px',
-              }}
-            >
+          <div className="text-center mt-12">
+            <p className="font-primary text-[10px] font-medium text-text-placeholder tracking-[1.5px]">
               ONE MORE SECOND • WEB GAME EDITION
             </p>
           </div>

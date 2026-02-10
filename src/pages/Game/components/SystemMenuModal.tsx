@@ -19,18 +19,6 @@ export default function SystemMenuModal({ isOpen, onClose, profile, setProfile }
 
   const daily = useMemo(() => ensureDailyChallenge(profile).dailyChallenge, [profile]);
 
-  const headerBtnStyle: React.CSSProperties = {
-    flex: 1,
-    padding: '8px 10px',
-    borderRadius: 10,
-    border: '1px solid rgba(255,255,255,0.12)',
-    background: 'rgba(255,255,255,0.06)',
-    color: '#fff',
-    fontFamily: 'Montserrat, -apple-system, BlinkMacSystemFont, sans-serif',
-    fontSize: 12,
-    cursor: 'pointer',
-  };
-
   function persist(next: PlayerProfile) {
     saveProfile(next);
     setProfile(next);
@@ -118,18 +106,54 @@ export default function SystemMenuModal({ isOpen, onClose, profile, setProfile }
 
   return (
     <Modal isOpen={isOpen}>
-      <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
-        <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
-          <button style={headerBtnStyle} onClick={() => setTab('profile')}>프로필</button>
-          <button style={headerBtnStyle} onClick={() => setTab('shop')}>상점</button>
-          <button style={headerBtnStyle} onClick={() => setTab('achievements')}>업적</button>
-          <button style={headerBtnStyle} onClick={() => setTab('settings')}>설정</button>
+      <div className="w-full h-full flex flex-col">
+        <div className="flex gap-2 mb-3">
+          <button
+            className={`flex-1 px-2.5 py-2 rounded-[10px] border text-xs cursor-pointer transition-colors ${
+              tab === 'profile'
+                ? 'border-accent-blue bg-accent-blue/30 text-white'
+                : 'border-white/15 bg-white/10 text-white'
+            }`}
+            onClick={() => setTab('profile')}
+          >
+            프로필
+          </button>
+          <button
+            className={`flex-1 px-2.5 py-2 rounded-[10px] border text-xs cursor-pointer transition-colors ${
+              tab === 'shop'
+                ? 'border-accent-blue bg-accent-blue/30 text-white'
+                : 'border-white/15 bg-white/10 text-white'
+            }`}
+            onClick={() => setTab('shop')}
+          >
+            상점
+          </button>
+          <button
+            className={`flex-1 px-2.5 py-2 rounded-[10px] border text-xs cursor-pointer transition-colors ${
+              tab === 'achievements'
+                ? 'border-accent-blue bg-accent-blue/30 text-white'
+                : 'border-white/15 bg-white/10 text-white'
+            }`}
+            onClick={() => setTab('achievements')}
+          >
+            업적
+          </button>
+          <button
+            className={`flex-1 px-2.5 py-2 rounded-[10px] border text-xs cursor-pointer transition-colors ${
+              tab === 'settings'
+                ? 'border-accent-blue bg-accent-blue/30 text-white'
+                : 'border-white/15 bg-white/10 text-white'
+            }`}
+            onClick={() => setTab('settings')}
+          >
+            설정
+          </button>
         </div>
 
-        <div style={{ flex: 1, overflow: 'auto' }}>
+        <div className="flex-1 overflow-auto">
           {tab === 'profile' && (
-            <div style={{ color: '#e5e7eb', fontSize: 12, lineHeight: 1.6 }}>
-              <div style={{ marginBottom: 10 }}>
+            <div className="text-gray-200 text-xs leading-relaxed">
+              <div className="mb-2.5">
                 <div><b>Coins</b>: {profile.coins}</div>
                 <div><b>Best</b>: {profile.bestScore}s</div>
                 <div><b>Total Runs</b>: {profile.totalRuns}</div>
@@ -137,41 +161,23 @@ export default function SystemMenuModal({ isOpen, onClose, profile, setProfile }
                 <div><b>Skin</b>: {getSkin(profile.selectedSkinId).name}</div>
               </div>
 
-              <div style={{ padding: 10, borderRadius: 12, border: '1px solid rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.04)' }}>
-                <div style={{ color: '#fff', marginBottom: 6 }}><b>Daily Challenge</b></div>
+              <div className="p-2.5 rounded-xl border border-white/15 bg-white/5">
+                <div className="text-white mb-1.5"><b>Daily Challenge</b></div>
                 <div>목표: <b>{daily.targetSeconds}s</b> 생존</div>
                 <div>보상: <b>{daily.rewardCoins}</b> 코인</div>
                 <div>상태: {daily.completed ? '완료' : '미완료'}</div>
               </div>
 
-              <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+              <div className="flex gap-2 mt-3">
                 <button
                   onClick={handleReset}
-                  style={{
-                    flex: 1,
-                    padding: '8px 10px',
-                    borderRadius: 12,
-                    border: '1px solid rgba(239,68,68,0.35)',
-                    background: 'rgba(239,68,68,0.12)',
-                    color: '#fff',
-                    cursor: 'pointer',
-                    fontSize: 12,
-                  }}
+                  className="flex-1 px-2.5 py-2 rounded-xl border border-red-500/40 bg-red-500/20 text-white cursor-pointer text-xs transition-colors hover:bg-red-500/30"
                 >
                   진행 초기화
                 </button>
                 <button
                   onClick={onClose}
-                  style={{
-                    flex: 1,
-                    padding: '8px 10px',
-                    borderRadius: 12,
-                    border: '1px solid rgba(255,255,255,0.12)',
-                    background: 'rgba(255,255,255,0.06)',
-                    color: '#fff',
-                    cursor: 'pointer',
-                    fontSize: 12,
-                  }}
+                  className="flex-1 px-2.5 py-2 rounded-xl border border-white/15 bg-white/10 text-white cursor-pointer text-xs transition-colors hover:bg-white/20"
                 >
                   닫기
                 </button>
@@ -180,30 +186,24 @@ export default function SystemMenuModal({ isOpen, onClose, profile, setProfile }
           )}
 
           {tab === 'shop' && (
-            <div style={{ color: '#e5e7eb', fontSize: 12, lineHeight: 1.5 }}>
-              <div style={{ marginBottom: 10 }}><b>Coins</b>: {profile.coins}</div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <div className="text-gray-200 text-xs leading-relaxed">
+              <div className="mb-2.5"><b>Coins</b>: {profile.coins}</div>
+              <div className="flex flex-col gap-2.5">
                 {SKINS.map((skin) => {
                   const owned = profile.ownedSkins.includes(skin.id);
                   const selected = profile.selectedSkinId === skin.id;
 
                   return (
-                    <div key={skin.id} style={{
-                      padding: 10,
-                      borderRadius: 12,
-                      border: '1px solid rgba(255,255,255,0.12)',
-                      background: 'rgba(255,255,255,0.04)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      gap: 8
-                    }}>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                        <div style={{ color: '#fff' }}><b>{skin.name}</b></div>
-                        <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-                          <span style={{ width: 10, height: 10, borderRadius: 999, background: skin.playerColor, display: 'inline-block' }} />
-                          <span style={{ width: 10, height: 10, borderRadius: 999, background: skin.bulletColor, display: 'inline-block' }} />
-                          <span style={{ opacity: 0.9 }}>{skin.priceCoins} coins</span>
+                    <div
+                      key={skin.id}
+                      className="p-2.5 rounded-xl border border-white/15 bg-white/5 flex items-center justify-between gap-2"
+                    >
+                      <div className="flex flex-col gap-1">
+                        <div className="text-white"><b>{skin.name}</b></div>
+                        <div className="flex gap-1.5 items-center">
+                          <span className="w-2.5 h-2.5 rounded-full inline-block" style={{ background: skin.playerColor }} />
+                          <span className="w-2.5 h-2.5 rounded-full inline-block" style={{ background: skin.bulletColor }} />
+                          <span className="opacity-90">{skin.priceCoins} coins</span>
                         </div>
                       </div>
 
@@ -211,30 +211,22 @@ export default function SystemMenuModal({ isOpen, onClose, profile, setProfile }
                         <button
                           onClick={() => buySkin(skin.id)}
                           disabled={profile.coins < skin.priceCoins}
-                          style={{
-                            padding: '8px 10px',
-                            borderRadius: 10,
-                            border: '1px solid rgba(255,255,255,0.12)',
-                            background: profile.coins < skin.priceCoins ? 'rgba(255,255,255,0.05)' : 'rgba(59,130,246,0.25)',
-                            color: '#fff',
-                            cursor: profile.coins < skin.priceCoins ? 'not-allowed' : 'pointer',
-                            fontSize: 12,
-                          }}
+                          className={`px-2.5 py-2 rounded-[10px] border text-white text-xs ${
+                            profile.coins < skin.priceCoins
+                              ? 'border-white/15 bg-white/10 cursor-not-allowed'
+                              : 'border-white/15 bg-blue-500/30 cursor-pointer hover:bg-blue-500/40'
+                          }`}
                         >
                           구매
                         </button>
                       ) : (
                         <button
                           onClick={() => selectSkin(skin.id)}
-                          style={{
-                            padding: '8px 10px',
-                            borderRadius: 10,
-                            border: '1px solid rgba(255,255,255,0.12)',
-                            background: selected ? 'rgba(34,197,94,0.25)' : 'rgba(255,255,255,0.06)',
-                            color: '#fff',
-                            cursor: 'pointer',
-                            fontSize: 12,
-                          }}
+                          className={`px-2.5 py-2 rounded-[10px] border text-white text-xs cursor-pointer ${
+                            selected
+                              ? 'border-white/15 bg-green-500/30'
+                              : 'border-white/15 bg-white/10 hover:bg-white/20'
+                          }`}
                         >
                           {selected ? '선택됨' : '선택'}
                         </button>
@@ -247,37 +239,32 @@ export default function SystemMenuModal({ isOpen, onClose, profile, setProfile }
           )}
 
           {tab === 'achievements' && (
-            <div style={{ color: '#e5e7eb', fontSize: 12, lineHeight: 1.5 }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <div className="text-gray-200 text-xs leading-relaxed">
+              <div className="flex flex-col gap-2.5">
                 {ACHIEVEMENTS.map((a) => {
                   const unlocked = Boolean(profile.achievements[a.id]);
                   return (
-                    <div key={a.id} style={{
-                      padding: 10,
-                      borderRadius: 12,
-                      border: '1px solid rgba(255,255,255,0.12)',
-                      background: unlocked ? 'rgba(34,197,94,0.14)' : 'rgba(255,255,255,0.04)',
-                    }}>
-                      <div style={{ color: '#fff', marginBottom: 3 }}><b>{a.title}</b> {unlocked ? '(완료)' : ''}</div>
-                      <div style={{ opacity: 0.9 }}>{a.desc}</div>
+                    <div
+                      key={a.id}
+                      className={`p-2.5 rounded-xl border ${
+                        unlocked
+                          ? 'border-white/15 bg-green-500/20'
+                          : 'border-white/15 bg-white/5'
+                      }`}
+                    >
+                      <div className="text-white mb-1">
+                        <b>{a.title}</b> {unlocked ? '(완료)' : ''}
+                      </div>
+                      <div className="opacity-90">{a.desc}</div>
                     </div>
                   );
                 })}
               </div>
 
-              <div style={{ marginTop: 12 }}>
+              <div className="mt-3">
                 <button
                   onClick={onClose}
-                  style={{
-                    width: '100%',
-                    padding: '8px 10px',
-                    borderRadius: 12,
-                    border: '1px solid rgba(255,255,255,0.12)',
-                    background: 'rgba(255,255,255,0.06)',
-                    color: '#fff',
-                    cursor: 'pointer',
-                    fontSize: 12,
-                  }}
+                  className="w-full px-2.5 py-2 rounded-xl border border-white/15 bg-white/10 text-white cursor-pointer text-xs hover:bg-white/20 transition-colors"
                 >
                   닫기
                 </button>
@@ -286,13 +273,13 @@ export default function SystemMenuModal({ isOpen, onClose, profile, setProfile }
           )}
 
           {tab === 'settings' && (
-            <div style={{ color: '#e5e7eb', fontSize: 12, lineHeight: 1.5 }}>
+            <div className="text-gray-200 text-xs leading-relaxed">
               {/* 그래픽 설정 */}
-              <div style={{ marginBottom: 16 }}>
-                <div style={{ color: '#fff', marginBottom: 8, fontSize: 14 }}><b>그래픽</b></div>
+              <div className="mb-4">
+                <div className="text-white mb-2 text-sm"><b>그래픽</b></div>
                 
-                <div style={{ marginBottom: 10 }}>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+                <div className="mb-2.5">
+                  <label className="flex items-center gap-2 cursor-pointer">
                     <input
                       type="checkbox"
                       checked={settings.graphics.particles}
@@ -302,8 +289,8 @@ export default function SystemMenuModal({ isOpen, onClose, profile, setProfile }
                   </label>
                 </div>
 
-                <div style={{ marginBottom: 10 }}>
-                  <label style={{ display: 'block', marginBottom: 4 }}>
+                <div className="mb-2.5">
+                  <label className="block mb-1">
                     피격 플래시 강도: {settings.graphics.hitFlashIntensity}%
                   </label>
                   <input
@@ -312,24 +299,16 @@ export default function SystemMenuModal({ isOpen, onClose, profile, setProfile }
                     max="100"
                     value={settings.graphics.hitFlashIntensity}
                     onChange={(e) => updateSetting('graphics', 'hitFlashIntensity', Number(e.target.value))}
-                    style={{ width: '100%' }}
+                    className="w-full"
                   />
                 </div>
 
-                <div style={{ marginBottom: 10 }}>
-                  <label style={{ display: 'block', marginBottom: 4 }}>프레임 제한</label>
+                <div className="mb-2.5">
+                  <label className="block mb-1">프레임 제한</label>
                   <select
                     value={settings.graphics.fpsLimit}
                     onChange={(e) => updateSetting('graphics', 'fpsLimit', Number(e.target.value) as 30 | 60 | 0)}
-                    style={{
-                      width: '100%',
-                      padding: '6px 8px',
-                      borderRadius: 8,
-                      border: '1px solid rgba(255,255,255,0.12)',
-                      background: 'rgba(255,255,255,0.06)',
-                      color: '#fff',
-                      fontSize: 12,
-                    }}
+                    className="w-full px-2 py-1.5 rounded-lg border border-white/15 bg-white/10 text-white text-xs"
                   >
                     <option value="30">30 FPS</option>
                     <option value="60">60 FPS</option>
@@ -339,11 +318,11 @@ export default function SystemMenuModal({ isOpen, onClose, profile, setProfile }
               </div>
 
               {/* 사운드 설정 */}
-              <div style={{ marginBottom: 16 }}>
-                <div style={{ color: '#fff', marginBottom: 8, fontSize: 14 }}><b>사운드</b></div>
+              <div className="mb-4">
+                <div className="text-white mb-2 text-sm"><b>사운드</b></div>
                 
-                <div style={{ marginBottom: 10 }}>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+                <div className="mb-2.5">
+                  <label className="flex items-center gap-2 cursor-pointer">
                     <input
                       type="checkbox"
                       checked={settings.audio.bgmEnabled}
@@ -353,8 +332,8 @@ export default function SystemMenuModal({ isOpen, onClose, profile, setProfile }
                   </label>
                 </div>
 
-                <div style={{ marginBottom: 10 }}>
-                  <label style={{ display: 'block', marginBottom: 4 }}>
+                <div className="mb-2.5">
+                  <label className="block mb-1">
                     BGM 볼륨: {settings.audio.bgmVolume}%
                   </label>
                   <input
@@ -363,13 +342,13 @@ export default function SystemMenuModal({ isOpen, onClose, profile, setProfile }
                     max="100"
                     value={settings.audio.bgmVolume}
                     onChange={(e) => updateSetting('audio', 'bgmVolume', Number(e.target.value))}
-                    style={{ width: '100%' }}
+                    className="w-full"
                     disabled={!settings.audio.bgmEnabled}
                   />
                 </div>
 
-                <div style={{ marginBottom: 10 }}>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+                <div className="mb-2.5">
+                  <label className="flex items-center gap-2 cursor-pointer">
                     <input
                       type="checkbox"
                       checked={settings.audio.sfxEnabled}
@@ -379,8 +358,8 @@ export default function SystemMenuModal({ isOpen, onClose, profile, setProfile }
                   </label>
                 </div>
 
-                <div style={{ marginBottom: 10 }}>
-                  <label style={{ display: 'block', marginBottom: 4 }}>
+                <div className="mb-2.5">
+                  <label className="block mb-1">
                     효과음 볼륨: {settings.audio.sfxVolume}%
                   </label>
                   <input
@@ -389,67 +368,39 @@ export default function SystemMenuModal({ isOpen, onClose, profile, setProfile }
                     max="100"
                     value={settings.audio.sfxVolume}
                     onChange={(e) => updateSetting('audio', 'sfxVolume', Number(e.target.value))}
-                    style={{ width: '100%' }}
+                    className="w-full"
                     disabled={!settings.audio.sfxEnabled}
                   />
                 </div>
               </div>
 
               {/* 프로필 관리 */}
-              <div style={{ marginBottom: 16 }}>
-                <div style={{ color: '#fff', marginBottom: 8, fontSize: 14 }}><b>프로필 관리</b></div>
+              <div className="mb-4">
+                <div className="text-white mb-2 text-sm"><b>프로필 관리</b></div>
                 
-                <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+                <div className="flex gap-2 mb-2">
                   <button
                     onClick={exportProfile}
-                    style={{
-                      flex: 1,
-                      padding: '8px 10px',
-                      borderRadius: 10,
-                      border: '1px solid rgba(255,255,255,0.12)',
-                      background: 'rgba(59,130,246,0.25)',
-                      color: '#fff',
-                      cursor: 'pointer',
-                      fontSize: 12,
-                    }}
+                    className="flex-1 px-2.5 py-2 rounded-[10px] border border-white/15 bg-blue-500/30 text-white cursor-pointer text-xs hover:bg-blue-500/40 transition-colors"
                   >
                     내보내기
                   </button>
                   <label
-                    style={{
-                      flex: 1,
-                      padding: '8px 10px',
-                      borderRadius: 10,
-                      border: '1px solid rgba(255,255,255,0.12)',
-                      background: 'rgba(59,130,246,0.25)',
-                      color: '#fff',
-                      cursor: 'pointer',
-                      fontSize: 12,
-                      textAlign: 'center',
-                    }}
+                    className="flex-1 px-2.5 py-2 rounded-[10px] border border-white/15 bg-blue-500/30 text-white cursor-pointer text-xs text-center hover:bg-blue-500/40 transition-colors"
                   >
                     가져오기
                     <input
                       type="file"
                       accept=".json"
                       onChange={importProfile}
-                      style={{ display: 'none' }}
+                      className="hidden"
                     />
                   </label>
                 </div>
 
                 <button
                   onClick={handleResetSettings}
-                  style={{
-                    width: '100%',
-                    padding: '8px 10px',
-                    borderRadius: 10,
-                    border: '1px solid rgba(239,68,68,0.35)',
-                    background: 'rgba(239,68,68,0.12)',
-                    color: '#fff',
-                    cursor: 'pointer',
-                    fontSize: 12,
-                  }}
+                  className="w-full px-2.5 py-2 rounded-[10px] border border-red-500/40 bg-red-500/20 text-white cursor-pointer text-xs hover:bg-red-500/30 transition-colors"
                 >
                   설정 초기화
                 </button>
@@ -457,16 +408,7 @@ export default function SystemMenuModal({ isOpen, onClose, profile, setProfile }
 
               <button
                 onClick={onClose}
-                style={{
-                  width: '100%',
-                  padding: '8px 10px',
-                  borderRadius: 12,
-                  border: '1px solid rgba(255,255,255,0.12)',
-                  background: 'rgba(255,255,255,0.06)',
-                  color: '#fff',
-                  cursor: 'pointer',
-                  fontSize: 12,
-                }}
+                className="w-full px-2.5 py-2 rounded-xl border border-white/15 bg-white/10 text-white cursor-pointer text-xs hover:bg-white/20 transition-colors"
               >
                 닫기
               </button>

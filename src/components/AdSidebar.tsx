@@ -11,9 +11,8 @@ export default function AdSidebar() {
   }, []);
 
   return (
-    <div style={{ width: 160, minHeight: 600 }}>
-      <ins className="adsbygoogle"
-        style={{ display: "block" }}
+    <div className="w-40 min-h-[600px]">
+      <ins className="adsbygoogle block"
         data-ad-client="ca-pub-3647004630291518"
         data-ad-slot="0000000000"  // ✳️ 여기에 실제 광고 슬롯 ID를 넣어야 광고가 뜸
         data-ad-format="auto"

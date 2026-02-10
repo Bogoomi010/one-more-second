@@ -1,13 +1,15 @@
 import { loadSettings } from './settings';
+import bgmFile from '../Sound/Sound_main.mp3';
 
 class AudioManager {
   private audioContext: AudioContext | null = null;
   private bgmGainNode: GainNode | null = null;
   private sfxGainNode: GainNode | null = null;
   private bgmSource: AudioBufferSourceNode | null = null;
+  private bgmBuffer: AudioBuffer | null = null;
   private initialized = false;
 
-  init() {
+  async init() {
     if (this.initialized) return;
     
     try {
@@ -23,6 +25,9 @@ class AudioManager {
       
       this.updateVolumes();
       this.initialized = true;
+
+      // BGM 로드 (재생은 하지 않음)
+      await this.loadBGM();
     } catch (error) {
       console.warn('AudioContext initialization failed:', error);
     }
@@ -34,28 +39,19 @@ class AudioManager {
     if (this.bgmGainNode) {
       const bgmVolume = settings.audio.bgmEnabled ? settings.audio.bgmVolume / 100 : 0;
       this.bgmGainNode.gain.value = bgmVolume;
+
+      // BGM 활성화 상태에 따라 재생/정지
+      if (settings.audio.bgmEnabled && !this.bgmSource && this.bgmBuffer) {
+        this.playBGM();
+      } else if (!settings.audio.bgmEnabled && this.bgmSource) {
+        this.stopBGM();
+      }
     }
     
     if (this.sfxGainNode) {
       const sfxVolume = settings.audio.sfxEnabled ? settings.audio.sfxVolume / 100 : 0;
       this.sfxGainNode.gain.value = sfxVolume;
     }
-  }
-
-  // 간단한 톤 생성 (실제 게임에서는 오디오 파일 사용)
-  private createTone(frequency: number, duration: number, type: OscillatorType = 'sine'): AudioBuffer | null {
-    if (!this.audioContext) return null;
-    
-    const sampleRate = this.audioContext.sampleRate;
-    const buffer = this.audioContext.createBuffer(1, sampleRate * duration, sampleRate);
-    const data = buffer.getChannelData(0);
-    
-    for (let i = 0; i < buffer.length; i++) {
-      const t = i / sampleRate;
-      data[i] = Math.sin(2 * Math.PI * frequency * t) * Math.exp(-t * 2);
-    }
-    
-    return buffer;
   }
 
   playHitSound() {
@@ -112,28 +108,52 @@ class AudioManager {
   }
 
   playScoreSound() {
-    if (!this.audioContext || !this.sfxGainNode) return;
-    
-    const settings = loadSettings();
-    if (!settings.audio.sfxEnabled) return;
-    
+    // TODO: 10초 또는 20초 돌파 시 효과음 추가 예정
+  }
+
+  async loadBGM() {
+    if (!this.audioContext) return;
+
     try {
-      const oscillator = this.audioContext.createOscillator();
-      const gainNode = this.audioContext.createGain();
-      
-      oscillator.connect(gainNode);
-      gainNode.connect(this.sfxGainNode);
-      
-      oscillator.frequency.value = 800;
-      oscillator.type = 'sine';
-      
-      gainNode.gain.setValueAtTime(0.1, this.audioContext.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 0.2);
-      
-      oscillator.start();
-      oscillator.stop(this.audioContext.currentTime + 0.2);
+      const response = await fetch(bgmFile);
+      const arrayBuffer = await response.arrayBuffer();
+      this.bgmBuffer = await this.audioContext.decodeAudioData(arrayBuffer);
     } catch (error) {
-      console.warn('Failed to play score sound:', error);
+      console.warn('Failed to load BGM:', error);
+    }
+  }
+
+  playBGM() {
+    if (!this.audioContext || !this.bgmGainNode || !this.bgmBuffer) return;
+
+    const settings = loadSettings();
+    if (!settings.audio.bgmEnabled) return;
+
+    try {
+      // 기존 BGM이 재생 중이면 중지
+      this.stopBGM();
+
+      // 추가 게인 노드로 볼륨 절반으로 조절
+      const bgmVolumeGain = this.audioContext.createGain();
+      bgmVolumeGain.gain.value = 0.4; // 볼륨 50%로 설정
+      bgmVolumeGain.connect(this.bgmGainNode);
+
+      // 새로운 소스 생성
+      this.bgmSource = this.audioContext.createBufferSource();
+      this.bgmSource.buffer = this.bgmBuffer;
+      this.bgmSource.loop = true; // 반복 재생
+      this.bgmSource.connect(bgmVolumeGain);
+
+      // BGM이 끝나면 자동으로 다시 재생 (루프 보장)
+      this.bgmSource.onended = () => {
+        if (this.bgmSource) {
+          this.playBGM();
+        }
+      };
+
+      this.bgmSource.start(0);
+    } catch (error) {
+      console.warn('Failed to play BGM:', error);
     }
   }
 

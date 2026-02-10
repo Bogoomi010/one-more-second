@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import Game from './index';
 import { defaultProfile } from '../../gameSystem/storage';
 
@@ -32,30 +32,43 @@ describe('Game Page Integration', () => {
     jest.clearAllMocks();
   });
 
+  const startGame = () => {
+    const enterButton = screen.getByText('ENTER');
+    fireEvent.click(enterButton);
+  };
+
+  const getLocalDateKey = () => {
+    const now = new Date();
+    const yyyy = now.getFullYear();
+    const mm = String(now.getMonth() + 1).padStart(2, '0');
+    const dd = String(now.getDate()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}`;
+  };
+
   it('should render game canvas', () => {
     render(<Game {...defaultProps} />);
-    
+    startGame();
     expect(screen.getByTestId('game-canvas')).toBeInTheDocument();
   });
 
   it('should display initial lives', () => {
     render(<Game {...defaultProps} />);
     
-    expect(screen.getByText(/♥/)).toBeInTheDocument();
+    expect(screen.getByText(/❤️/)).toBeInTheDocument();
   });
 
   it('should update profile on game over', async () => {
     const profile = { ...defaultProfile(), coins: 0 };
     render(<Game {...defaultProps} profile={profile} />);
-    
+    startGame();
     const triggerButton = screen.getByText('Trigger Game Over');
-    triggerButton.click();
+    fireEvent.click(triggerButton);
     
     await waitFor(() => {
       expect(mockSetProfile).toHaveBeenCalled();
     });
     
-    const updatedProfile = mockSetProfile.mock.calls[0][0];
+    const updatedProfile = mockSetProfile.mock.calls[mockSetProfile.mock.calls.length - 1][0];
     expect(updatedProfile.totalRuns).toBe(1);
     expect(updatedProfile.totalSecondsSurvived).toBe(30);
     expect(updatedProfile.coins).toBeGreaterThan(0);
@@ -63,9 +76,9 @@ describe('Game Page Integration', () => {
 
   it('should show score modal after game over', async () => {
     render(<Game {...defaultProps} />);
-    
+    startGame();
     const triggerButton = screen.getByText('Trigger Game Over');
-    triggerButton.click();
+    fireEvent.click(triggerButton);
     
     await waitFor(() => {
       expect(screen.getByText('GAME OVER')).toBeInTheDocument();
@@ -76,7 +89,7 @@ describe('Game Page Integration', () => {
     const profile = {
       ...defaultProfile(),
       dailyChallenge: {
-        dateKey: new Date().toISOString().split('T')[0],
+        dateKey: getLocalDateKey(),
         targetSeconds: 20,
         rewardCoins: 30,
         completed: false,
@@ -84,29 +97,29 @@ describe('Game Page Integration', () => {
     };
     
     render(<Game {...defaultProps} profile={profile} />);
-    
+    startGame();
     const triggerButton = screen.getByText('Trigger Game Over');
-    triggerButton.click();
+    fireEvent.click(triggerButton);
     
     await waitFor(() => {
       expect(mockSetProfile).toHaveBeenCalled();
     });
     
-    const updatedProfile = mockSetProfile.mock.calls[0][0];
+    const updatedProfile = mockSetProfile.mock.calls[mockSetProfile.mock.calls.length - 1][0];
     expect(updatedProfile.dailyChallenge.completed).toBe(true);
   });
 
   it('should unlock achievements on game over', async () => {
     render(<Game {...defaultProps} />);
-    
+    startGame();
     const triggerButton = screen.getByText('Trigger Game Over');
-    triggerButton.click();
+    fireEvent.click(triggerButton);
     
     await waitFor(() => {
       expect(mockSetProfile).toHaveBeenCalled();
     });
     
-    const updatedProfile = mockSetProfile.mock.calls[0][0];
+    const updatedProfile = mockSetProfile.mock.calls[mockSetProfile.mock.calls.length - 1][0];
     expect(updatedProfile.achievements['first-run']).toBeDefined();
     expect(updatedProfile.achievements['survive-10']).toBeDefined();
     expect(updatedProfile.achievements['survive-30']).toBeDefined();

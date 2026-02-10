@@ -1,54 +1,44 @@
-body {
-  margin: 0;
-  min-height: 100vh;
-  background: #111;
-  color: #fff;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  display: flex;
-  flex-direction: column;
-}
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
-}
+/* CSS 변수 정의 */
+@layer base {
+  :root {
+    --color-bg-primary: #0f172a;
+    --color-bg-secondary: #1e293b99;
+    --color-bg-card: #ffffff0d;
+    --color-bg-card-alt: #ffffff1a;
 
-.main-centered {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-}
+    --color-text-primary: #ffffff;
+    --color-text-secondary: #f1f5f9;
+    --color-text-muted: #cbd5e1;
+    --color-text-disabled: #94a3b8;
+    --color-text-placeholder: #64748b;
 
-.header {
-  width: 100%;
-  background: #222;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  padding: 24px 0 0 0;
-  text-align: center;
-}
-.header-title {
-  font-size: 2rem;
-  font-weight: bold;
-  color: #fff;
-}
+    --color-accent-green: #4ade80;
+    --color-accent-blue: #38bdf8;
+    --color-accent-green-alpha: #4ade801a;
+    --color-accent-blue-alpha: #38bdf899;
 
-.footer {
-  width: 100%;
-  background: #222;
-  box-shadow: 0 -2px 4px rgba(0,0,0,0.1);
-  text-align: center;
-  padding: 16px 0;
-  color: #aaa;
-  font-size: 1rem;
-}
+    --color-border-primary: #ffffff1a;
+    --color-border-secondary: #ffffff0d;
+    --color-border-accent: #38bdf8;
 
-.status {
-  margin-bottom: 16px;
-  font-size: 1.1rem;
+    --gradient-primary: linear-gradient(90deg, #4ade80 0%, #38bdf8 100%);
+  }
+
+  body {
+    @apply m-0 min-h-screen bg-bg-primary text-text-primary flex flex-col;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+      'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+      sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  code {
+    font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+      monospace;
+  }
 }
