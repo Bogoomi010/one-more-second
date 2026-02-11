@@ -1,0 +1,41 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+
+    match /users/{uid} {
+      allow read, write: if isOwner(uid);
+    }
+
+    match /users/{uid}/achievements/{achievementId} {
+      allow read, write: if isOwner(uid);
+    }
+
+    match /users/{uid}/daily/{dateKey} {
+      allow read, write: if isOwner(uid);
+    }
+
+    match /scoreSubmissions/{docId} {
+      allow read: if true;
+      allow create: if isSignedIn() && request.resource.data.uid == request.auth.uid;
+      allow update, delete: if false;
+    }
+
+    // Leaderboard 컬렉션은 서버(Cloud Functions/Admin SDK)에서만 write 하도록 제한.
+    match /leaderboard_global/{docId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    match /{collectionId}/{docId} {
+      allow read: if collectionId.matches('leaderboard_country_.*') || collectionId.matches('leaderboard_daily_.*');
+      allow write: if false;
+    }
+  }
+}
