@@ -8,12 +8,6 @@
 yarn add react-i18next i18next i18next-browser-languagedetector
 ```
 
-또는 npm을 사용하는 경우:
-
-```bash
-npm install react-i18next i18next i18next-browser-languagedetector
-```
-
 ## 2단계: i18n 설정 파일 활성화
 
 `src/i18n/index.ts` 파일을 열고 주석을 해제하세요:

@@ -8,12 +8,6 @@
 yarn add react-i18next i18next i18next-browser-languagedetector
 ```
 
-또는 npm을 사용하는 경우:
-
-```bash
-npm install react-i18next i18next i18next-browser-languagedetector
-```
-
 ## 설치 후 확인
 
 설치가 완료되면 다음 명령어로 개발 서버를 실행할 수 있습니다:
@@ -29,10 +23,7 @@ yarn start
 패키지 설치 중 네트워크 오류가 발생하는 경우:
 
 ```bash
-# npm 레지스트리 변경
-npm config set registry https://registry.npmjs.org/
-
-# 또는 yarn 사용
+# yarn으로 재시도
 yarn install
 ```
 
@@ -41,10 +32,6 @@ yarn install
 권한 오류가 발생하는 경우:
 
 ```bash
-# sudo 없이 설치 (권장)
-npm install --legacy-peer-deps
-
-# 또는
 yarn install --ignore-engines
 ```
 
@@ -84,5 +71,5 @@ yarn test --coverage
 yarn build
 
 # 빌드 결과 미리보기
-npx serve -s build
+yarn dlx serve -s build
 ```
