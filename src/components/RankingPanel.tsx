@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import Flag from 'react-world-flags';
 import { getName } from 'country-list';
 import { RankingEntry, getGlobalRanking, getCountryRanking, getDailyRanking } from '../gameSystem/ranking';
+import { getFlagEmoji } from '../utils/flags';
 
 type RankingType = 'global' | 'country' | 'daily';
 
@@ -178,7 +178,9 @@ export default function RankingPanel({ userCountry, refreshTrigger = 0 }: Rankin
 
                   {/* 국기 */}
                   <div style={{ flexShrink: 0 }}>
-                    <Flag code={entry.country} height="16" style={{ borderRadius: 2 }} />
+                    <span style={{ fontSize: 16, lineHeight: 1 }} aria-hidden="true">
+                      {getFlagEmoji(entry.country)}
+                    </span>
                   </div>
 
                   {/* 닉네임 */}

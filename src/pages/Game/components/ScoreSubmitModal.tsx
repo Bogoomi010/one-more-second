@@ -1,7 +1,6 @@
-import React, { useEffect, useState } from 'react';
-import Select from 'react-select';
+import React, { useEffect, useRef, useState } from 'react';
 import { getName } from 'country-list';
-import Flag from 'react-world-flags';
+import 'flag-icons/css/flag-icons.min.css';
 import { submitScore } from '../../../utils/api';
 import { ScoreRecord } from '../../../types/score';
 import { addRankingEntry } from '../../../gameSystem/ranking';
@@ -22,47 +21,14 @@ interface CountryOption {
   label: string;
 }
 
-// 주요 국가 코드 목록
-const majorCountryCodes = [
-  'KR', // 한국
-  'US', // 미국
-  'JP', // 일본
-  'CN', // 중국
-  'GB', // 영국
-  'DE', // 독일
-  'FR', // 프랑스
-  'CA', // 캐나다
-  'AU', // 호주
-  'TW', // 대만
-  'SG', // 싱가포르
-  'IN', // 인도
-  'BR', // 브라질
-  'MX', // 멕시코
-  'IT', // 이탈리아
-  'ES', // 스페인
-  'NL', // 네덜란드
-  'SE', // 스웨덴
-  'RU', // 러시아
-  'TH', // 태국
-  'VN', // 베트남
-  'PH', // 필리핀
-  'ID', // 인도네시아
-  'MY', // 말레이시아
-];
+const majorCountryCodes = ['KR', 'US', 'JP', 'CN', 'GB', 'DE', 'FR', 'CA', 'AU', 'IN'];
 
 const countries: CountryOption[] = majorCountryCodes
   .map((code: string) => ({
     value: code,
     label: getName(code) || code,
   }))
-  .filter((country) => country.label); // 유효한 국가만 필터링
-
-const formatOptionLabel = ({ value, label }: CountryOption) => (
-  <div className="flex items-center">
-    <Flag code={value} height="12" />
-    <span className="ml-1.5 font-primary text-[11px]">{label}</span>
-  </div>
-);
+  .filter((country) => country.label);
 
 const ScoreSubmitModal: React.FC<ScoreSubmitModalProps> = ({
   score,
@@ -75,21 +41,32 @@ const ScoreSubmitModal: React.FC<ScoreSubmitModalProps> = ({
 }) => {
   const { user, loading: authLoading, firebaseEnabled, signInWithGoogle } = useAuth();
   const [nickname, setNickname] = useState('');
-  const [country, setCountry] = useState<CountryOption | null>(null);
+  const [country, setCountry] = useState<string>('');
+  const [isCountryMenuOpen, setIsCountryMenuOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // 모달이 열릴 때마다 에러 상태 초기화
+  const countryMenuRef = useRef<HTMLDivElement | null>(null);
+  const selectedCountry = countries.find((item) => item.value === country);
+
   useEffect(() => {
     if (isOpen) {
       setError(null);
     }
   }, [isOpen]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    await submitScoreData();
-  };
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (countryMenuRef.current && !countryMenuRef.current.contains(event.target as Node)) {
+        setIsCountryMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   const submitScoreData = async () => {
     if (!nickname || !country) {
@@ -102,34 +79,35 @@ const ScoreSubmitModal: React.FC<ScoreSubmitModalProps> = ({
 
     const scoreData: ScoreRecord = {
       nickname,
-      country: country.value,
+      country,
       score,
     };
 
-    // 로컬 랭킹에 추가
-    addRankingEntry(nickname, country.value, score);
+    addRankingEntry(nickname, country, score);
 
-    // 국가 정보 전달
     if (onCountrySelect) {
-      onCountrySelect(country.value);
+      onCountrySelect(country);
     }
 
-    // 랭킹 업데이트 트리거
     if (onRankingUpdate) {
       onRankingUpdate();
     }
 
-    // 백엔드 API 호출 (선택적)
     const response = await submitScore(scoreData);
     setIsSubmitting(false);
 
     if (response.success) {
       setNickname('');
-      setCountry(null);
+      setCountry('');
       onClose();
     } else {
       setError(response.message || '스코어 제출에 실패했습니다.');
     }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await submitScoreData();
   };
 
   const handleGoogleSignIn = async () => {
@@ -158,8 +136,8 @@ const ScoreSubmitModal: React.FC<ScoreSubmitModalProps> = ({
               </span>
               {systemLines.length > 0 && (
                 <div className="text-xs text-accent-green leading-relaxed text-left">
-                  {systemLines.map((l, idx) => (
-                    <div key={idx}>{l}</div>
+                  {systemLines.map((line, idx) => (
+                    <div key={idx}>{line}</div>
                   ))}
                 </div>
               )}
@@ -179,7 +157,7 @@ const ScoreSubmitModal: React.FC<ScoreSubmitModalProps> = ({
             <div className="mb-5 rounded-xl border border-border-secondary bg-bg-card px-4 py-3">
               {user ? (
                 <div className="text-[12px] font-primary text-accent-green">
-                  로그인됨: 클라우드 랭킹/기록 동기화가 활성화됩니다.
+                  로그인됨: 클라우드 점수/기록 동기화가 활성화됩니다.
                 </div>
               ) : (
                 <div className="flex items-center justify-between gap-3">
@@ -219,93 +197,50 @@ const ScoreSubmitModal: React.FC<ScoreSubmitModalProps> = ({
                 <label className="block font-primary text-[10px] font-medium text-text-disabled tracking-[1px] mb-2">
                   COUNTRY
                 </label>
-                <Select
-                  options={countries}
-                  value={country}
-                  onChange={(option: CountryOption | null) => setCountry(option)}
-                  placeholder="Select..."
-                  formatOptionLabel={formatOptionLabel}
-                  isSearchable
-                  components={{
-                    SingleValue: (props: any) => (
-                      <div className="flex items-center h-full">
-                        <span className="font-primary text-sm text-white leading-none">
-                          {props.children}
-                        </span>
-                      </div>
-                    ),
-                  }}
-                  styles={{
-                    control: (base: any) => ({
-                      ...base,
-                      height: '48px',
-                      minHeight: '48px',
-                      backgroundColor: 'var(--color-bg-card)',
-                      borderColor: 'var(--color-border-secondary)',
-                      borderRadius: '12px',
-                      boxShadow: 'none',
-                      '&:hover': { borderColor: 'transparent' },
-                      paddingLeft: '6px',
-                      paddingRight: '6px',
-                    }),
-                    valueContainer: (base: any) => ({
-                      ...base,
-                      padding: '0 10px',
-                      display: 'flex',
-                      justifyContent: 'flex-start',
-                      height: '46px',
-                    }),
-                    input: (base: any) => ({
-                      ...base,
-                      color: 'var(--color-text-primary)',
-                      fontFamily: 'Quicksand, -apple-system, BlinkMacSystemFont, sans-serif',
-                      fontSize: '14px',
-                    }),
-                    option: (base: any, state: any) => ({
-                      ...base,
-                      padding: '12px 16px',
-                      backgroundColor: state.isSelected
-                        ? 'var(--color-accent-blue)'
-                        : state.isFocused
-                          ? 'var(--color-accent-blue-alpha)'
-                          : 'var(--color-bg-secondary)',
-                      color: 'var(--color-text-primary)',
-                      cursor: 'pointer',
-                      fontFamily: 'Quicksand, -apple-system, BlinkMacSystemFont, sans-serif',
-                      fontSize: '14px',
-                    }),
-                    menu: (base: any) => ({
-                      ...base,
-                      backgroundColor: 'var(--color-bg-primary)',
-                      borderRadius: '12px',
-                      border: '1px solid var(--color-border-primary)',
-                      boxShadow: '0 4px 16px rgba(0, 0, 0, 0.4)',
-                      overflow: 'hidden',
-                    }),
-                    menuList: (base: any) => ({
-                      ...base,
-                      padding: '4px',
-                      maxHeight: '280px',
-                    }),
-                    placeholder: (base: any) => ({
-                      ...base,
-                      color: 'var(--color-text-placeholder)',
-                      fontSize: '14px',
-                      fontFamily: 'Quicksand, -apple-system, BlinkMacSystemFont, sans-serif',
-                      margin: 0,
-                    }),
-                    dropdownIndicator: (base: any) => ({
-                      ...base,
-                      padding: '0',
-                      paddingRight: '8px',
-                      color: 'var(--color-text-disabled)',
-                      display: 'flex',
-                      alignItems: 'center',
-                    }),
-                    indicatorSeparator: () => ({ display: 'none' }),
-                    singleValue: (base: any) => ({ ...base, margin: 0 }),
-                  }}
-                />
+                <div className="relative" ref={countryMenuRef}>
+                  <button
+                    type="button"
+                    onClick={() => setIsCountryMenuOpen((prev) => !prev)}
+                    className="w-full h-12 min-h-12 rounded-xl border border-border-secondary bg-bg-card text-text-primary text-sm font-primary px-4 cursor-pointer flex items-center justify-between"
+                    aria-haspopup="listbox"
+                    aria-expanded={isCountryMenuOpen}
+                  >
+                    <span className="flex items-center gap-2">
+                      {selectedCountry ? (
+                        <span
+                          className={`fi fi-${selectedCountry.value.toLowerCase()} rounded-[2px]`}
+                          aria-hidden="true"
+                        />
+                      ) : null}
+                      <span>{selectedCountry?.label ?? 'Select country...'}</span>
+                    </span>
+                    <span className="text-text-disabled text-xs">{isCountryMenuOpen ? '▲' : '▼'}</span>
+                  </button>
+
+                  {isCountryMenuOpen ? (
+                    <div className="absolute left-0 right-0 top-[calc(100%+8px)] z-20 max-h-64 overflow-y-auto rounded-xl border border-border-primary bg-bg-secondary shadow-lg p-1">
+                      {countries.map((option) => (
+                        <button
+                          key={option.value}
+                          type="button"
+                          onClick={() => {
+                            setCountry(option.value);
+                            setIsCountryMenuOpen(false);
+                          }}
+                          className="w-full text-left px-3 py-2 rounded-lg text-sm text-text-primary hover:bg-bg-card-alt flex items-center gap-2"
+                          role="option"
+                          aria-selected={country === option.value}
+                        >
+                          <span
+                            className={`fi fi-${option.value.toLowerCase()} rounded-[2px]`}
+                            aria-hidden="true"
+                          />
+                          <span>{option.label}</span>
+                        </button>
+                      ))}
+                    </div>
+                  ) : null}
+                </div>
               </div>
             </div>
           </form>
@@ -336,20 +271,20 @@ const ScoreSubmitModal: React.FC<ScoreSubmitModalProps> = ({
               onClick={onClose}
               className="bg-transparent border-none text-text-disabled font-primary text-sm font-medium cursor-pointer transition-colors duration-200 hover:text-accent-green"
             >
-              Restart (재시작)
+              Restart (다시)
             </button>
             <button
               type="button"
               onClick={onClose}
               className="w-8 h-8 rounded-2xl bg-accent-green-alpha border border-accent-green/40 text-accent-green text-base cursor-pointer transition-all duration-200 hover:brightness-110 flex items-center justify-center"
             >
-              ↻
+              ×
             </button>
           </div>
 
           <div className="text-center mt-12">
             <p className="font-primary text-[10px] font-medium text-text-placeholder tracking-[1.5px]">
-              ONE MORE SECOND • WEB GAME EDITION
+              ONE MORE SECOND - WEB GAME EDITION
             </p>
           </div>
         </div>

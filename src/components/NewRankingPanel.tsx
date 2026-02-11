@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import Flag from 'react-world-flags';
 import { getName } from 'country-list';
 import { RankingEntry } from '../gameSystem/ranking';
 import {
@@ -8,6 +7,7 @@ import {
   getGlobalRanking,
 } from '../services/rankingService';
 import rankingIcon from '../assets/icon-ranking-background.png';
+import { getFlagEmoji } from '../utils/flags';
 
 type RankingType = 'global' | 'country' | 'daily';
 
@@ -169,7 +169,9 @@ export default function NewRankingPanel({ userCountry, refreshTrigger = 0 }: New
 
                   {/* Flag */}
                   <div className="flex-shrink-0">
-                    <Flag code={entry.country} height="16" style={{ borderRadius: 3 }} />
+                    <span className="text-[16px] leading-none" aria-hidden="true">
+                      {getFlagEmoji(entry.country)}
+                    </span>
                   </div>
 
                   {/* Nickname */}
