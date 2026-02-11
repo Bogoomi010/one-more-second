@@ -58,7 +58,7 @@ export default function NewGamePanel({
   };
 
   return (
-    <div className="w-full max-w-[635px] bg-bg-secondary border border-border-primary rounded-[24px] p-6 flex flex-col gap-4 backdrop-blur-[10px] font-primary">
+    <div className="w-full h-full min-w-0 min-h-0 bg-bg-secondary border border-border-primary rounded-[24px] p-6 flex flex-col gap-4 backdrop-blur-[10px] font-primary overflow-hidden box-border">
       {/* Top Bar */}
       <div className="flex justify-between items-center px-5 py-4 w-full">
         {/* Stats Panel */}

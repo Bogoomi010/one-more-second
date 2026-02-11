@@ -57,7 +57,7 @@ export default function NewStatsPanel({ profile }: NewStatsPanelProps) {
   const challengeProgress = Math.min((profile.bestScore / profile.dailyChallenge.targetSeconds) * 100, 100);
 
   return (
-    <div className="w-full max-w-80 bg-bg-secondary border border-border-primary rounded-[24px] p-6 flex flex-col gap-4 backdrop-blur-[10px] font-primary">
+    <div className="w-full h-full min-w-0 min-h-0 overflow-y-auto bg-bg-secondary border border-border-primary rounded-[24px] p-6 flex flex-col gap-4 backdrop-blur-[10px] font-primary">
       {/* Header */}
       <div className="flex items-center gap-2">
         <span className="text-ui-title font-tertiary">📈</span>

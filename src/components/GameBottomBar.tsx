@@ -35,7 +35,7 @@ export default function GameBottomBar({
   };
 
   return (
-    <div className="w-full max-w-[635px] bg-bg-secondary border border-border-primary rounded-[24px] px-4 sm:px-6 py-4 flex justify-between items-center gap-3 sm:gap-4 backdrop-blur-[10px] font-primary">
+    <div className="w-full min-w-0 bg-bg-secondary border border-border-primary rounded-[24px] px-4 sm:px-6 py-4 flex justify-between items-center gap-3 sm:gap-4 backdrop-blur-[10px] font-primary">
       {/* Connection Info */}
       <div className="flex items-center gap-4">
         {/* Latency */}

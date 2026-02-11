@@ -68,7 +68,7 @@ export default function NewRankingPanel({ userCountry, refreshTrigger = 0 }: New
   };
 
   return (
-    <div className="w-full max-w-80 h-[617px] bg-bg-secondary border border-border-primary rounded-[24px] p-6 flex flex-col gap-6 backdrop-blur-[10px] font-primary overflow-hidden box-border">
+    <div className="w-full h-full min-w-0 min-h-0 bg-bg-secondary border border-border-primary rounded-[24px] p-6 flex flex-col gap-6 backdrop-blur-[10px] font-primary overflow-hidden box-border">
       {/* Header */}
       <div className="flex items-center gap-2">
         <h2 className="m-0 text-[20px] font-bold text-text-primary font-primary">

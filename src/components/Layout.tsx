@@ -3,6 +3,7 @@ import { PlayerProfile } from '../gameSystem/types';
 import NewRankingPanel from './NewRankingPanel';
 import NewStatsPanel from './NewStatsPanel';
 import GameBottomBar from './GameBottomBar';
+import { LeftColumn, MainColumn, RightColumn } from './ColumnSlots';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -80,45 +81,33 @@ export default function Layout({ children, profile, userCountry, rankingRefreshT
       <main className="flex-1 w-full min-h-0 flex justify-center p-5 box-border overflow-hidden">
         <div className="w-full max-w-[min(1920px,calc(100%-40px))] h-full min-h-0 box-border overflow-hidden">
           <div className="grid h-full min-h-0 grid-cols-[minmax(0,1fr)_minmax(0,2fr)_minmax(0,1fr)] gap-5 items-stretch">
-            <div className="min-w-0 min-h-0 h-full rounded-2xl border border-border-primary bg-bg-secondary/30 p-4 flex flex-col items-center overflow-hidden">
-              <div className="mb-3 text-[11px] font-secondary font-bold tracking-wide text-text-placeholder">LEFT</div>
-              <div className="w-full flex-1 min-h-0 flex items-center justify-center overflow-hidden">
-                <NewRankingPanel
-                  userCountry={userCountry}
-                  refreshTrigger={rankingRefreshTrigger}
-                />
-              </div>
-            </div>
-
-            <div className="min-w-0 min-h-0 h-full rounded-2xl border border-border-primary bg-bg-secondary/30 p-4 flex flex-col overflow-hidden">
-              <div className="mb-3 text-[11px] font-secondary font-bold tracking-wide text-text-placeholder">MAIN</div>
-              <div className="w-full flex-1 min-h-0 flex items-center justify-center overflow-hidden">
-                {Array.isArray(children) ? children.map((child, idx) => (
-                  <div key={idx} className="w-full max-w-full flex justify-center min-h-0">
-                    {child}
-                  </div>
-                )) : (
-                  <div className="w-full max-w-full flex justify-center min-h-0">
-                    {children}
-                  </div>
-                )}
-              </div>
-              <div className="w-full shrink-0 pt-4">
-                <div className="rounded-xl border border-border-secondary bg-bg-primary/40 p-3">
-                  <div className="mb-2 text-[10px] font-secondary font-bold tracking-wide text-text-placeholder">FOOTER</div>
-                  <div className="w-full flex justify-center overflow-hidden">
-                    <GameBottomBar onSettingsClick={onSettingsClick} />
-                  </div>
+            <LeftColumn
+              mainPanel={
+                <div className="w-full h-full min-w-0 min-h-0 overflow-hidden">
+                  <NewRankingPanel
+                    userCountry={userCountry}
+                    refreshTrigger={rankingRefreshTrigger}
+                  />
                 </div>
-              </div>
-            </div>
+              }
+            />
 
-            <div className="min-w-0 min-h-0 h-full rounded-2xl border border-border-primary bg-bg-secondary/30 p-4 flex flex-col items-center overflow-hidden">
-              <div className="mb-3 text-[11px] font-secondary font-bold tracking-wide text-text-placeholder">RIGHT</div>
-              <div className="w-full flex-1 min-h-0 flex items-center justify-center overflow-hidden">
-                {profile ? <NewStatsPanel profile={profile} /> : <div className="w-full max-w-80" />}
-              </div>
-            </div>
+            <MainColumn
+              mainPanel={
+                <div className="w-full h-full min-w-0 min-h-0 flex flex-col gap-4 overflow-hidden">
+                  <div className="w-full flex-1 min-w-0 min-h-0 overflow-hidden">{children}</div>
+                  <GameBottomBar onSettingsClick={onSettingsClick} />
+                </div>
+              }
+            />
+
+            <RightColumn
+              mainPanel={
+                <div className="w-full h-full min-w-0 min-h-0 overflow-hidden">
+                  {profile ? <NewStatsPanel profile={profile} /> : <div className="w-full h-full min-w-0 min-h-0" />}
+                </div>
+              }
+            />
           </div>
         </div>
       </main>
