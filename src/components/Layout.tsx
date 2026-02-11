@@ -1,9 +1,45 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { PlayerProfile } from '../gameSystem/types';
+import { syncLanguagePreferenceToCloud } from '../services/userDataService';
 import NewRankingPanel from './NewRankingPanel';
 import NewStatsPanel from './NewStatsPanel';
 import GameBottomBar from './GameBottomBar';
 import { LeftColumn, MainColumn, RightColumn } from './ColumnSlots';
+
+type SupportedLanguage = 'ko' | 'en' | 'ja' | 'zh-CN';
+
+const SUPPORTED_LANGUAGES: SupportedLanguage[] = ['ko', 'en', 'ja', 'zh-CN'];
+const LANGUAGE_NAMES: Record<SupportedLanguage, string> = {
+  ko: '한국어',
+  en: 'English',
+  ja: '日本語',
+  'zh-CN': '简体中文',
+};
+
+function normalizeLanguage(language?: string | null): SupportedLanguage {
+  if (!language) return 'ko';
+  if (language.startsWith('zh')) return 'zh-CN';
+  if (language.startsWith('ja')) return 'ja';
+  if (language.startsWith('en')) return 'en';
+  if (language.startsWith('ko')) return 'ko';
+  return 'ko';
+}
+
+function getLanguageLabel(language: SupportedLanguage): string {
+  switch (language) {
+    case 'ko':
+      return 'KO';
+    case 'en':
+      return 'EN';
+    case 'ja':
+      return 'JA';
+    case 'zh-CN':
+      return '中文';
+    default:
+      return 'KO';
+  }
+}
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -11,13 +47,52 @@ interface LayoutProps {
   userCountry?: string;
   rankingRefreshTrigger?: number;
   onSettingsClick?: () => void;
+  onUserButtonClick?: () => void;
+  userInitial?: string;
 }
 
-export default function Layout({ children, profile, userCountry, rankingRefreshTrigger, onSettingsClick }: LayoutProps) {
+export default function Layout({
+  children,
+  profile,
+  userCountry,
+  rankingRefreshTrigger,
+  onSettingsClick,
+  onUserButtonClick,
+  userInitial,
+}: LayoutProps) {
+  const { t, i18n } = useTranslation();
+  const [isLanguageMenuOpen, setIsLanguageMenuOpen] = useState(false);
+  const languageMenuRef = useRef<HTMLDivElement | null>(null);
+
+  const currentLanguage = normalizeLanguage(i18n.resolvedLanguage ?? i18n.language);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (languageMenuRef.current && !languageMenuRef.current.contains(event.target as Node)) {
+        setIsLanguageMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  const handleLanguageButtonClick = () => {
+    setIsLanguageMenuOpen(prev => !prev);
+  };
+
+  const handleLanguageSelect = (nextLanguage: SupportedLanguage) => {
+    i18n.changeLanguage(nextLanguage);
+    void syncLanguagePreferenceToCloud(nextLanguage);
+    setIsLanguageMenuOpen(false);
+  };
+
   return (
     <div className="h-screen bg-bg-primary flex flex-col items-center w-full overflow-hidden box-border">
       {/* Header */}
-      <div className="w-full bg-bg-secondary border border-border-primary px-6 py-4 flex justify-between items-center backdrop-blur-[10px]">
+      <div className="relative z-40 w-full bg-bg-secondary border border-border-primary px-6 py-4 flex justify-between items-center backdrop-blur-[10px]">
         {/* Logo Section */}
         <div className="flex items-center gap-3">
           <div className="w-[40px] h-[40px] rounded-xl bg-bg-card flex justify-center items-center">
@@ -37,13 +112,13 @@ export default function Layout({ children, profile, userCountry, rankingRefreshT
           {/* Navigation */}
           <div className="flex gap-8 items-center">
             <span className="text-accent-green font-primary text-[14px] font-bold">
-              Game
+              {t('layout.navGame')}
             </span>
             <span className="text-text-muted font-primary text-[14px] font-bold cursor-pointer">
-              Market
+              {t('layout.navMarket')}
             </span>
             <span className="text-text-muted font-primary text-[14px] font-bold cursor-pointer">
-              Global Wall
+              {t('layout.navGlobalWall')}
             </span>
           </div>
 
@@ -51,11 +126,43 @@ export default function Layout({ children, profile, userCountry, rankingRefreshT
           <div className="w-px h-6 bg-bg-card-alt" />
 
           {/* Language Button */}
-          <div className="flex items-center gap-2 px-3 py-2 rounded-lg cursor-pointer">
-            <span className="text-base font-tertiary">🌐</span>
-            <span className="text-text-muted font-primary text-[14px] font-semibold">
-              EN
-            </span>
+          <div className="relative" ref={languageMenuRef}>
+            <button
+              type="button"
+              className="flex items-center gap-2 px-3 py-2 rounded-lg cursor-pointer"
+              onClick={handleLanguageButtonClick}
+              title={t('layout.languageSwitch')}
+              aria-label={t('layout.languageSwitch')}
+              aria-expanded={isLanguageMenuOpen}
+              aria-haspopup="menu"
+            >
+              <span className="text-base font-tertiary">🌐</span>
+              <span className="text-text-muted font-primary text-[14px] font-semibold">
+                {getLanguageLabel(currentLanguage)}
+              </span>
+            </button>
+
+            {isLanguageMenuOpen && (
+              <div className="absolute right-0 top-[calc(100%+8px)] min-w-[144px] rounded-xl border border-border-primary bg-bg-secondary shadow-lg z-[60] p-1.5">
+                {SUPPORTED_LANGUAGES.map(option => (
+                  <button
+                    key={option}
+                    type="button"
+                    className={`w-full px-3 py-2 rounded-lg text-left text-[13px] font-primary transition-colors ${
+                      option === currentLanguage
+                        ? 'bg-bg-card text-text-primary'
+                        : 'text-text-muted hover:bg-bg-card-alt hover:text-text-primary'
+                    }`}
+                    onClick={() => handleLanguageSelect(option)}
+                  >
+                    <span className="inline-flex items-center justify-between w-full">
+                      <span>{LANGUAGE_NAMES[option]}</span>
+                      <span className="text-[12px] opacity-80">{getLanguageLabel(option)}</span>
+                    </span>
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Menu Button */}
@@ -71,8 +178,14 @@ export default function Layout({ children, profile, userCountry, rankingRefreshT
           )}
 
           {/* User Button */}
-          <div className="w-[40px] h-[40px] rounded-xl bg-bg-card border border-border-primary flex justify-center items-center cursor-pointer">
-            <span className="text-[20px] font-tertiary">👤</span>
+          <div
+            className="w-[40px] h-[40px] rounded-xl bg-bg-card border border-border-primary flex justify-center items-center cursor-pointer"
+            onClick={onUserButtonClick}
+            title={onUserButtonClick ? t('layout.googleAuth') : undefined}
+          >
+            <span className="text-[16px] font-tertiary text-text-primary">
+              {userInitial ?? '👤'}
+            </span>
           </div>
         </div>
       </div>
@@ -114,9 +227,9 @@ export default function Layout({ children, profile, userCountry, rankingRefreshT
 
       <footer className="w-full border-t border-[#ffffff0d] py-12 flex justify-center items-center shrink-0">
         <div className="flex items-center gap-1 font-secondary text-[10px] font-normal">
-          <span className="text-text-placeholder">© 2024</span>
-          <span className="text-accent-blue">ONE MORE SECOND</span>
-          <span className="text-text-placeholder">. STAY FOCUSED.</span>
+          <span className="text-text-placeholder">{t('layout.footerYear')}</span>
+          <span className="text-accent-blue">{t('layout.footerBrand')}</span>
+          <span className="text-text-placeholder">{t('layout.footerTagline')}</span>
         </div>
       </footer>
     </div>

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import GameCanvas from './GameCanvas';
 import { GameResult } from '../../../gameSystem/types';
 import { PlayerProfile } from '../../../gameSystem/types';
@@ -19,6 +20,7 @@ export default function NewGamePanel({
   onGameOver,
   isModalOpen = false,
 }: NewGamePanelProps) {
+  const { t } = useTranslation();
   const [score, setScore] = useState(0);
   const [spawnInterval, setSpawnInterval] = useState(500);
   const [gameStarted, setGameStarted] = useState(false);
@@ -64,11 +66,11 @@ export default function NewGamePanel({
         {/* Stats Panel */}
         <div className="rounded-2xl bg-bg-card border border-bg-card px-3 py-2 flex flex-col gap-1">
           <div className="text-text-primary font-secondary text-ui-tab font-normal">
-            Score: {score}s
+            {t('game.score')}: {score}s
           </div>
           <div className="flex items-center gap-2">
             <span className="text-text-primary font-secondary text-ui-tab font-normal">
-              Best:{' '}
+              {t('game.best')}: {' '}
             </span>
             <span className="text-accent-blue font-secondary text-ui-tab font-bold">
               {formatTime(profile.bestScore)}
@@ -77,7 +79,7 @@ export default function NewGamePanel({
               {' '}•{' '}
             </span>
             <span className="text-text-primary font-secondary text-ui-tab font-normal">
-              Coins:{' '}
+              {t('game.coins')}: {' '}
             </span>
             <span className="text-rose-400 font-secondary text-ui-tab font-bold">
               {profile.coins}
@@ -90,12 +92,12 @@ export default function NewGamePanel({
           <div className="flex items-center gap-3 justify-center">
             <img
               src={lifeIcon}
-              alt="Life icon"
+              alt={t('game.lifeIconAlt')}
               className="w-12 h-12 object-contain"
             />
           </div>
           <div className="text-text-disabled font-secondary text-ui-tab font-normal">
-            Interval: {spawnInterval}ms
+            {t('game.spawnInterval')}: {spawnInterval}ms
           </div>
         </div>
       </div>
@@ -106,7 +108,7 @@ export default function NewGamePanel({
           <>
             {/* Press Text */}
             <div className="text-text-primary font-secondary text-ui-tab font-bold tracking-[2px]">
-              PRESS
+              {t('game.press')}
             </div>
 
             {/* Enter Button */}
@@ -115,13 +117,13 @@ export default function NewGamePanel({
               onClick={() => setGameStarted(true)}
             >
               <div className="text-bg-primary font-secondary text-ui-tab font-black tracking-[3px]">
-                ENTER
+                {t('game.enter')}
               </div>
             </div>
 
             {/* To Start Text */}
             <div className="text-text-primary font-secondary text-ui-tab font-bold tracking-[2px]">
-              TO START
+              {t('game.toStart')}
             </div>
 
             {/* Player Placeholder */}
@@ -132,11 +134,11 @@ export default function NewGamePanel({
               {/* Move Control */}
               <div className="flex flex-col gap-2 items-center">
                 <div className="text-accent-blue font-secondary text-ui-tab font-bold tracking-widest">
-                  MOVE
+                  {t('game.move')}
                 </div>
                 <div className="rounded-xl bg-bg-card border border-bg-card px-4 py-2 flex justify-center items-center">
                   <div className="text-text-primary font-secondary text-ui-tab font-normal">
-                    WASD / ARROWS
+                    {t('game.moveKeys')}
                   </div>
                 </div>
               </div>
@@ -144,11 +146,11 @@ export default function NewGamePanel({
               {/* Slowmo Control */}
               <div className="flex flex-col gap-2 items-center">
                 <div className="text-rose-400 font-secondary text-ui-tab font-bold tracking-widest">
-                  SLOWMO
+                  {t('game.slowmo')}
                 </div>
                 <div className="rounded-xl bg-bg-card border border-bg-card px-4 py-2 flex justify-center items-center">
                   <div className="text-text-primary font-secondary text-ui-tab font-normal">
-                    SHIFT
+                    {t('game.slowmoKey')}
                   </div>
                 </div>
               </div>

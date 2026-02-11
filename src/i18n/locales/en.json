@@ -2,6 +2,16 @@
   "app": {
     "title": "one more second"
   },
+  "layout": {
+    "navGame": "Game",
+    "navMarket": "Market",
+    "navGlobalWall": "Global Wall",
+    "languageSwitch": "Change language",
+    "googleAuth": "Google sign in/sign out",
+    "footerYear": "© 2024",
+    "footerBrand": "ONE MORE SECOND",
+    "footerTagline": ". STAY FOCUSED."
+  },
   "ranking": {
     "title": "Ranking",
     "global": "Global",
@@ -13,24 +23,39 @@
   "stats": {
     "title": "Stats & Achievements",
     "tabStats": "Stats",
+    "tabTrophy": "Trophy ({{unlocked}}/{{total}})",
     "tabAchievements": "Achievements",
     "bestScore": "Best Score",
+    "personalBest": "PERSONAL BEST",
     "totalRuns": "Total Runs",
+    "totalRunsValue": "{{count}} runs",
     "coins": "Coins",
     "totalTime": "Total Survival Time",
     "averageTime": "Average Survival",
     "ownedSkins": "Owned Skins",
+    "countUnit": "",
     "achievementProgress": "Achievement Progress",
     "dailyChallenge": "Daily Challenge",
     "dailyChallengeTarget": "Goal: Survive {{seconds}}s",
     "dailyChallengeReward": "Reward: {{coins}} coins",
+    "timeRemaining": "{{time}} REMAINING",
     "dailyChallengeCompleted": "Completed!",
     "achievementRate": "Completion Rate"
   },
   "game": {
     "lives": "Lives",
     "score": "Score",
+    "best": "Best",
+    "coins": "Coins",
     "spawnInterval": "Spawn Interval",
+    "press": "PRESS",
+    "enter": "ENTER",
+    "toStart": "TO START",
+    "move": "MOVE",
+    "moveKeys": "WASD / ARROWS",
+    "slowmo": "SLOWMO",
+    "slowmoKey": "SHIFT",
+    "lifeIconAlt": "Life icon",
     "gameOver": "GAME OVER",
     "pressRToRestart": "Press R to restart",
     "menu": "Menu"

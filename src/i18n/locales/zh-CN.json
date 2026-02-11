@@ -2,6 +2,16 @@
   "app": {
     "title": "one more second"
   },
+  "layout": {
+    "navGame": "游戏",
+    "navMarket": "市场",
+    "navGlobalWall": "全球墙",
+    "languageSwitch": "切换语言",
+    "googleAuth": "Google 登录/登出",
+    "footerYear": "© 2024",
+    "footerBrand": "ONE MORE SECOND",
+    "footerTagline": ". STAY FOCUSED."
+  },
   "ranking": {
     "title": "排行榜",
     "global": "全球",
@@ -13,24 +23,39 @@
   "stats": {
     "title": "统计 & 成就",
     "tabStats": "统计",
+    "tabTrophy": "奖杯 ({{unlocked}}/{{total}})",
     "tabAchievements": "成就",
     "bestScore": "最佳成绩",
+    "personalBest": "PERSONAL BEST",
     "totalRuns": "总游戏次数",
+    "totalRunsValue": "{{count}}局",
     "coins": "持有金币",
     "totalTime": "总生存时间",
     "averageTime": "平均生存时间",
     "ownedSkins": "拥有皮肤",
+    "countUnit": "个",
     "achievementProgress": "成就进度",
     "dailyChallenge": "每日挑战",
     "dailyChallengeTarget": "目标: 生存{{seconds}}秒",
     "dailyChallengeReward": "奖励: {{coins}}金币",
+    "timeRemaining": "剩余 {{time}}",
     "dailyChallengeCompleted": "已完成！",
     "achievementRate": "完成率"
   },
   "game": {
     "lives": "生命",
     "score": "分数",
+    "best": "最佳",
+    "coins": "金币",
     "spawnInterval": "生成间隔",
+    "press": "PRESS",
+    "enter": "ENTER",
+    "toStart": "TO START",
+    "move": "MOVE",
+    "moveKeys": "WASD / ARROWS",
+    "slowmo": "SLOWMO",
+    "slowmoKey": "SHIFT",
+    "lifeIconAlt": "生命图标",
     "gameOver": "游戏结束",
     "pressRToRestart": "按R重新开始",
     "menu": "菜单"

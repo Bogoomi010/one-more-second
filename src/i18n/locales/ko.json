@@ -2,6 +2,16 @@
   "app": {
     "title": "one more second"
   },
+  "layout": {
+    "navGame": "Game",
+    "navMarket": "Market",
+    "navGlobalWall": "Global Wall",
+    "languageSwitch": "언어 변경",
+    "googleAuth": "Google 로그인/로그아웃",
+    "footerYear": "© 2024",
+    "footerBrand": "ONE MORE SECOND",
+    "footerTagline": ". STAY FOCUSED."
+  },
   "ranking": {
     "title": "랭킹",
     "global": "전체",
@@ -13,24 +23,39 @@
   "stats": {
     "title": "통계 & 업적",
     "tabStats": "통계",
+    "tabTrophy": "Trophy ({{unlocked}}/{{total}})",
     "tabAchievements": "업적",
     "bestScore": "최고 기록",
+    "personalBest": "PERSONAL BEST",
     "totalRuns": "총 플레이",
+    "totalRunsValue": "{{count}}회",
     "coins": "보유 코인",
     "totalTime": "총 생존 시간",
     "averageTime": "평균 생존",
     "ownedSkins": "보유 스킨",
+    "countUnit": "개",
     "achievementProgress": "업적 달성",
     "dailyChallenge": "오늘의 챌린지",
     "dailyChallengeTarget": "목표: {{seconds}}초 생존",
     "dailyChallengeReward": "보상: {{coins}} 코인",
+    "timeRemaining": "{{time}} REMAINING",
     "dailyChallengeCompleted": "완료됨!",
     "achievementRate": "달성률"
   },
   "game": {
     "lives": "생명",
     "score": "점수",
+    "best": "Best",
+    "coins": "Coins",
     "spawnInterval": "생성 간격",
+    "press": "PRESS",
+    "enter": "ENTER",
+    "toStart": "TO START",
+    "move": "MOVE",
+    "moveKeys": "WASD / ARROWS",
+    "slowmo": "SLOWMO",
+    "slowmoKey": "SHIFT",
+    "lifeIconAlt": "Life icon",
     "gameOver": "GAME OVER",
     "pressRToRestart": "R을 눌러 재시작",
     "menu": "메뉴"

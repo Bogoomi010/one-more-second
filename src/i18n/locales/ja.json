@@ -2,6 +2,16 @@
   "app": {
     "title": "one more second"
   },
+  "layout": {
+    "navGame": "ゲーム",
+    "navMarket": "マーケット",
+    "navGlobalWall": "グローバルウォール",
+    "languageSwitch": "言語を変更",
+    "googleAuth": "Google ログイン/ログアウト",
+    "footerYear": "© 2024",
+    "footerBrand": "ONE MORE SECOND",
+    "footerTagline": ". STAY FOCUSED."
+  },
   "ranking": {
     "title": "ランキング",
     "global": "全体",
@@ -13,24 +23,39 @@
   "stats": {
     "title": "統計 & 実績",
     "tabStats": "統計",
+    "tabTrophy": "トロフィー ({{unlocked}}/{{total}})",
     "tabAchievements": "実績",
     "bestScore": "ベストスコア",
+    "personalBest": "PERSONAL BEST",
     "totalRuns": "総プレイ回数",
+    "totalRunsValue": "{{count}}回",
     "coins": "所持コイン",
     "totalTime": "総生存時間",
     "averageTime": "平均生存時間",
     "ownedSkins": "所持スキン",
+    "countUnit": "個",
     "achievementProgress": "実績達成",
     "dailyChallenge": "デイリーチャレンジ",
     "dailyChallengeTarget": "目標: {{seconds}}秒生存",
     "dailyChallengeReward": "報酬: {{coins}}コイン",
+    "timeRemaining": "残り {{time}}",
     "dailyChallengeCompleted": "完了！",
     "achievementRate": "達成率"
   },
   "game": {
     "lives": "ライフ",
     "score": "スコア",
+    "best": "ベスト",
+    "coins": "コイン",
     "spawnInterval": "生成間隔",
+    "press": "PRESS",
+    "enter": "ENTER",
+    "toStart": "TO START",
+    "move": "MOVE",
+    "moveKeys": "WASD / ARROWS",
+    "slowmo": "SLOWMO",
+    "slowmoKey": "SHIFT",
+    "lifeIconAlt": "ライフアイコン",
     "gameOver": "GAME OVER",
     "pressRToRestart": "Rキーで再スタート",
     "menu": "メニュー"

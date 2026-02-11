@@ -107,6 +107,13 @@ yarn start
 
 브라우저에서 [http://localhost:3000](http://localhost:3000)을 열어 게임을 플레이할 수 있습니다.
 
+### Firebase 연동 (선택)
+
+Google 로그인 + Firestore 랭킹/프로필 동기화를 사용하려면
+[`FIREBASE_SETUP.md`](FIREBASE_SETUP.md)를 따라 Firebase 프로젝트를 먼저 생성하세요.
+
+기본 환경변수 템플릿은 [`.env.example`](.env.example)에서 확인할 수 있습니다.
+
 ### 테스트 실행
 
 ```bash

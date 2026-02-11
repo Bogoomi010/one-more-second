@@ -5,6 +5,7 @@ import Flag from 'react-world-flags';
 import { submitScore } from '../../../utils/api';
 import { ScoreRecord } from '../../../types/score';
 import { addRankingEntry } from '../../../gameSystem/ranking';
+import { useAuth } from '../../../context/AuthContext';
 
 interface ScoreSubmitModalProps {
   score: number;
@@ -72,6 +73,7 @@ const ScoreSubmitModal: React.FC<ScoreSubmitModalProps> = ({
   onCountrySelect,
   onRankingUpdate,
 }) => {
+  const { user, loading: authLoading, firebaseEnabled, signInWithGoogle } = useAuth();
   const [nickname, setNickname] = useState('');
   const [country, setCountry] = useState<CountryOption | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -130,6 +132,14 @@ const ScoreSubmitModal: React.FC<ScoreSubmitModalProps> = ({
     }
   };
 
+  const handleGoogleSignIn = async () => {
+    try {
+      await signInWithGoogle();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Google 로그인에 실패했습니다.');
+    }
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -164,6 +174,30 @@ const ScoreSubmitModal: React.FC<ScoreSubmitModalProps> = ({
               {score}
             </p>
           </div>
+
+          {firebaseEnabled && (
+            <div className="mb-5 rounded-xl border border-border-secondary bg-bg-card px-4 py-3">
+              {user ? (
+                <div className="text-[12px] font-primary text-accent-green">
+                  로그인됨: 클라우드 랭킹/기록 동기화가 활성화됩니다.
+                </div>
+              ) : (
+                <div className="flex items-center justify-between gap-3">
+                  <p className="m-0 text-[12px] text-text-secondary font-primary">
+                    로그인하면 점수가 클라우드에 저장됩니다.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={handleGoogleSignIn}
+                    disabled={authLoading}
+                    className="rounded-lg border border-border-secondary bg-bg-secondary px-3 py-2 text-[11px] font-semibold text-text-primary cursor-pointer hover:bg-bg-card-alt disabled:opacity-60 disabled:cursor-not-allowed"
+                  >
+                    {authLoading ? 'Loading...' : 'Google 로그인'}
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-5 mb-8">
             <div className="flex flex-col gap-5">

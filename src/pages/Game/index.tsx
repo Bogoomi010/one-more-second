@@ -10,6 +10,7 @@ import {
   saveProfile,
 } from '../../gameSystem';
 import { GameResult, PlayerProfile } from '../../gameSystem/types';
+import { syncLocalProfileToCloud } from '../../services/userDataService';
 
 interface GameProps {
   profile: PlayerProfile;
@@ -42,6 +43,7 @@ export default function Game({ profile, setProfile, setUserCountry, onRankingUpd
 
     saveProfile(next);
     setProfile(next);
+    void syncLocalProfileToCloud(next);
 
     const lines: string[] = [];
     lines.push(`+${runReward} coins`);

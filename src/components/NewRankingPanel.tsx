@@ -1,7 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import Flag from 'react-world-flags';
 import { getName } from 'country-list';
-import { RankingEntry, getGlobalRanking, getCountryRanking, getDailyRanking } from '../gameSystem/ranking';
+import { RankingEntry } from '../gameSystem/ranking';
+import {
+  getCountryRanking,
+  getDailyRanking,
+  getGlobalRanking,
+} from '../services/rankingService';
 import rankingIcon from '../assets/icon-ranking-background.png';
 
 type RankingType = 'global' | 'country' | 'daily';
@@ -16,22 +21,27 @@ export default function NewRankingPanel({ userCountry, refreshTrigger = 0 }: New
   const [rankings, setRankings] = useState<RankingEntry[]>([]);
   const [selectedCountry, setSelectedCountry] = useState<string>(userCountry ?? 'KR');
 
-  const loadRankings = React.useCallback(() => {
+  const loadRankings = React.useCallback(async (): Promise<RankingEntry[]> => {
     switch (rankingType) {
       case 'global':
-        setRankings(getGlobalRanking(100));
-        break;
+        return getGlobalRanking(50);
       case 'country':
-        setRankings(getCountryRanking(selectedCountry, 50));
-        break;
+        return getCountryRanking(selectedCountry, 30);
       case 'daily':
-        setRankings(getDailyRanking(undefined, 50));
-        break;
+        return getDailyRanking(undefined, 30);
     }
+    return [];
   }, [rankingType, selectedCountry]);
 
   useEffect(() => {
-    loadRankings();
+    let isMounted = true;
+    (async () => {
+      const next = await loadRankings();
+      if (isMounted) setRankings(next);
+    })();
+    return () => {
+      isMounted = false;
+    };
   }, [loadRankings, refreshTrigger]);
 
   const formatTime = (seconds: number): string => {

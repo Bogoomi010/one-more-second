@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { PlayerProfile } from '../gameSystem/types';
 import { ACHIEVEMENTS } from '../gameSystem/achievements';
 
@@ -9,30 +10,32 @@ interface NewStatsPanelProps {
 type TabType = 'stats' | 'trophy';
 
 export default function NewStatsPanel({ profile }: NewStatsPanelProps) {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<TabType>('stats');
   const [timeRemaining, setTimeRemaining] = useState<string>('');
 
   const unlockedAchievements = ACHIEVEMENTS.filter((ach) => profile.achievements[ach.id]);
-  // Daily challenge 남은 시간 계산
+
   useEffect(() => {
     const updateTimeRemaining = () => {
       const now = new Date();
       const tomorrow = new Date(now);
       tomorrow.setDate(tomorrow.getDate() + 1);
       tomorrow.setHours(0, 0, 0, 0);
-      
+
       const diff = tomorrow.getTime() - now.getTime();
       const hours = Math.floor(diff / (1000 * 60 * 60));
       const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-      
-      setTimeRemaining(`${hours}:${String(minutes).padStart(2, '0')} REMAINING`);
+
+      const time = `${hours}:${String(minutes).padStart(2, '0')}`;
+      setTimeRemaining(t('stats.timeRemaining', { time }));
     };
 
     updateTimeRemaining();
-    const interval = setInterval(updateTimeRemaining, 60000); // 1분마다 업데이트
+    const interval = setInterval(updateTimeRemaining, 60000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [t]);
 
   const formatTime = (seconds: number): string => {
     if (seconds < 60) return `${seconds.toFixed(1)}s`;
@@ -52,21 +55,17 @@ export default function NewStatsPanel({ profile }: NewStatsPanelProps) {
 
   const bestTime = formatBestTime(profile.bestScore);
   const avgSurvival = Math.floor(profile.totalSecondsSurvived / Math.max(1, profile.totalRuns));
-
-  // Daily challenge 진행률 계산
   const challengeProgress = Math.min((profile.bestScore / profile.dailyChallenge.targetSeconds) * 100, 100);
 
   return (
     <div className="w-full h-full min-w-0 min-h-0 overflow-y-auto bg-bg-secondary border border-border-primary rounded-[24px] p-6 flex flex-col gap-4 backdrop-blur-[10px] font-primary">
-      {/* Header */}
       <div className="flex items-center gap-2">
         <span className="text-ui-title font-tertiary">📈</span>
         <h2 className="m-0 text-ui-title font-bold text-text-primary font-primary">
-          Stats & Achievements
+          {t('stats.title')}
         </h2>
       </div>
 
-      {/* Tabs */}
       <div className="flex gap-1 p-1.5 bg-bg-card rounded-2xl">
         <button
           onClick={() => setActiveTab('stats')}
@@ -76,7 +75,7 @@ export default function NewStatsPanel({ profile }: NewStatsPanelProps) {
               : 'bg-transparent text-text-disabled'
           }`}
         >
-          Stats
+          {t('stats.tabStats')}
         </button>
         <button
           onClick={() => setActiveTab('trophy')}
@@ -86,17 +85,15 @@ export default function NewStatsPanel({ profile }: NewStatsPanelProps) {
               : 'bg-transparent text-text-disabled'
           }`}
         >
-          Trophy ({unlockedAchievements.length}/{ACHIEVEMENTS.length})
+          {t('stats.tabTrophy', { unlocked: unlockedAchievements.length, total: ACHIEVEMENTS.length })}
         </button>
       </div>
 
-      {/* Content */}
       {activeTab === 'stats' ? (
         <>
-          {/* PERSONAL BEST Card */}
           <div className="rounded-2xl p-[14px] bg-transparent border border-border-primary flex flex-col gap-2">
             <div className="text-ui-meta font-black text-accent-green font-secondary tracking-wide">
-              PERSONAL BEST
+              {t('stats.personalBest')}
             </div>
             <div className="flex items-baseline gap-1">
               <span className="text-ui-value-hero font-bold text-text-primary font-secondary">
@@ -108,26 +105,22 @@ export default function NewStatsPanel({ profile }: NewStatsPanelProps) {
             </div>
           </div>
 
-          {/* Stats Grid */}
           <div className="flex flex-col gap-2.5">
-            {/* Row 1 */}
             <div className="flex gap-4">
-              {/* 총 플레이 횟수 */}
               <div className="flex-1 rounded-2xl p-2 bg-bg-card border border-bg-card flex flex-col gap-2">
                 <div className="text-ui-label font-black text-text-placeholder font-secondary tracking-wide">
-                  총 플레이 횟수
+                  {t('stats.totalRuns')}
                 </div>
                 <div className="text-ui-value font-bold text-accent-green font-secondary">
-                  {profile.totalRuns}회
+                  {t('stats.totalRunsValue', { count: profile.totalRuns })}
                 </div>
               </div>
 
-              {/* 보유 코인 */}
               <div className="flex-1 rounded-2xl p-2 bg-bg-card border border-bg-card flex flex-col gap-2">
                 <div className="flex items-center gap-1.5">
                   <span className="text-ui-icon font-tertiary">💎</span>
                   <div className="text-ui-label font-black text-text-placeholder font-secondary tracking-wide">
-                    보유 코인
+                    {t('stats.coins')}
                   </div>
                 </div>
                 <div className="text-ui-value font-bold text-rose-400 font-secondary">
@@ -136,22 +129,19 @@ export default function NewStatsPanel({ profile }: NewStatsPanelProps) {
               </div>
             </div>
 
-            {/* Row 2 */}
             <div className="flex gap-4">
-              {/* 총 생존 시간 */}
               <div className="flex-1 rounded-2xl p-2 bg-bg-card border border-bg-card flex flex-col gap-2">
                 <div className="text-ui-label font-black text-text-placeholder font-secondary tracking-wide">
-                  총 생존 시간
+                  {t('stats.totalTime')}
                 </div>
                 <div className="text-ui-value font-bold text-accent-blue font-secondary">
                   {formatTime(profile.totalSecondsSurvived)}
                 </div>
               </div>
 
-              {/* 평균 생존 */}
               <div className="flex-1 rounded-2xl p-2 bg-bg-card border border-bg-card flex flex-col gap-2">
                 <div className="text-ui-label font-black text-text-placeholder font-secondary tracking-wide">
-                  평균 생존
+                  {t('stats.averageTime')}
                 </div>
                 <div className="text-ui-value font-bold text-text-primary font-secondary">
                   {formatTime(avgSurvival)}
@@ -159,28 +149,25 @@ export default function NewStatsPanel({ profile }: NewStatsPanelProps) {
               </div>
             </div>
 
-            {/* Row 3 */}
             <div className="flex gap-4">
-              {/* 보유 스킨 */}
               <div className="flex-1 rounded-2xl p-2 bg-bg-card border border-bg-card flex flex-col gap-2">
                 <div className="flex items-center gap-1.5">
                   <span className="text-ui-icon font-tertiary">🧠</span>
                   <div className="text-ui-label font-black text-text-placeholder font-secondary tracking-wide">
-                    보유 스킨
+                    {t('stats.ownedSkins')}
                   </div>
                 </div>
                 <div className="text-ui-value font-bold text-text-primary">
                   <span className="font-secondary">{profile.ownedSkins.length}</span>
-                  <span className="font-primary">개</span>
+                  <span className="font-primary">{t('stats.countUnit')}</span>
                 </div>
               </div>
 
-              {/* 업적 달성 */}
               <div className="flex-1 rounded-2xl p-2 bg-bg-card border border-bg-card flex flex-col gap-2">
                 <div className="flex items-center gap-1.5">
                   <span className="text-ui-icon font-tertiary">🏆</span>
                   <div className="text-ui-label font-black text-text-placeholder font-secondary tracking-wide">
-                    업적 달성
+                    {t('stats.achievementProgress')}
                   </div>
                 </div>
                 <div className="text-ui-value font-bold text-text-primary font-secondary">
@@ -190,37 +177,30 @@ export default function NewStatsPanel({ profile }: NewStatsPanelProps) {
             </div>
           </div>
 
-          {/* DAILY CHALLENGE Card */}
           <div className="rounded-2xl p-2.5 bg-transparent border-4 border-accent-blue flex flex-col gap-1.5">
-            {/* Header */}
             <div className="flex items-center gap-2">
               <span className="text-ui-icon-lg font-tertiary">🛡️</span>
               <div className="text-ui-meta font-black text-accent-blue font-secondary tracking-wide">
-                DAILY CHALLENGE
+                {t('stats.dailyChallenge')}
               </div>
             </div>
 
-            {/* Description */}
             <div className="text-ui-body font-bold text-text-secondary font-primary">
-              Survive {profile.dailyChallenge.targetSeconds}s in one run
+              {t('stats.dailyChallengeTarget', { seconds: profile.dailyChallenge.targetSeconds })}
             </div>
 
-            {/* Footer */}
             <div className="flex justify-between items-center">
-              {/* Reward Badge */}
               <div className="rounded-[4px] px-2 py-1 bg-accent-green-alpha border border-[#4ade8033]">
                 <div className="text-ui-label font-black text-accent-green font-secondary tracking-wide">
-                  REWARD: {profile.dailyChallenge.rewardCoins} COINS
+                  {t('stats.dailyChallengeReward', { coins: profile.dailyChallenge.rewardCoins })}
                 </div>
               </div>
 
-              {/* Time Remaining */}
               <div className="text-ui-label font-normal text-text-placeholder font-secondary">
                 {timeRemaining}
               </div>
             </div>
 
-            {/* Progress Bar */}
             <div className="w-full h-1.5 bg-bg-card rounded-[3px] overflow-hidden">
               <div
                 className="h-full bg-accent-blue rounded-[3px] transition-all duration-300"
@@ -231,9 +211,11 @@ export default function NewStatsPanel({ profile }: NewStatsPanelProps) {
         </>
       ) : (
         <div className="flex flex-col gap-2 min-h-[400px]">
-          {/* Achievement List */}
           {ACHIEVEMENTS.map((ach) => {
             const unlocked = profile.achievements[ach.id];
+            const title = t(`achievements.${ach.id}.title`, { defaultValue: ach.title });
+            const desc = t(`achievements.${ach.id}.desc`, { defaultValue: ach.desc });
+
             return (
               <div
                 key={ach.id}
@@ -253,10 +235,10 @@ export default function NewStatsPanel({ profile }: NewStatsPanelProps) {
                   </div>
                   <div className="flex-1">
                     <div className="text-ui-body font-bold text-white mb-0.5 font-primary">
-                      {ach.title}
+                      {title}
                     </div>
                     <div className="text-ui-tab text-text-disabled font-primary">
-                      {ach.desc}
+                      {desc}
                     </div>
                   </div>
                 </div>
