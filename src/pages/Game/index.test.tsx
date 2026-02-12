@@ -27,6 +27,8 @@ describe('Game Page Integration', () => {
     setUserCountry: mockSetUserCountry,
     onRankingUpdate: mockOnRankingUpdate,
     profileIdentity: null,
+    isProfileSetupOpen: false,
+    identityLoading: false,
     onRequestProfileSetup: jest.fn(),
   };
 

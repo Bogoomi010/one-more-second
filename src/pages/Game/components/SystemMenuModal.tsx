@@ -1,4 +1,5 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
+import Toast from '../../../components/Toast';
 import {
   ACHIEVEMENTS,
   ensureDailyChallenge,
@@ -26,8 +27,16 @@ interface Props {
 export default function SystemMenuModal({ isOpen, onClose, profile, setProfile }: Props) {
   const [tab, setTab] = useState<TabId>('profile');
   const [settings, setSettings] = useState<GameSettings>(() => loadSettings());
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [toastVariant, setToastVariant] = useState<'info' | 'success' | 'error'>('info');
 
   const daily = useMemo(() => ensureDailyChallenge(profile).dailyChallenge, [profile]);
+
+  useEffect(() => {
+    if (!toastMessage) return;
+    const timer = window.setTimeout(() => setToastMessage(null), 1800);
+    return () => window.clearTimeout(timer);
+  }, [toastMessage]);
 
   if (!isOpen) return null;
 
@@ -102,16 +111,19 @@ export default function SystemMenuModal({ isOpen, onClose, profile, setProfile }
     const reader = new FileReader();
     reader.onload = (e) => {
       try {
-        const imported = JSON.parse(e.target?.result as string);
+        const imported = JSON.parse(e.target?.result as string) as PlayerProfile & { version?: number };
         if (imported && imported.version === 1) {
           saveProfile(imported);
           setProfile(imported);
-          window.alert('프로필을 가져왔습니다.');
+          setToastVariant('success');
+          setToastMessage('프로필을 가져왔습니다.');
         } else {
-          window.alert('올바르지 않은 프로필 파일입니다.');
+          setToastVariant('error');
+          setToastMessage('올바르지 않은 프로필 파일입니다.');
         }
       } catch {
-        window.alert('파일을 읽을 수 없습니다.');
+        setToastVariant('error');
+        setToastMessage('파일을 읽을 수 없습니다.');
       }
     };
     reader.readAsText(file);
@@ -138,7 +150,7 @@ export default function SystemMenuModal({ isOpen, onClose, profile, setProfile }
         <div className="flex items-center justify-between mb-5">
           <div>
             <h2 className="m-0 text-[28px] font-bold font-primary text-accent-green tracking-[1px]">SYSTEM MENU</h2>
-            <p className="m-0 mt-1 text-[12px] text-text-secondary font-primary">게임 상태, 스킨, 설정을 관리하세요.</p>
+            <p className="m-0 mt-1 text-[12px] text-text-secondary font-primary">게임 상태, 스킨, 설정을 관리합니다.</p>
           </div>
           <button
             type="button"
@@ -391,6 +403,7 @@ export default function SystemMenuModal({ isOpen, onClose, profile, setProfile }
           )}
         </div>
       </div>
+      <Toast message={toastMessage} visible={Boolean(toastMessage)} variant={toastVariant} />
     </div>
   );
 }

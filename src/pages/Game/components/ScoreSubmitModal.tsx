@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { submitScore } from '../../../utils/api';
 import { ScoreRecord } from '../../../types/score';
@@ -16,6 +16,8 @@ interface ScoreSubmitModalProps {
   onCountrySelect?: (country: string) => void;
   onRankingUpdate?: () => void;
   profileIdentity: UserIdentityProfile | null;
+  isProfileSetupOpen: boolean;
+  identityLoading: boolean;
   onRequestProfileSetup: () => void;
   canSubmitByScore: boolean;
   isNewHighScore: boolean;
@@ -30,6 +32,8 @@ const ScoreSubmitModal: React.FC<ScoreSubmitModalProps> = ({
   onCountrySelect,
   onRankingUpdate,
   profileIdentity,
+  isProfileSetupOpen,
+  identityLoading,
   onRequestProfileSetup,
   canSubmitByScore,
   isNewHighScore,
@@ -38,6 +42,8 @@ const ScoreSubmitModal: React.FC<ScoreSubmitModalProps> = ({
   const { user, loading: authLoading, signInWithGoogle } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [submitAfterProfileSetup, setSubmitAfterProfileSetup] = useState(false);
+  const [requestedProfileSetup, setRequestedProfileSetup] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -45,7 +51,14 @@ const ScoreSubmitModal: React.FC<ScoreSubmitModalProps> = ({
     }
   }, [isOpen]);
 
-  const submitScoreData = async () => {
+  useEffect(() => {
+    if (!isOpen) {
+      setSubmitAfterProfileSetup(false);
+      setRequestedProfileSetup(false);
+    }
+  }, [isOpen]);
+
+  const submitScoreData = useCallback(async () => {
     if (!user) {
       setError(t('scoreSubmit.signInRequired'));
       return;
@@ -83,14 +96,52 @@ const ScoreSubmitModal: React.FC<ScoreSubmitModalProps> = ({
     } else {
       setError(response.message || t('scoreSubmit.submitFailed'));
     }
-  };
+  }, [onClose, onCountrySelect, onRankingUpdate, profileIdentity, score, t, user]);
 
   const handleGoogleSignIn = async () => {
     try {
       await signInWithGoogle();
+      setSubmitAfterProfileSetup(true);
+      setRequestedProfileSetup(true);
+      // 로그인 후에는 기존 유저 여부와 관계없이 프로필 설정 모달을 연다.
+      onRequestProfileSetup();
     } catch (err) {
       setError(err instanceof Error ? err.message : t('scoreSubmit.signInFailed'));
     }
+  };
+
+  useEffect(() => {
+    if (!submitAfterProfileSetup || !isOpen) return;
+    if (!requestedProfileSetup) return;
+    if (isProfileSetupOpen) return;
+    if (!user || identityLoading) return;
+
+    if (!profileIdentity?.nickname || !profileIdentity?.country) {
+      setSubmitAfterProfileSetup(false);
+      setRequestedProfileSetup(false);
+      setError(t('scoreSubmit.profileSetupCanceled'));
+      return;
+    }
+
+    setSubmitAfterProfileSetup(false);
+    setRequestedProfileSetup(false);
+    void submitScoreData();
+  }, [
+    identityLoading,
+    isOpen,
+    isProfileSetupOpen,
+    profileIdentity,
+    requestedProfileSetup,
+    submitAfterProfileSetup,
+    submitScoreData,
+    t,
+    user,
+  ]);
+
+  const handleOpenProfileSetup = () => {
+    setSubmitAfterProfileSetup(true);
+    setRequestedProfileSetup(true);
+    onRequestProfileSetup();
   };
 
   if (!isOpen) return null;
@@ -134,10 +185,15 @@ const ScoreSubmitModal: React.FC<ScoreSubmitModalProps> = ({
               <button
                 type="button"
                 onClick={handleGoogleSignIn}
-                disabled={authLoading}
-                className="h-12 rounded-xl border border-border-secondary bg-bg-secondary px-3 py-2 text-[13px] font-semibold text-text-primary cursor-pointer hover:bg-bg-card-alt disabled:opacity-60 disabled:cursor-not-allowed"
+                disabled={authLoading || identityLoading}
+                className="h-12 rounded-xl border border-border-secondary bg-bg-secondary px-3 py-2 text-[13px] font-semibold text-text-primary cursor-pointer hover:bg-bg-card-alt disabled:opacity-60 disabled:cursor-not-allowed inline-flex items-center justify-center gap-2"
               >
-                {authLoading ? t('scoreSubmit.loading') : t('scoreSubmit.signInWithGoogle')}
+                {(authLoading || identityLoading) ? (
+                  <>
+                    <span className="w-4 h-4 border-2 border-text-primary/50 border-t-text-primary rounded-full animate-spin" />
+                    <span>{t('scoreSubmit.loading')}</span>
+                  </>
+                ) : t('scoreSubmit.signInWithGoogle')}
               </button>
             </div>
           ) : profileIdentity ? (
@@ -154,7 +210,7 @@ const ScoreSubmitModal: React.FC<ScoreSubmitModalProps> = ({
               <p className="m-0 text-[12px] text-text-secondary font-primary">{t('scoreSubmit.profileRequired')}</p>
               <button
                 type="button"
-                onClick={onRequestProfileSetup}
+                onClick={handleOpenProfileSetup}
                 className="h-12 rounded-xl border border-border-secondary bg-bg-secondary px-3 py-2 text-[13px] font-semibold text-text-primary cursor-pointer hover:bg-bg-card-alt"
               >
                 {t('scoreSubmit.openProfileSetup')}
@@ -223,4 +279,3 @@ const ScoreSubmitModal: React.FC<ScoreSubmitModalProps> = ({
 };
 
 export default ScoreSubmitModal;
-

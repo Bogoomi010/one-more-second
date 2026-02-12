@@ -19,6 +19,8 @@ interface GameProps {
   onRankingUpdate: () => void;
   isSystemMenuOpen?: boolean;
   profileIdentity: UserIdentityProfile | null;
+  isProfileSetupOpen: boolean;
+  identityLoading: boolean;
   onRequestProfileSetup: () => void;
 }
 
@@ -29,6 +31,8 @@ export default function Game({
   onRankingUpdate,
   isSystemMenuOpen = false,
   profileIdentity,
+  isProfileSetupOpen,
+  identityLoading,
   onRequestProfileSetup,
 }: GameProps) {
   const [score, setScore] = useState(0);
@@ -94,6 +98,8 @@ export default function Game({
         onCountrySelect={setUserCountry}
         onRankingUpdate={onRankingUpdate}
         profileIdentity={profileIdentity}
+        isProfileSetupOpen={isProfileSetupOpen}
+        identityLoading={identityLoading}
         onRequestProfileSetup={onRequestProfileSetup}
         canSubmitByScore={canSubmitByScore}
         isNewHighScore={isNewHighScore}

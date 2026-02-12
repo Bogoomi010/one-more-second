@@ -87,7 +87,8 @@
     "profileNickname": "Nickname",
     "profileCountry": "Country",
     "submitFailed": "Score submit failed.",
-    "signInFailed": "Google sign in failed."
+    "signInFailed": "Google sign in failed.",
+    "profileSetupCanceled": "Profile setup was canceled, so score submission was skipped."
   },
   "systemMenu": {
     "profile": "프로필",
