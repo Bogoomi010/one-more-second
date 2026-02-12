@@ -32,6 +32,8 @@ export default function Game({
   onRequestProfileSetup,
 }: GameProps) {
   const [score, setScore] = useState(0);
+  const [canSubmitByScore, setCanSubmitByScore] = useState(true);
+  const [isNewHighScore, setIsNewHighScore] = useState(false);
   const [showScoreModal, setShowScoreModal] = useState(false);
   const [lastRunMessage, setLastRunMessage] = useState<string[]>([]);
 
@@ -39,6 +41,8 @@ export default function Game({
 
   const handleGameOver = (result: GameResult) => {
     setScore(result.scoreSeconds);
+    setCanSubmitByScore(result.scoreSeconds >= profile.bestScore);
+    setIsNewHighScore(result.scoreSeconds > profile.bestScore);
 
     // 프로필 업데이트 (코인/통계/업적/데일리)
     let next = ensureDailyChallenge(profile);
@@ -65,6 +69,8 @@ export default function Game({
 
   const handleRestartGame = () => {
     setScore(0);
+    setCanSubmitByScore(true);
+    setIsNewHighScore(false);
     setShowScoreModal(false);
     setLastRunMessage([]);
   };
@@ -89,6 +95,8 @@ export default function Game({
         onRankingUpdate={onRankingUpdate}
         profileIdentity={profileIdentity}
         onRequestProfileSetup={onRequestProfileSetup}
+        canSubmitByScore={canSubmitByScore}
+        isNewHighScore={isNewHighScore}
       />
     </>
   );

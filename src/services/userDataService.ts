@@ -5,8 +5,12 @@ import {
   collection,
   doc,
   getDoc,
+  getDocs,
+  limit as limitFn,
+  query,
   serverTimestamp,
   setDoc,
+  where,
 } from 'firebase/firestore';
 import { PlayerProfile } from '../gameSystem/types';
 import { firebaseDb, firebaseEnabled } from '../lib/firebase';
@@ -68,6 +72,28 @@ export async function appendScoreSubmissionForUser(
 
 }
 
+async function hasHigherOrEqualScoreForSameNickname(
+  user: User,
+  scoreData: ScoreRecord
+): Promise<boolean> {
+  const db = firebaseDb;
+  if (!firebaseEnabled || !db) return false;
+
+  const nicknameKey = scoreData.nickname.trim().toLowerCase();
+  if (!nicknameKey) return false;
+
+  const q = query(collection(db, 'scoreSubmissions'), where('uid', '==', user.uid));
+  const snapshot = await getDocs(q);
+  if (snapshot.empty) return false;
+
+  return snapshot.docs.some((docSnap) => {
+    const data = docSnap.data() as { nickname?: string; score?: number };
+    const existingNickname = String(data.nickname ?? '').trim().toLowerCase();
+    const existingScore = Number(data.score ?? 0);
+    return existingNickname === nicknameKey && existingScore >= scoreData.score;
+  });
+}
+
 export async function submitScoreToCloudIfSignedIn(
   scoreData: ScoreRecord
 ): Promise<ScoreSubmitResult> {
@@ -81,6 +107,15 @@ export async function submitScoreToCloudIfSignedIn(
   }
 
   try {
+    const shouldSkip = await hasHigherOrEqualScoreForSameNickname(user, scoreData);
+    if (shouldSkip) {
+      return {
+        success: true,
+        message: '동일 닉네임의 더 높은 기존 기록이 있어 클라우드 전송을 생략했습니다.',
+        savedToCloud: false,
+      };
+    }
+
     await appendScoreSubmissionForUser(user, scoreData);
     return {
       success: true,
@@ -197,6 +232,35 @@ export async function upsertUserIdentityProfile(
     },
     { merge: true }
   );
+}
+
+export async function isNicknameAvailable(
+  nickname: string,
+  currentUid?: string
+): Promise<boolean> {
+  const db = firebaseDb;
+  if (!firebaseEnabled || !db) return true;
+
+  const trimmed = nickname.trim();
+  if (!trimmed) return false;
+
+  try {
+    const q = query(
+      collection(db, 'scoreSubmissions'),
+      where('nickname', '==', trimmed),
+      limitFn(20)
+    );
+    const snapshot = await getDocs(q);
+    if (snapshot.empty) return true;
+
+    return snapshot.docs.every((docSnap) => {
+      const data = docSnap.data() as { uid?: string };
+      return Boolean(currentUid && data.uid === currentUid);
+    });
+  } catch (error) {
+    console.error('Nickname availability check failed:', error);
+    return true;
+  }
 }
 
 export async function syncLanguagePreferenceToCloud(language: string): Promise<void> {

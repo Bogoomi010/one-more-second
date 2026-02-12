@@ -1,6 +1,5 @@
 const RANKING_STORAGE_KEY = 'oms.ranking.v1';
 
-// Simple UUID generator
 function generateId(): string {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
     const r = (Math.random() * 16) | 0;
@@ -15,7 +14,7 @@ export interface RankingEntry {
   country: string;
   score: number;
   timestamp: number;
-  dateKey: string; // YYYY-MM-DD
+  dateKey: string;
 }
 
 export interface RankingData {
@@ -66,7 +65,38 @@ export function saveRankingData(data: RankingData): void {
 
 function sortByScoreDesc(a: RankingEntry, b: RankingEntry): number {
   if (b.score !== a.score) return b.score - a.score;
-  return a.timestamp - b.timestamp; // 같은 점수면 먼저 달성한 사람이 위
+  return b.timestamp - a.timestamp;
+}
+
+function nicknameKey(nickname: string): string {
+  return nickname.trim().toLowerCase();
+}
+
+function upsertBestByNickname(
+  list: RankingEntry[],
+  entry: RankingEntry,
+  maxLength: number
+): RankingEntry[] {
+  const key = nicknameKey(entry.nickname);
+  const idx = list.findIndex((item) => nicknameKey(item.nickname) === key);
+
+  if (idx === -1) {
+    const next = [...list, entry].sort(sortByScoreDesc);
+    return next.slice(0, maxLength);
+  }
+
+  const existing = list[idx];
+  if (
+    entry.score > existing.score ||
+    (entry.score === existing.score && entry.timestamp > existing.timestamp)
+  ) {
+    const next = [...list];
+    next[idx] = entry;
+    next.sort(sortByScoreDesc);
+    return next.slice(0, maxLength);
+  }
+
+  return [...list].sort(sortByScoreDesc).slice(0, maxLength);
 }
 
 export function addRankingEntry(
@@ -86,34 +116,18 @@ export function addRankingEntry(
     dateKey: today,
   };
 
-  // 전체 랭킹에 추가 (Top 100)
-  data.global.push(entry);
-  data.global.sort(sortByScoreDesc);
-  if (data.global.length > 100) {
-    data.global = data.global.slice(0, 100);
-  }
+  data.global = upsertBestByNickname(data.global, entry, 100);
 
-  // 국가별 랭킹에 추가 (Top 50)
   if (!data.byCountry[country]) {
     data.byCountry[country] = [];
   }
-  data.byCountry[country].push(entry);
-  data.byCountry[country].sort(sortByScoreDesc);
-  if (data.byCountry[country].length > 50) {
-    data.byCountry[country] = data.byCountry[country].slice(0, 50);
-  }
+  data.byCountry[country] = upsertBestByNickname(data.byCountry[country], entry, 50);
 
-  // 일일 랭킹에 추가 (Top 50)
   if (!data.daily[today]) {
     data.daily[today] = [];
   }
-  data.daily[today].push(entry);
-  data.daily[today].sort(sortByScoreDesc);
-  if (data.daily[today].length > 50) {
-    data.daily[today] = data.daily[today].slice(0, 50);
-  }
+  data.daily[today] = upsertBestByNickname(data.daily[today], entry, 50);
 
-  // 오래된 일일 랭킹 정리 (최근 7일만 유지)
   const allDates = Object.keys(data.daily).sort().reverse();
   if (allDates.length > 7) {
     const toDelete = allDates.slice(7);
@@ -142,9 +156,14 @@ export function getDailyRanking(date?: string, limit = 50): RankingEntry[] {
   return (data.daily[key] ?? []).slice(0, limit);
 }
 
-export function getUserRank(entryId: string, type: 'global' | 'country' | 'daily', country?: string, date?: string): number | null {
+export function getUserRank(
+  entryId: string,
+  type: 'global' | 'country' | 'daily',
+  country?: string,
+  date?: string
+): number | null {
   const data = loadRankingData();
-  
+
   let list: RankingEntry[];
   if (type === 'global') {
     list = data.global;

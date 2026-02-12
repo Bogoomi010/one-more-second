@@ -175,6 +175,7 @@
     "saving": "Saving...",
     "errorRequired": "Please fill in all fields.",
     "errorInvalidNickname": "Special characters are not allowed.",
-    "errorSaveFailed": "Failed to save profile."
+    "errorSaveFailed": "Failed to save profile.",
+    "errorNicknameTaken": "This nickname is already in use."
   }
 }

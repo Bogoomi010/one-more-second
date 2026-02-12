@@ -2,7 +2,11 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { getName } from 'country-list';
 import 'flag-icons/css/flag-icons.min.css';
 import { useTranslation } from 'react-i18next';
-import { UserIdentityProfile } from '../services/userDataService';
+import { useAuth } from '../context/AuthContext';
+import {
+  isNicknameAvailable,
+  UserIdentityProfile,
+} from '../services/userDataService';
 
 interface ProfileSetupModalProps {
   isOpen: boolean;
@@ -34,6 +38,7 @@ export default function ProfileSetupModal({
   onClose,
 }: ProfileSetupModalProps) {
   const { t } = useTranslation();
+  const { user } = useAuth();
   const [nickname, setNickname] = useState('');
   const [country, setCountry] = useState('KR');
   const [isCountryMenuOpen, setIsCountryMenuOpen] = useState(false);
@@ -90,6 +95,13 @@ export default function ProfileSetupModal({
     setError(null);
 
     try {
+      const isAvailable = await isNicknameAvailable(nickname.trim(), user?.uid);
+      if (!isAvailable) {
+        setError(t('profileSetup.errorNicknameTaken'));
+        setIsSubmitting(false);
+        return;
+      }
+
       await onConfirm({
         nickname: nickname.trim(),
         country,

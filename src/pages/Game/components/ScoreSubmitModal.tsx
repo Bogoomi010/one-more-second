@@ -5,6 +5,7 @@ import { ScoreRecord } from '../../../types/score';
 import { addRankingEntry } from '../../../gameSystem/ranking';
 import { useAuth } from '../../../context/AuthContext';
 import { UserIdentityProfile } from '../../../services/userDataService';
+import retryIcon from '../../../assets/icon-retry.png';
 
 interface ScoreSubmitModalProps {
   score: number;
@@ -16,6 +17,8 @@ interface ScoreSubmitModalProps {
   onRankingUpdate?: () => void;
   profileIdentity: UserIdentityProfile | null;
   onRequestProfileSetup: () => void;
+  canSubmitByScore: boolean;
+  isNewHighScore: boolean;
 }
 
 const ScoreSubmitModal: React.FC<ScoreSubmitModalProps> = ({
@@ -28,6 +31,8 @@ const ScoreSubmitModal: React.FC<ScoreSubmitModalProps> = ({
   onRankingUpdate,
   profileIdentity,
   onRequestProfileSetup,
+  canSubmitByScore,
+  isNewHighScore,
 }) => {
   const { t } = useTranslation();
   const { user, loading: authLoading, signInWithGoogle } = useAuth();
@@ -100,8 +105,9 @@ const ScoreSubmitModal: React.FC<ScoreSubmitModalProps> = ({
 
           <div className="flex justify-center items-center gap-4 mb-6">
             <div className="inline-flex flex-wrap items-center justify-center gap-2 rounded-[20px] px-4 py-2 bg-accent-green-alpha border border-accent-green/30 max-w-full">
+              <span className="text-sm">🏆</span>
               <span className="font-primary text-xs font-semibold text-accent-green tracking-[1px]">
-                NEW HIGH SCORE!
+                {isNewHighScore ? 'NEW HIGH SCORE!' : 'Not bad...😒'}
               </span>
               {systemLines.length > 0 && (
                 <div className="text-xs text-accent-green leading-relaxed text-left">
@@ -157,34 +163,49 @@ const ScoreSubmitModal: React.FC<ScoreSubmitModalProps> = ({
           )}
         </div>
 
-        <div className="mt-auto w-full">
+        <div className={canSubmitByScore ? 'mt-auto w-full' : 'w-full flex-1 flex items-center justify-center'}>
           {error && (
             <div className="text-center mb-4">
               <p className="font-primary text-sm text-accent-green tracking-[0.5px]">{error}</p>
             </div>
           )}
 
-          <button
-            onClick={submitScoreData}
-            disabled={isSubmitting || !user || !profileIdentity}
-            className={`w-full h-[52px] rounded-xl border-none font-primary text-[15px] font-semibold transition-all duration-200 ${
-              isSubmitting
-                ? 'bg-accent-green-alpha text-bg-primary cursor-not-allowed'
-                : 'bg-accent-green text-bg-primary cursor-pointer hover:brightness-110 disabled:opacity-60 disabled:cursor-not-allowed'
-            }`}
-          >
-            {isSubmitting ? t('scoreSubmit.submitting') : t('scoreSubmit.submit')}
-          </button>
+          {canSubmitByScore ? (
+            <div className="flex flex-col gap-3">
+              <button
+                onClick={submitScoreData}
+                disabled={isSubmitting || !user || !profileIdentity}
+                className={`w-full h-[52px] rounded-xl border-none font-primary text-[15px] font-semibold transition-all duration-200 ${
+                  isSubmitting
+                    ? 'bg-accent-green-alpha text-bg-primary cursor-not-allowed'
+                    : 'bg-accent-green text-bg-primary cursor-pointer hover:brightness-110 disabled:opacity-60 disabled:cursor-not-allowed'
+                }`}
+              >
+                {isSubmitting ? t('scoreSubmit.submitting') : t('scoreSubmit.submit')}
+              </button>
 
-          <div className="flex items-center justify-center gap-3 mt-4">
-            <button
-              type="button"
-              onClick={onClose}
-              className="bg-transparent border-none text-text-disabled font-primary text-sm font-medium cursor-pointer transition-colors duration-200 hover:text-accent-green"
-            >
-              {t('scoreSubmit.restart')}
-            </button>
-          </div>
+              <button
+                type="button"
+                onClick={onClose}
+                className="w-full h-[52px] rounded-xl border-none font-primary text-[15px] font-semibold transition-all duration-200 bg-accent-green text-bg-primary cursor-pointer hover:brightness-110 flex items-center justify-center gap-2"
+              >
+                <img src={retryIcon} alt="retry" className="w-5 h-5 object-contain" />
+                <span>{t('scoreSubmit.restart')}</span>
+              </button>
+            </div>
+          ) : (
+            <div className="w-full flex items-center justify-center">
+              <button
+                type="button"
+                onClick={onClose}
+                className="w-36 h-36 rounded-full border-none bg-accent-green cursor-pointer hover:brightness-110 flex items-center justify-center shadow-[0_0_24px_rgba(74,222,128,0.4)]"
+                aria-label={t('scoreSubmit.restart')}
+                title={t('scoreSubmit.restart')}
+              >
+                <img src={retryIcon} alt="retry" className="w-20 h-20 object-contain" />
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>
