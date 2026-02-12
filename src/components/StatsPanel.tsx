@@ -1,225 +1,252 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { PlayerProfile } from '../gameSystem/types';
 import { ACHIEVEMENTS } from '../gameSystem/achievements';
 
-interface StatsPanelProps {
+interface NewStatsPanelProps {
   profile: PlayerProfile;
 }
 
-type TabType = 'stats' | 'achievements';
+type TabType = 'stats' | 'trophy';
 
-export default function StatsPanel({ profile }: StatsPanelProps) {
+export default function NewStatsPanel({ profile }: NewStatsPanelProps) {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<TabType>('stats');
-
-  const formatTime = (seconds: number): string => {
-    if (seconds < 60) return `${seconds}초`;
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}분 ${secs}초`;
-  };
-
-  const formatDate = (timestamp: number): string => {
-    const date = new Date(timestamp);
-    return `${date.getMonth() + 1}/${date.getDate()} ${date.getHours()}:${String(date.getMinutes()).padStart(2, '0')}`;
-  };
+  const [timeRemaining, setTimeRemaining] = useState<string>('');
 
   const unlockedAchievements = ACHIEVEMENTS.filter((ach) => profile.achievements[ach.id]);
-  const achievementProgress = (unlockedAchievements.length / ACHIEVEMENTS.length) * 100;
+
+  useEffect(() => {
+    const updateTimeRemaining = () => {
+      const now = new Date();
+      const tomorrow = new Date(now);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      tomorrow.setHours(0, 0, 0, 0);
+
+      const diff = tomorrow.getTime() - now.getTime();
+      const hours = Math.floor(diff / (1000 * 60 * 60));
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+
+      const time = `${hours}:${String(minutes).padStart(2, '0')}`;
+      setTimeRemaining(t('stats.timeRemaining', { time }));
+    };
+
+    updateTimeRemaining();
+    const interval = setInterval(updateTimeRemaining, 60000);
+
+    return () => clearInterval(interval);
+  }, [t]);
+
+  const formatTime = (seconds: number): string => {
+    if (seconds < 60) return `${seconds.toFixed(1)}s`;
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}m ${secs.toFixed(1)}s`;
+  };
+
+  const formatBestTime = (seconds: number): { number: string; unit: string } => {
+    if (seconds < 60) {
+      return { number: seconds.toFixed(1), unit: 's' };
+    }
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return { number: `${mins}.${Math.floor(secs / 10)}`, unit: 'm' };
+  };
+
+  const bestTime = formatBestTime(profile.bestScore);
+  const avgSurvival = Math.floor(profile.totalSecondsSurvived / Math.max(1, profile.totalRuns));
+  const challengeProgress = Math.min((profile.bestScore / profile.dailyChallenge.targetSeconds) * 100, 100);
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-      {/* 탭 선택 */}
-      <div style={{ display: 'flex', gap: 8, marginBottom: 16, borderBottom: '1px solid #333', paddingBottom: 8 }}>
+    <div className="w-full h-full min-w-0 min-h-0 overflow-y-auto bg-bg-secondary border border-border-primary rounded-[24px] p-6 flex flex-col gap-4 backdrop-blur-[10px] font-primary">
+      <div className="flex items-center gap-2">
+        <span className="text-ui-title font-tertiary">📈</span>
+        <h2 className="m-0 text-ui-title font-bold text-text-primary font-primary">
+          {t('stats.title')}
+        </h2>
+      </div>
+
+      <div className="flex gap-1 p-1.5 bg-bg-card rounded-2xl">
         <button
           onClick={() => setActiveTab('stats')}
-          style={{
-            flex: 1,
-            padding: '8px 12px',
-            background: activeTab === 'stats' ? '#2563eb' : 'rgba(255,255,255,0.05)',
-            color: '#fff',
-            border: 'none',
-            borderRadius: 8,
-            cursor: 'pointer',
-            fontSize: 13,
-            fontWeight: activeTab === 'stats' ? 'bold' : 'normal',
-            transition: 'all 0.2s',
-          }}
+          className={`flex-1 py-2 rounded-xl border-none cursor-pointer text-ui-tab font-bold transition-all duration-200 font-primary ${
+            activeTab === 'stats'
+              ? 'bg-accent-blue text-bg-primary'
+              : 'bg-transparent text-text-disabled'
+          }`}
         >
-          통계
+          {t('stats.tabStats')}
         </button>
         <button
-          onClick={() => setActiveTab('achievements')}
-          style={{
-            flex: 1,
-            padding: '8px 12px',
-            background: activeTab === 'achievements' ? '#2563eb' : 'rgba(255,255,255,0.05)',
-            color: '#fff',
-            border: 'none',
-            borderRadius: 8,
-            cursor: 'pointer',
-            fontSize: 13,
-            fontWeight: activeTab === 'achievements' ? 'bold' : 'normal',
-            transition: 'all 0.2s',
-          }}
+          onClick={() => setActiveTab('trophy')}
+          className={`flex-1 py-2 rounded-xl border-none cursor-pointer text-ui-tab font-bold transition-all duration-200 font-primary ${
+            activeTab === 'trophy'
+              ? 'bg-accent-blue text-bg-primary'
+              : 'bg-transparent text-text-disabled'
+          }`}
         >
-          업적 ({unlockedAchievements.length}/{ACHIEVEMENTS.length})
+          {t('stats.tabTrophy', { unlocked: unlockedAchievements.length, total: ACHIEVEMENTS.length })}
         </button>
       </div>
 
-      {/* 콘텐츠 */}
-      <div style={{ flex: 1, overflowY: 'auto' }}>
-        {activeTab === 'stats' ? (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            {/* 최고 기록 */}
-            <div
-              style={{
-                padding: 16,
-                background: 'linear-gradient(135deg, rgba(37, 99, 235, 0.2) 0%, rgba(37, 99, 235, 0.05) 100%)',
-                borderRadius: 12,
-                border: '1px solid rgba(37, 99, 235, 0.3)',
-              }}
-            >
-              <div style={{ fontSize: 12, color: '#9ca3af', marginBottom: 4 }}>최고 기록</div>
-              <div style={{ fontSize: 28, fontWeight: 'bold', color: '#fff' }}>{formatTime(profile.bestScore)}</div>
+      {activeTab === 'stats' ? (
+        <>
+          <div className="rounded-2xl p-[14px] bg-transparent border border-border-primary flex flex-col gap-2">
+            <div className="text-ui-meta font-black text-accent-green font-secondary tracking-wide">
+              {t('stats.personalBest')}
             </div>
-
-            {/* 통계 그리드 */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-              <StatCard label="총 플레이" value={`${profile.totalRuns}회`} />
-              <StatCard label="보유 코인" value={`${profile.coins}`} icon="💰" />
-              <StatCard label="총 생존 시간" value={formatTime(profile.totalSecondsSurvived)} />
-              <StatCard label="평균 생존" value={formatTime(Math.floor(profile.totalSecondsSurvived / Math.max(1, profile.totalRuns)))} />
-              <StatCard label="보유 스킨" value={`${profile.ownedSkins.length}개`} icon="🎨" />
-              <StatCard label="업적 달성" value={`${unlockedAchievements.length}/${ACHIEVEMENTS.length}`} icon="🏆" />
-            </div>
-
-            {/* 데일리 챌린지 */}
-            <div
-              style={{
-                padding: 16,
-                background: 'rgba(255,255,255,0.03)',
-                borderRadius: 12,
-                border: '1px solid #333',
-              }}
-            >
-              <div style={{ fontSize: 14, fontWeight: 'bold', color: '#fff', marginBottom: 8 }}>
-                오늘의 챌린지 {profile.dailyChallenge.completed ? '✅' : ''}
-              </div>
-              <div style={{ fontSize: 13, color: '#9ca3af', marginBottom: 4 }}>
-                목표: {profile.dailyChallenge.targetSeconds}초 생존
-              </div>
-              <div style={{ fontSize: 13, color: '#34d399' }}>
-                보상: {profile.dailyChallenge.rewardCoins} 코인
-              </div>
-              {profile.dailyChallenge.completed && (
-                <div style={{ fontSize: 12, color: '#666', marginTop: 8 }}>완료됨!</div>
-              )}
+            <div className="flex items-baseline gap-1">
+              <span className="text-ui-value-hero font-bold text-text-primary font-secondary">
+                {bestTime.number}
+              </span>
+              <span className="text-ui-value font-normal text-accent-blue font-secondary">
+                {bestTime.unit}
+              </span>
             </div>
           </div>
-        ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {/* 진행도 바 */}
-            <div style={{ marginBottom: 12 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-                <span style={{ fontSize: 13, color: '#9ca3af' }}>달성률</span>
-                <span style={{ fontSize: 13, color: '#fff', fontWeight: 'bold' }}>
-                  {achievementProgress.toFixed(0)}%
-                </span>
+
+          <div className="flex flex-col gap-2.5">
+            <div className="flex gap-4">
+              <div className="flex-1 rounded-2xl p-2 bg-bg-card border border-bg-card flex flex-col gap-2">
+                <div className="text-ui-label font-black text-text-placeholder font-secondary tracking-wide">
+                  {t('stats.totalRuns')}
+                </div>
+                <div className="text-ui-value font-bold text-accent-green font-secondary">
+                  {t('stats.totalRunsValue', { count: profile.totalRuns })}
+                </div>
               </div>
-              <div
-                style={{
-                  width: '100%',
-                  height: 8,
-                  background: 'rgba(255,255,255,0.1)',
-                  borderRadius: 4,
-                  overflow: 'hidden',
-                }}
-              >
-                <div
-                  style={{
-                    width: `${achievementProgress}%`,
-                    height: '100%',
-                    background: 'linear-gradient(90deg, #2563eb 0%, #34d399 100%)',
-                    transition: 'width 0.3s',
-                  }}
-                />
+
+              <div className="flex-1 rounded-2xl p-2 bg-bg-card border border-bg-card flex flex-col gap-2">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-ui-icon font-tertiary">💎</span>
+                  <div className="text-ui-label font-black text-text-placeholder font-secondary tracking-wide">
+                    {t('stats.coins')}
+                  </div>
+                </div>
+                <div className="text-ui-value font-bold text-rose-400 font-secondary">
+                  {profile.coins}
+                </div>
               </div>
             </div>
 
-            {/* 업적 리스트 */}
-            {ACHIEVEMENTS.map((ach) => {
-              const unlocked = profile.achievements[ach.id];
-              return (
-                <div
-                  key={ach.id}
-                  style={{
-                    padding: 12,
-                    background: unlocked ? 'rgba(34, 197, 94, 0.1)' : 'rgba(255,255,255,0.03)',
-                    borderRadius: 8,
-                    border: unlocked ? '1px solid rgba(34, 197, 94, 0.3)' : '1px solid #333',
-                    opacity: unlocked ? 1 : 0.6,
-                    transition: 'all 0.2s',
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <div
-                      style={{
-                        width: 36,
-                        height: 36,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        background: unlocked ? 'rgba(34, 197, 94, 0.2)' : 'rgba(255,255,255,0.1)',
-                        borderRadius: '50%',
-                        fontSize: 18,
-                        flexShrink: 0,
-                      }}
-                    >
-                      {unlocked ? '✓' : '🔒'}
+            <div className="flex gap-4">
+              <div className="flex-1 rounded-2xl p-2 bg-bg-card border border-bg-card flex flex-col gap-2">
+                <div className="text-ui-label font-black text-text-placeholder font-secondary tracking-wide">
+                  {t('stats.totalTime')}
+                </div>
+                <div className="text-ui-value font-bold text-accent-blue font-secondary">
+                  {formatTime(profile.totalSecondsSurvived)}
+                </div>
+              </div>
+
+              <div className="flex-1 rounded-2xl p-2 bg-bg-card border border-bg-card flex flex-col gap-2">
+                <div className="text-ui-label font-black text-text-placeholder font-secondary tracking-wide">
+                  {t('stats.averageTime')}
+                </div>
+                <div className="text-ui-value font-bold text-text-primary font-secondary">
+                  {formatTime(avgSurvival)}
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-4">
+              <div className="flex-1 rounded-2xl p-2 bg-bg-card border border-bg-card flex flex-col gap-2">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-ui-icon font-tertiary">🧠</span>
+                  <div className="text-ui-label font-black text-text-placeholder font-secondary tracking-wide">
+                    {t('stats.ownedSkins')}
+                  </div>
+                </div>
+                <div className="text-ui-value font-bold text-text-primary">
+                  <span className="font-secondary">{profile.ownedSkins.length}</span>
+                  <span className="font-primary">{t('stats.countUnit')}</span>
+                </div>
+              </div>
+
+              <div className="flex-1 rounded-2xl p-2 bg-bg-card border border-bg-card flex flex-col gap-2">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-ui-icon font-tertiary">🏆</span>
+                  <div className="text-ui-label font-black text-text-placeholder font-secondary tracking-wide">
+                    {t('stats.achievementProgress')}
+                  </div>
+                </div>
+                <div className="text-ui-value font-bold text-text-primary font-secondary">
+                  {unlockedAchievements.length}/{ACHIEVEMENTS.length}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-2xl p-2.5 bg-transparent border-4 border-accent-blue flex flex-col gap-1.5">
+            <div className="flex items-center gap-2">
+              <span className="text-ui-icon-lg font-tertiary">🛡️</span>
+              <div className="text-ui-meta font-black text-accent-blue font-secondary tracking-wide">
+                {t('stats.dailyChallenge')}
+              </div>
+            </div>
+
+            <div className="text-ui-body font-bold text-text-secondary font-primary">
+              {t('stats.dailyChallengeTarget', { seconds: profile.dailyChallenge.targetSeconds })}
+            </div>
+
+            <div className="flex justify-between items-center">
+              <div className="rounded-[4px] px-2 py-1 bg-accent-green-alpha border border-[#4ade8033]">
+                <div className="text-ui-label font-black text-accent-green font-secondary tracking-wide">
+                  {t('stats.dailyChallengeReward', { coins: profile.dailyChallenge.rewardCoins })}
+                </div>
+              </div>
+
+              <div className="text-ui-label font-normal text-text-placeholder font-secondary">
+                {timeRemaining}
+              </div>
+            </div>
+
+            <div className="w-full h-1.5 bg-bg-card rounded-[3px] overflow-hidden">
+              <div
+                className="h-full bg-accent-blue rounded-[3px] transition-all duration-300"
+                style={{ width: `${challengeProgress}%` }}
+              />
+            </div>
+          </div>
+        </>
+      ) : (
+        <div className="flex flex-col gap-2 min-h-[400px]">
+          {ACHIEVEMENTS.map((ach) => {
+            const unlocked = profile.achievements[ach.id];
+            const title = t(`achievements.${ach.id}.title`, { defaultValue: ach.title });
+            const desc = t(`achievements.${ach.id}.desc`, { defaultValue: ach.desc });
+
+            return (
+              <div
+                key={ach.id}
+                className={`p-3 rounded-xl border ${
+                  unlocked
+                    ? 'bg-accent-green-alpha border-[#4ade8033] opacity-100'
+                    : 'bg-bg-card border-bg-card opacity-60'
+                }`}
+              >
+                <div className="flex items-center gap-2.5">
+                  <div
+                    className={`w-9 h-9 flex items-center justify-center rounded-full text-ui-icon-lg flex-shrink-0 ${
+                      unlocked ? 'bg-[#4ade8033]' : 'bg-bg-card-alt'
+                    }`}
+                  >
+                    {unlocked ? '✓' : '🔒'}
+                  </div>
+                  <div className="flex-1">
+                    <div className="text-ui-body font-bold text-white mb-0.5 font-primary">
+                      {title}
                     </div>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: 14, fontWeight: 'bold', color: '#fff', marginBottom: 2 }}>
-                        {ach.title}
-                      </div>
-                      <div style={{ fontSize: 12, color: '#9ca3af' }}>{ach.desc}</div>
-                      {unlocked && (
-                        <div style={{ fontSize: 11, color: '#666', marginTop: 4 }}>
-                          {formatDate(unlocked.unlockedAt)}
-                        </div>
-                      )}
+                    <div className="text-ui-tab text-text-disabled font-primary">
+                      {desc}
                     </div>
                   </div>
                 </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-interface StatCardProps {
-  label: string;
-  value: string;
-  icon?: string;
-}
-
-function StatCard({ label, value, icon }: StatCardProps) {
-  return (
-    <div
-      style={{
-        padding: 12,
-        background: 'rgba(255,255,255,0.03)',
-        borderRadius: 8,
-        border: '1px solid #333',
-      }}
-    >
-      <div style={{ fontSize: 11, color: '#9ca3af', marginBottom: 4 }}>
-        {icon && <span style={{ marginRight: 4 }}>{icon}</span>}
-        {label}
-      </div>
-      <div style={{ fontSize: 16, fontWeight: 'bold', color: '#fff' }}>{value}</div>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

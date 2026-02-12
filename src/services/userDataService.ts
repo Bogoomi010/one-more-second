@@ -48,12 +48,15 @@ export async function appendScoreSubmissionForUser(
   const db = firebaseDb;
   if (!firebaseEnabled || !db) return;
 
+  const createdAtDate = new Date();
   await addDoc(collection(db, 'scoreSubmissions'), {
     uid: user.uid,
     nickname: scoreData.nickname,
     country: scoreData.country,
     score: scoreData.score,
+    dateKey: todayDateKey(createdAtDate),
     createdAt: serverTimestamp(),
+    clientTimestamp: createdAtDate.getTime(),
     clientVersion: 'v1',
     source: 'web-cra',
   });

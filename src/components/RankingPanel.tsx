@@ -1,36 +1,47 @@
 import React, { useState, useEffect } from 'react';
 import { getName } from 'country-list';
-import { RankingEntry, getGlobalRanking, getCountryRanking, getDailyRanking } from '../gameSystem/ranking';
+import { RankingEntry } from '../gameSystem/ranking';
+import {
+  getCountryRanking,
+  getDailyRanking,
+  getGlobalRanking,
+} from '../services/rankingService';
+import rankingIcon from '../assets/icon-ranking-background.png';
 import { getFlagEmoji } from '../utils/flags';
 
 type RankingType = 'global' | 'country' | 'daily';
 
-interface RankingPanelProps {
+interface NewRankingPanelProps {
   userCountry?: string;
   refreshTrigger?: number;
 }
 
-export default function RankingPanel({ userCountry, refreshTrigger = 0 }: RankingPanelProps) {
+export default function NewRankingPanel({ userCountry, refreshTrigger = 0 }: NewRankingPanelProps) {
   const [rankingType, setRankingType] = useState<RankingType>('global');
   const [rankings, setRankings] = useState<RankingEntry[]>([]);
   const [selectedCountry, setSelectedCountry] = useState<string>(userCountry ?? 'KR');
 
-  const loadRankings = React.useCallback(() => {
+  const loadRankings = React.useCallback(async (): Promise<RankingEntry[]> => {
     switch (rankingType) {
       case 'global':
-        setRankings(getGlobalRanking(100));
-        break;
+        return getGlobalRanking(50);
       case 'country':
-        setRankings(getCountryRanking(selectedCountry, 50));
-        break;
+        return getCountryRanking(selectedCountry, 30);
       case 'daily':
-        setRankings(getDailyRanking(undefined, 50));
-        break;
+        return getDailyRanking(undefined, 30);
     }
+    return [];
   }, [rankingType, selectedCountry]);
 
   useEffect(() => {
-    loadRankings();
+    let isMounted = true;
+    (async () => {
+      const next = await loadRankings();
+      if (isMounted) setRankings(next);
+    })();
+    return () => {
+      isMounted = false;
+    };
   }, [loadRankings, refreshTrigger]);
 
   const formatTime = (seconds: number): string => {
@@ -47,79 +58,56 @@ export default function RankingPanel({ userCountry, refreshTrigger = 0 }: Rankin
     return '#e0e0e0';
   };
 
+  const getTabLabel = (type: RankingType): string => {
+    switch (type) {
+      case 'global': return 'Global';
+      case 'country': return 'Local';
+      case 'daily': return 'Daily';
+    }
+  };
+
+  const getFooterText = (): string => {
+    switch (rankingType) {
+      case 'global':
+        return `TOTAL ${rankings.length} RECORDS`;
+      case 'country':
+        return `${getName(selectedCountry)?.toUpperCase()} ${rankings.length} RECORDS`;
+      case 'daily':
+        return `TODAY ${rankings.length} RECORDS`;
+    }
+  };
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-      {/* 탭 선택 */}
-      <div style={{ display: 'flex', gap: 8, marginBottom: 16, borderBottom: '1px solid #333', paddingBottom: 8 }}>
-        <button
-          onClick={() => setRankingType('global')}
-          style={{
-            flex: 1,
-            padding: '8px 12px',
-            background: rankingType === 'global' ? '#2563eb' : 'rgba(255,255,255,0.05)',
-            color: '#fff',
-            border: 'none',
-            borderRadius: 8,
-            cursor: 'pointer',
-            fontSize: 13,
-            fontWeight: rankingType === 'global' ? 'bold' : 'normal',
-            transition: 'all 0.2s',
-          }}
-        >
-          전체
-        </button>
-        <button
-          onClick={() => setRankingType('country')}
-          style={{
-            flex: 1,
-            padding: '8px 12px',
-            background: rankingType === 'country' ? '#2563eb' : 'rgba(255,255,255,0.05)',
-            color: '#fff',
-            border: 'none',
-            borderRadius: 8,
-            cursor: 'pointer',
-            fontSize: 13,
-            fontWeight: rankingType === 'country' ? 'bold' : 'normal',
-            transition: 'all 0.2s',
-          }}
-        >
-          국가별
-        </button>
-        <button
-          onClick={() => setRankingType('daily')}
-          style={{
-            flex: 1,
-            padding: '8px 12px',
-            background: rankingType === 'daily' ? '#2563eb' : 'rgba(255,255,255,0.05)',
-            color: '#fff',
-            border: 'none',
-            borderRadius: 8,
-            cursor: 'pointer',
-            fontSize: 13,
-            fontWeight: rankingType === 'daily' ? 'bold' : 'normal',
-            transition: 'all 0.2s',
-          }}
-        >
-          일일
-        </button>
+    <div className="w-full h-full min-w-0 min-h-0 bg-bg-secondary border border-border-primary rounded-[24px] p-6 flex flex-col gap-6 backdrop-blur-[10px] font-primary overflow-hidden box-border">
+      {/* Header */}
+      <div className="flex items-center gap-2">
+        <h2 className="m-0 text-[20px] font-bold text-text-primary font-primary">
+          Ranking
+        </h2>
       </div>
 
-      {/* 국가 선택 (국가별 탭일 때만) */}
+      {/* Tabs */}
+      <div className="flex gap-1 p-1.5 bg-bg-card rounded-2xl w-full">
+        {(['global', 'country', 'daily'] as RankingType[]).map((type) => (
+          <button
+            key={type}
+            onClick={() => setRankingType(type)}
+            className={`flex-1 py-2 bg-transparent border-none rounded-xl cursor-pointer text-[12px] font-bold transition-all duration-200 font-primary flex items-center justify-center ${
+              rankingType === type ? 'text-bg-primary bg-accent-green' : 'text-text-disabled'
+            }`}
+          >
+            {getTabLabel(type)}
+          </button>
+        ))}
+      </div>
+
+      {/* Country Select (for country tab) */}
       {rankingType === 'country' && (
-        <div style={{ marginBottom: 12 }}>
+        <div>
           <select
             value={selectedCountry}
             onChange={(e) => setSelectedCountry(e.target.value)}
-            style={{
-              width: '100%',
-              padding: '8px 12px',
-              background: 'rgba(255,255,255,0.05)',
-              color: '#fff',
-              border: '1px solid #333',
-              borderRadius: 8,
-              fontSize: 13,
-              cursor: 'pointer',
-            }}
+            className="w-full py-2.5 px-3 bg-bg-card text-white border border-border-primary rounded-xl text-[13px] cursor-pointer font-primary"
           >
             <option value="KR">🇰🇷 대한민국</option>
             <option value="US">🇺🇸 미국</option>
@@ -132,80 +120,73 @@ export default function RankingPanel({ userCountry, refreshTrigger = 0 }: Rankin
         </div>
       )}
 
-      {/* 랭킹 리스트 */}
-      <div style={{ flex: 1, overflowY: 'auto' }}>
+      {/* Content */}
+      <div className="flex-1 min-h-0">
         {rankings.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: 40, color: '#666' }}>
-            아직 기록이 없습니다
+          // Empty State
+          <div className="flex flex-col items-center justify-center gap-4 h-full">
+            <div className="w-16 h-16 flex items-center justify-center bg-bg-card rounded-[32px]">
+              <img
+                src={rankingIcon}
+                alt="Empty state icon"
+                className="w-8 h-8 object-contain opacity-40"
+              />
+            </div>
+            <div className="text-[14px] font-medium text-text-placeholder text-center font-primary">
+              No records available yet.
+            </div>
+            <div className="text-[10px] font-bold text-accent-blue-alpha tracking-wide font-secondary">
+              START PLAYING TO RANK UP
+            </div>
           </div>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          // Rankings List
+          <div className="flex flex-col gap-2 h-full overflow-y-auto pr-1">
             {rankings.map((entry, index) => {
               const rank = index + 1;
+              const isTopThree = rank <= 3;
+              const rankColor = getRankColor(rank);
 
               return (
                 <div
                   key={entry.id}
+                  className={`flex items-center gap-3 p-3 rounded-xl border transition-all duration-200 ${
+                    isTopThree ? 'bg-white/[0.07]' : 'bg-white/[0.03]'
+                  }`}
                   style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 12,
-                    padding: '10px 12px',
-                    background: rank <= 3 ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.03)',
-                    borderRadius: 8,
-                    border: rank <= 3 ? `1px solid ${getRankColor(rank)}40` : '1px solid transparent',
-                    transition: 'all 0.2s',
+                    borderColor: isTopThree ? `${rankColor}40` : '#ffffff0a'
                   }}
                 >
-                  {/* 순위 */}
+                  {/* Rank Badge */}
                   <div
-                    style={{
-                      width: 32,
-                      height: 32,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      background: rank <= 3 ? getRankColor(rank) : 'rgba(255,255,255,0.1)',
-                      color: rank <= 3 ? '#000' : '#fff',
-                      borderRadius: '50%',
-                      fontWeight: 'bold',
-                      fontSize: 14,
-                      flexShrink: 0,
-                    }}
+                    className={`w-8 h-8 flex items-center justify-center rounded-full font-bold text-[13px] flex-shrink-0 font-primary ${
+                      isTopThree ? 'text-black' : 'text-white bg-bg-card-alt'
+                    }`}
+                    style={isTopThree ? { background: rankColor } : {}}
                   >
                     {rank}
                   </div>
 
-                  {/* 국기 */}
-                  <div style={{ flexShrink: 0 }}>
-                    <span style={{ fontSize: 16, lineHeight: 1 }} aria-hidden="true">
+                  {/* Flag */}
+                  <div className="flex-shrink-0">
+                    <span className="text-[16px] leading-none" aria-hidden="true">
                       {getFlagEmoji(entry.country)}
                     </span>
                   </div>
 
-                  {/* 닉네임 */}
+                  {/* Nickname */}
                   <div
-                    style={{
-                      flex: 1,
-                      color: '#fff',
-                      fontSize: 14,
-                      fontWeight: rank <= 3 ? 'bold' : 'normal',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap',
-                    }}
+                    className={`flex-1 text-white text-[14px] overflow-hidden text-ellipsis whitespace-nowrap font-primary ${
+                      isTopThree ? 'font-bold' : 'font-medium'
+                    }`}
                   >
                     {entry.nickname}
                   </div>
 
-                  {/* 점수 */}
+                  {/* Score */}
                   <div
-                    style={{
-                      color: getRankColor(rank),
-                      fontSize: 15,
-                      fontWeight: 'bold',
-                      flexShrink: 0,
-                    }}
+                    className={`text-[14px] font-bold flex-shrink-0 font-secondary`}
+                    style={{ color: isTopThree ? rankColor : '#94a3b8' }}
                   >
                     {formatTime(entry.score)}
                   </div>
@@ -216,20 +197,11 @@ export default function RankingPanel({ userCountry, refreshTrigger = 0 }: Rankin
         )}
       </div>
 
-      {/* 하단 정보 */}
-      <div
-        style={{
-          marginTop: 12,
-          paddingTop: 12,
-          borderTop: '1px solid #333',
-          fontSize: 11,
-          color: '#666',
-          textAlign: 'center',
-        }}
-      >
-        {rankingType === 'global' && `전체 ${rankings.length}개 기록`}
-        {rankingType === 'country' && `${getName(selectedCountry)} ${rankings.length}개 기록`}
-        {rankingType === 'daily' && `오늘 ${rankings.length}개 기록`}
+      {/* Footer */}
+      <div className="flex items-center justify-center pt-4 border-t border-border-secondary w-full shrink-0">
+        <div className="text-[10px] font-medium text-text-placeholder tracking-wide font-secondary">
+          {getFooterText()}
+        </div>
       </div>
     </div>
   );

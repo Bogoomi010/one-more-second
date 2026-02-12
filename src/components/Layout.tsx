@@ -2,8 +2,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { PlayerProfile } from '../gameSystem/types';
 import { syncLanguagePreferenceToCloud } from '../services/userDataService';
-import NewRankingPanel from './NewRankingPanel';
-import NewStatsPanel from './NewStatsPanel';
+import NewRankingPanel from './RankingPanel';
+import NewStatsPanel from './StatsPanel';
 import GameBottomBar from './GameBottomBar';
 import { LeftColumn, MainColumn, RightColumn } from './ColumnSlots';
 
