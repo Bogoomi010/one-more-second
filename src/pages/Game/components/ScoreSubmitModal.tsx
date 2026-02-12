@@ -1,10 +1,10 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { getName } from 'country-list';
-import 'flag-icons/css/flag-icons.min.css';
+import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { submitScore } from '../../../utils/api';
 import { ScoreRecord } from '../../../types/score';
 import { addRankingEntry } from '../../../gameSystem/ranking';
 import { useAuth } from '../../../context/AuthContext';
+import { UserIdentityProfile } from '../../../services/userDataService';
 
 interface ScoreSubmitModalProps {
   score: number;
@@ -14,21 +14,9 @@ interface ScoreSubmitModalProps {
   systemLines?: string[];
   onCountrySelect?: (country: string) => void;
   onRankingUpdate?: () => void;
+  profileIdentity: UserIdentityProfile | null;
+  onRequestProfileSetup: () => void;
 }
-
-interface CountryOption {
-  value: string;
-  label: string;
-}
-
-const majorCountryCodes = ['KR', 'US', 'JP', 'CN', 'GB', 'DE', 'FR', 'CA', 'AU', 'IN'];
-
-const countries: CountryOption[] = majorCountryCodes
-  .map((code: string) => ({
-    value: code,
-    label: getName(code) || code,
-  }))
-  .filter((country) => country.label);
 
 const ScoreSubmitModal: React.FC<ScoreSubmitModalProps> = ({
   score,
@@ -38,16 +26,13 @@ const ScoreSubmitModal: React.FC<ScoreSubmitModalProps> = ({
   systemLines = [],
   onCountrySelect,
   onRankingUpdate,
+  profileIdentity,
+  onRequestProfileSetup,
 }) => {
-  const { user, loading: authLoading, firebaseEnabled, signInWithGoogle } = useAuth();
-  const [nickname, setNickname] = useState('');
-  const [country, setCountry] = useState<string>('');
-  const [isCountryMenuOpen, setIsCountryMenuOpen] = useState(false);
+  const { t } = useTranslation();
+  const { user, loading: authLoading, signInWithGoogle } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  const countryMenuRef = useRef<HTMLDivElement | null>(null);
-  const selectedCountry = countries.find((item) => item.value === country);
 
   useEffect(() => {
     if (isOpen) {
@@ -55,22 +40,14 @@ const ScoreSubmitModal: React.FC<ScoreSubmitModalProps> = ({
     }
   }, [isOpen]);
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (countryMenuRef.current && !countryMenuRef.current.contains(event.target as Node)) {
-        setIsCountryMenuOpen(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, []);
-
   const submitScoreData = async () => {
-    if (!nickname || !country) {
-      setError('모든 필드를 입력해주세요.');
+    if (!user) {
+      setError(t('scoreSubmit.signInRequired'));
+      return;
+    }
+
+    if (!profileIdentity?.nickname || !profileIdentity?.country) {
+      setError(t('scoreSubmit.profileRequired'));
       return;
     }
 
@@ -78,15 +55,15 @@ const ScoreSubmitModal: React.FC<ScoreSubmitModalProps> = ({
     setError(null);
 
     const scoreData: ScoreRecord = {
-      nickname,
-      country,
+      nickname: profileIdentity.nickname,
+      country: profileIdentity.country,
       score,
     };
 
-    addRankingEntry(nickname, country, score);
+    addRankingEntry(scoreData.nickname, scoreData.country, scoreData.score);
 
     if (onCountrySelect) {
-      onCountrySelect(country);
+      onCountrySelect(scoreData.country);
     }
 
     if (onRankingUpdate) {
@@ -97,24 +74,17 @@ const ScoreSubmitModal: React.FC<ScoreSubmitModalProps> = ({
     setIsSubmitting(false);
 
     if (response.success) {
-      setNickname('');
-      setCountry('');
       onClose();
     } else {
-      setError(response.message || '스코어 제출에 실패했습니다.');
+      setError(response.message || t('scoreSubmit.submitFailed'));
     }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    await submitScoreData();
   };
 
   const handleGoogleSignIn = async () => {
     try {
       await signInWithGoogle();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Google 로그인에 실패했습니다.');
+      setError(err instanceof Error ? err.message : t('scoreSubmit.signInFailed'));
     }
   };
 
@@ -130,7 +100,6 @@ const ScoreSubmitModal: React.FC<ScoreSubmitModalProps> = ({
 
           <div className="flex justify-center items-center gap-4 mb-6">
             <div className="inline-flex flex-wrap items-center justify-center gap-2 rounded-[20px] px-4 py-2 bg-accent-green-alpha border border-accent-green/30 max-w-full">
-              <span className="text-sm">🏆</span>
               <span className="font-primary text-xs font-semibold text-accent-green tracking-[1px]">
                 NEW HIGH SCORE!
               </span>
@@ -153,97 +122,39 @@ const ScoreSubmitModal: React.FC<ScoreSubmitModalProps> = ({
             </p>
           </div>
 
-          {firebaseEnabled && (
-            <div className="mb-5 rounded-xl border border-border-secondary bg-bg-card px-4 py-3">
-              {user ? (
-                <div className="text-[12px] font-primary text-accent-green">
-                  로그인됨: 클라우드 점수/기록 동기화가 활성화됩니다.
-                </div>
-              ) : (
-                <div className="flex items-center justify-between gap-3">
-                  <p className="m-0 text-[12px] text-text-secondary font-primary">
-                    로그인하면 점수가 클라우드에 저장됩니다.
-                  </p>
-                  <button
-                    type="button"
-                    onClick={handleGoogleSignIn}
-                    disabled={authLoading}
-                    className="rounded-lg border border-border-secondary bg-bg-secondary px-3 py-2 text-[11px] font-semibold text-text-primary cursor-pointer hover:bg-bg-card-alt disabled:opacity-60 disabled:cursor-not-allowed"
-                  >
-                    {authLoading ? 'Loading...' : 'Google 로그인'}
-                  </button>
-                </div>
-              )}
+          {!user ? (
+            <div className="mb-6 rounded-xl border border-border-secondary bg-bg-card px-4 py-4 flex flex-col gap-3">
+              <p className="m-0 text-[12px] text-text-secondary font-primary">{t('scoreSubmit.signInDescription')}</p>
+              <button
+                type="button"
+                onClick={handleGoogleSignIn}
+                disabled={authLoading}
+                className="h-12 rounded-xl border border-border-secondary bg-bg-secondary px-3 py-2 text-[13px] font-semibold text-text-primary cursor-pointer hover:bg-bg-card-alt disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                {authLoading ? t('scoreSubmit.loading') : t('scoreSubmit.signInWithGoogle')}
+              </button>
+            </div>
+          ) : profileIdentity ? (
+            <div className="mb-6 rounded-xl border border-border-secondary bg-bg-card px-4 py-4 flex flex-col gap-2">
+              <p className="m-0 text-[12px] text-text-secondary font-primary">
+                {t('scoreSubmit.profileNickname')}: {profileIdentity.nickname}
+              </p>
+              <p className="m-0 text-[12px] text-text-secondary font-primary">
+                {t('scoreSubmit.profileCountry')}: {profileIdentity.country}
+              </p>
+            </div>
+          ) : (
+            <div className="mb-6 rounded-xl border border-border-secondary bg-bg-card px-4 py-4 flex flex-col gap-3">
+              <p className="m-0 text-[12px] text-text-secondary font-primary">{t('scoreSubmit.profileRequired')}</p>
+              <button
+                type="button"
+                onClick={onRequestProfileSetup}
+                className="h-12 rounded-xl border border-border-secondary bg-bg-secondary px-3 py-2 text-[13px] font-semibold text-text-primary cursor-pointer hover:bg-bg-card-alt"
+              >
+                {t('scoreSubmit.openProfileSetup')}
+              </button>
             </div>
           )}
-
-          <form onSubmit={handleSubmit} className="flex flex-col gap-5 mb-8">
-            <div className="flex flex-col gap-5">
-              <div className="flex-1">
-                <label className="block font-primary text-[10px] font-medium text-text-disabled tracking-[1px] mb-2">
-                  NICKNAME
-                </label>
-                <input
-                  type="text"
-                  value={nickname}
-                  onChange={(e) => setNickname(e.target.value)}
-                  className="w-full h-12 min-h-12 box-border rounded-xl border border-border-secondary bg-bg-card text-text-primary text-sm font-primary px-4 outline-none"
-                  placeholder="Enter your name..."
-                  autoFocus
-                />
-              </div>
-
-              <div className="flex-1 mt-5">
-                <label className="block font-primary text-[10px] font-medium text-text-disabled tracking-[1px] mb-2">
-                  COUNTRY
-                </label>
-                <div className="relative" ref={countryMenuRef}>
-                  <button
-                    type="button"
-                    onClick={() => setIsCountryMenuOpen((prev) => !prev)}
-                    className="w-full h-12 min-h-12 rounded-xl border border-border-secondary bg-bg-card text-text-primary text-sm font-primary px-4 cursor-pointer flex items-center justify-between"
-                    aria-haspopup="listbox"
-                    aria-expanded={isCountryMenuOpen}
-                  >
-                    <span className="flex items-center gap-2">
-                      {selectedCountry ? (
-                        <span
-                          className={`fi fi-${selectedCountry.value.toLowerCase()} rounded-[2px]`}
-                          aria-hidden="true"
-                        />
-                      ) : null}
-                      <span>{selectedCountry?.label ?? 'Select country...'}</span>
-                    </span>
-                    <span className="text-text-disabled text-xs">{isCountryMenuOpen ? '▲' : '▼'}</span>
-                  </button>
-
-                  {isCountryMenuOpen ? (
-                    <div className="absolute left-0 right-0 top-[calc(100%+8px)] z-20 max-h-64 overflow-y-auto rounded-xl border border-border-primary bg-bg-secondary shadow-lg p-1">
-                      {countries.map((option) => (
-                        <button
-                          key={option.value}
-                          type="button"
-                          onClick={() => {
-                            setCountry(option.value);
-                            setIsCountryMenuOpen(false);
-                          }}
-                          className="w-full text-left px-3 py-2 rounded-lg text-sm text-text-primary hover:bg-bg-card-alt flex items-center gap-2"
-                          role="option"
-                          aria-selected={country === option.value}
-                        >
-                          <span
-                            className={`fi fi-${option.value.toLowerCase()} rounded-[2px]`}
-                            aria-hidden="true"
-                          />
-                          <span>{option.label}</span>
-                        </button>
-                      ))}
-                    </div>
-                  ) : null}
-                </div>
-              </div>
-            </div>
-          </form>
         </div>
 
         <div className="mt-auto w-full">
@@ -255,14 +166,14 @@ const ScoreSubmitModal: React.FC<ScoreSubmitModalProps> = ({
 
           <button
             onClick={submitScoreData}
-            disabled={isSubmitting}
+            disabled={isSubmitting || !user || !profileIdentity}
             className={`w-full h-[52px] rounded-xl border-none font-primary text-[15px] font-semibold transition-all duration-200 ${
               isSubmitting
                 ? 'bg-accent-green-alpha text-bg-primary cursor-not-allowed'
-                : 'bg-accent-green text-bg-primary cursor-pointer hover:brightness-110'
+                : 'bg-accent-green text-bg-primary cursor-pointer hover:brightness-110 disabled:opacity-60 disabled:cursor-not-allowed'
             }`}
           >
-            {isSubmitting ? 'Submitting...' : 'Submit Score (제출하기)'}
+            {isSubmitting ? t('scoreSubmit.submitting') : t('scoreSubmit.submit')}
           </button>
 
           <div className="flex items-center justify-center gap-3 mt-4">
@@ -271,21 +182,8 @@ const ScoreSubmitModal: React.FC<ScoreSubmitModalProps> = ({
               onClick={onClose}
               className="bg-transparent border-none text-text-disabled font-primary text-sm font-medium cursor-pointer transition-colors duration-200 hover:text-accent-green"
             >
-              Restart (다시)
+              {t('scoreSubmit.restart')}
             </button>
-            <button
-              type="button"
-              onClick={onClose}
-              className="w-8 h-8 rounded-2xl bg-accent-green-alpha border border-accent-green/40 text-accent-green text-base cursor-pointer transition-all duration-200 hover:brightness-110 flex items-center justify-center"
-            >
-              ×
-            </button>
-          </div>
-
-          <div className="text-center mt-12">
-            <p className="font-primary text-[10px] font-medium text-text-placeholder tracking-[1.5px]">
-              ONE MORE SECOND - WEB GAME EDITION
-            </p>
           </div>
         </div>
       </div>

@@ -10,7 +10,7 @@ import {
   saveProfile,
 } from '../../gameSystem';
 import { GameResult, PlayerProfile } from '../../gameSystem/types';
-import { syncLocalProfileToCloud } from '../../services/userDataService';
+import { syncLocalProfileToCloud, UserIdentityProfile } from '../../services/userDataService';
 
 interface GameProps {
   profile: PlayerProfile;
@@ -18,9 +18,19 @@ interface GameProps {
   setUserCountry: (country: string) => void;
   onRankingUpdate: () => void;
   isSystemMenuOpen?: boolean;
+  profileIdentity: UserIdentityProfile | null;
+  onRequestProfileSetup: () => void;
 }
 
-export default function Game({ profile, setProfile, setUserCountry, onRankingUpdate, isSystemMenuOpen = false }: GameProps) {
+export default function Game({
+  profile,
+  setProfile,
+  setUserCountry,
+  onRankingUpdate,
+  isSystemMenuOpen = false,
+  profileIdentity,
+  onRequestProfileSetup,
+}: GameProps) {
   const [score, setScore] = useState(0);
   const [showScoreModal, setShowScoreModal] = useState(false);
   const [lastRunMessage, setLastRunMessage] = useState<string[]>([]);
@@ -77,6 +87,8 @@ export default function Game({ profile, setProfile, setUserCountry, onRankingUpd
         systemLines={lastRunMessage}
         onCountrySelect={setUserCountry}
         onRankingUpdate={onRankingUpdate}
+        profileIdentity={profileIdentity}
+        onRequestProfileSetup={onRequestProfileSetup}
       />
     </>
   );

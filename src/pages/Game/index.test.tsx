@@ -26,6 +26,8 @@ describe('Game Page Integration', () => {
     setProfile: mockSetProfile,
     setUserCountry: mockSetUserCountry,
     onRankingUpdate: mockOnRankingUpdate,
+    profileIdentity: null,
+    onRequestProfileSetup: jest.fn(),
   };
 
   beforeEach(() => {

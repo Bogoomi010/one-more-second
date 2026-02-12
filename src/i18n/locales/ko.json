@@ -10,7 +10,12 @@
     "googleAuth": "Google 로그인/로그아웃",
     "footerYear": "© 2024",
     "footerBrand": "ONE MORE SECOND",
-    "footerTagline": ". STAY FOCUSED."
+    "footerTagline": ". STAY FOCUSED.",
+    "userMenuSignedInAs": "Signed in as",
+    "userMenuSignedOut": "Not signed in",
+    "userMenuEditProfile": "Edit Profile",
+    "userMenuLogin": "Sign In",
+    "userMenuLogout": "Sign Out"
   },
   "ranking": {
     "title": "랭킹",
@@ -72,7 +77,17 @@
     "restart": "Restart",
     "error": "모든 필드를 입력해주세요.",
     "rewardRun": "+{{coins}} coins (run)",
-    "rewardDaily": "+{{coins}} coins (daily)"
+    "rewardDaily": "+{{coins}} coins (daily)",
+    "signInRequired": "Please sign in with Google first.",
+    "signInDescription": "Sign in to submit and sync your score.",
+    "signInWithGoogle": "Sign in with Google",
+    "loading": "Loading...",
+    "profileRequired": "Please set up your profile first.",
+    "openProfileSetup": "Open Profile Setup",
+    "profileNickname": "Nickname",
+    "profileCountry": "Country",
+    "submitFailed": "Score submit failed.",
+    "signInFailed": "Google sign in failed."
   },
   "systemMenu": {
     "profile": "프로필",
@@ -147,5 +162,19 @@
     "mint": "Mint",
     "sunset": "Sunset",
     "neon": "Neon"
+  },
+  "profileSetup": {
+    "title": "PROFILE SETUP",
+    "subtitle": "Set your nickname and country to submit scores.",
+    "nickname": "Nickname",
+    "nicknamePlaceholder": "Enter nickname",
+    "country": "Country",
+    "countryPlaceholder": "Select country",
+    "confirm": "Confirm",
+    "cancel": "Cancel",
+    "saving": "Saving...",
+    "errorRequired": "Please fill in all fields.",
+    "errorInvalidNickname": "Special characters are not allowed.",
+    "errorSaveFailed": "Failed to save profile."
   }
 }

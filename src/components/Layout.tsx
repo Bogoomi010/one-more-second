@@ -2,8 +2,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { PlayerProfile } from '../gameSystem/types';
 import { syncLanguagePreferenceToCloud } from '../services/userDataService';
-import NewRankingPanel from './RankingPanel';
-import NewStatsPanel from './StatsPanel';
+import RankingPanel from './RankingPanel';
+import StatsPanel from './StatsPanel';
 import GameBottomBar from './GameBottomBar';
 import { LeftColumn, MainColumn, RightColumn } from './ColumnSlots';
 
@@ -35,7 +35,7 @@ function getLanguageLabel(language: SupportedLanguage): string {
     case 'ja':
       return 'JA';
     case 'zh-CN':
-      return '中文';
+      return 'ZH';
     default:
       return 'KO';
   }
@@ -47,7 +47,11 @@ interface LayoutProps {
   userCountry?: string;
   rankingRefreshTrigger?: number;
   onSettingsClick?: () => void;
-  onUserButtonClick?: () => void;
+  onLoginClick?: () => void;
+  onLogoutClick?: () => void;
+  onProfileEditClick?: () => void;
+  isLoggedIn?: boolean;
+  userDisplayName?: string;
   userInitial?: string;
 }
 
@@ -57,12 +61,18 @@ export default function Layout({
   userCountry,
   rankingRefreshTrigger,
   onSettingsClick,
-  onUserButtonClick,
+  onLoginClick,
+  onLogoutClick,
+  onProfileEditClick,
+  isLoggedIn = false,
+  userDisplayName,
   userInitial,
 }: LayoutProps) {
   const { t, i18n } = useTranslation();
   const [isLanguageMenuOpen, setIsLanguageMenuOpen] = useState(false);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const languageMenuRef = useRef<HTMLDivElement | null>(null);
+  const userMenuRef = useRef<HTMLDivElement | null>(null);
 
   const currentLanguage = normalizeLanguage(i18n.resolvedLanguage ?? i18n.language);
 
@@ -70,6 +80,9 @@ export default function Layout({
     const handleClickOutside = (event: MouseEvent) => {
       if (languageMenuRef.current && !languageMenuRef.current.contains(event.target as Node)) {
         setIsLanguageMenuOpen(false);
+      }
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+        setIsUserMenuOpen(false);
       }
     };
 
@@ -83,6 +96,10 @@ export default function Layout({
     setIsLanguageMenuOpen(prev => !prev);
   };
 
+  const handleUserButtonClick = () => {
+    setIsUserMenuOpen(prev => !prev);
+  };
+
   const handleLanguageSelect = (nextLanguage: SupportedLanguage) => {
     i18n.changeLanguage(nextLanguage);
     void syncLanguagePreferenceToCloud(nextLanguage);
@@ -91,14 +108,10 @@ export default function Layout({
 
   return (
     <div className="h-screen bg-bg-primary flex flex-col items-center w-full overflow-hidden box-border">
-      {/* Header */}
       <div className="relative z-40 w-full bg-bg-secondary border border-border-primary px-6 py-4 flex justify-between items-center backdrop-blur-[10px]">
-        {/* Logo Section */}
         <div className="flex items-center gap-3">
           <div className="w-[40px] h-[40px] rounded-xl bg-bg-card flex justify-center items-center">
-            <span className="text-[24px] font-tertiary font-bold text-bg-primary">
-              ⚡
-            </span>
+            <span className="text-[24px] font-tertiary font-bold text-bg-primary">O</span>
           </div>
           <div className="flex items-center gap-1 font-primary">
             <span className="text-[24px] italic font-bold text-text-primary">ONE</span>
@@ -107,25 +120,15 @@ export default function Layout({
           </div>
         </div>
 
-        {/* Right Section */}
         <div className="flex items-center gap-6">
-          {/* Navigation */}
           <div className="flex gap-8 items-center">
-            <span className="text-accent-green font-primary text-[14px] font-bold">
-              {t('layout.navGame')}
-            </span>
-            <span className="text-text-muted font-primary text-[14px] font-bold cursor-pointer">
-              {t('layout.navMarket')}
-            </span>
-            <span className="text-text-muted font-primary text-[14px] font-bold cursor-pointer">
-              {t('layout.navGlobalWall')}
-            </span>
+            <span className="text-accent-green font-primary text-[14px] font-bold">{t('layout.navGame')}</span>
+            <span className="text-text-muted font-primary text-[14px] font-bold cursor-pointer">{t('layout.navMarket')}</span>
+            <span className="text-text-muted font-primary text-[14px] font-bold cursor-pointer">{t('layout.navGlobalWall')}</span>
           </div>
 
-          {/* Divider */}
           <div className="w-px h-6 bg-bg-card-alt" />
 
-          {/* Language Button */}
           <div className="relative" ref={languageMenuRef}>
             <button
               type="button"
@@ -136,10 +139,8 @@ export default function Layout({
               aria-expanded={isLanguageMenuOpen}
               aria-haspopup="menu"
             >
-              <span className="text-base font-tertiary">🌐</span>
-              <span className="text-text-muted font-primary text-[14px] font-semibold">
-                {getLanguageLabel(currentLanguage)}
-              </span>
+              <span className="text-base font-tertiary">L</span>
+              <span className="text-text-muted font-primary text-[14px] font-semibold">{getLanguageLabel(currentLanguage)}</span>
             </button>
 
             {isLanguageMenuOpen && (
@@ -165,42 +166,85 @@ export default function Layout({
             )}
           </div>
 
-          {/* Menu Button */}
           {onSettingsClick && (
-            <div
+            <button
+              type="button"
               className="w-8 h-8 rounded-lg bg-bg-card-alt border border-white/20 flex justify-center items-center cursor-pointer transition-all duration-200 hover:bg-white/20"
               onClick={onSettingsClick}
             >
-              <span className="text-base font-tertiary text-text-primary">
-                ☰
-              </span>
-            </div>
+              <span className="text-base font-tertiary text-text-primary">M</span>
+            </button>
           )}
 
-          {/* User Button */}
-          <div
-            className="w-[40px] h-[40px] rounded-xl bg-bg-card border border-border-primary flex justify-center items-center cursor-pointer"
-            onClick={onUserButtonClick}
-            title={onUserButtonClick ? t('layout.googleAuth') : undefined}
-          >
-            <span className="text-[16px] font-tertiary text-text-primary">
-              {userInitial ?? '👤'}
-            </span>
+          <div className="relative" ref={userMenuRef}>
+            <button
+              type="button"
+              className="w-[40px] h-[40px] rounded-xl bg-bg-card border border-border-primary flex justify-center items-center cursor-pointer"
+              onClick={handleUserButtonClick}
+              title={t('layout.googleAuth')}
+              aria-label={t('layout.googleAuth')}
+              aria-expanded={isUserMenuOpen}
+              aria-haspopup="menu"
+            >
+              <span className="text-[16px] font-tertiary text-text-primary">{userInitial ?? 'U'}</span>
+            </button>
+
+            {isUserMenuOpen && (
+              <div className="absolute right-0 top-[calc(100%+8px)] min-w-[220px] rounded-xl border border-border-primary bg-bg-secondary shadow-lg z-[60] p-2">
+                <div className="px-2 py-1.5 text-[11px] uppercase tracking-wide text-text-muted font-primary">
+                  {isLoggedIn
+                    ? `${t('layout.userMenuSignedInAs')}: ${userDisplayName ?? 'User'}`
+                    : t('layout.userMenuSignedOut')}
+                </div>
+
+                {isLoggedIn ? (
+                  <>
+                    <button
+                      type="button"
+                      className="w-full px-3 py-2 rounded-lg text-left text-[13px] font-primary text-text-primary hover:bg-bg-card-alt"
+                      onClick={() => {
+                        setIsUserMenuOpen(false);
+                        onProfileEditClick?.();
+                      }}
+                    >
+                      {t('layout.userMenuEditProfile')}
+                    </button>
+                    <button
+                      type="button"
+                      className="w-full px-3 py-2 rounded-lg text-left text-[13px] font-primary text-text-primary hover:bg-bg-card-alt"
+                      onClick={() => {
+                        setIsUserMenuOpen(false);
+                        onLogoutClick?.();
+                      }}
+                    >
+                      {t('layout.userMenuLogout')}
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    type="button"
+                    className="w-full px-3 py-2 rounded-lg text-left text-[13px] font-primary text-text-primary hover:bg-bg-card-alt"
+                    onClick={() => {
+                      setIsUserMenuOpen(false);
+                      onLoginClick?.();
+                    }}
+                  >
+                    {t('layout.userMenuLogin')}
+                  </button>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>
 
-      {/* Main Content */}
       <main className="flex-1 w-full min-h-0 flex justify-center p-5 box-border overflow-hidden">
         <div className="w-full max-w-[min(1920px,calc(100%-40px))] h-full min-h-0 box-border overflow-hidden">
           <div className="grid h-full min-h-0 grid-cols-[minmax(0,1fr)_minmax(0,2fr)_minmax(0,1fr)] gap-5 items-stretch">
             <LeftColumn
               mainPanel={
                 <div className="w-full h-full min-w-0 min-h-0 overflow-hidden">
-                  <NewRankingPanel
-                    userCountry={userCountry}
-                    refreshTrigger={rankingRefreshTrigger}
-                  />
+                  <RankingPanel userCountry={userCountry} refreshTrigger={rankingRefreshTrigger} />
                 </div>
               }
             />
@@ -217,7 +261,7 @@ export default function Layout({
             <RightColumn
               mainPanel={
                 <div className="w-full h-full min-w-0 min-h-0 overflow-hidden">
-                  {profile ? <NewStatsPanel profile={profile} /> : <div className="w-full h-full min-w-0 min-h-0" />}
+                  {profile ? <StatsPanel profile={profile} /> : <div className="w-full h-full min-w-0 min-h-0" />}
                 </div>
               }
             />

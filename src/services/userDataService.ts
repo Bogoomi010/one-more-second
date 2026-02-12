@@ -17,6 +17,11 @@ export interface ScoreSubmitResult extends ScoreSubmitResponse {
   savedToCloud: boolean;
 }
 
+export interface UserIdentityProfile {
+  nickname: string;
+  country: string;
+}
+
 type SupportedLanguage = 'ko' | 'en' | 'ja' | 'zh-CN';
 const LANGUAGE_STORAGE_KEY = 'oms.language';
 
@@ -113,8 +118,6 @@ export async function upsertUserProfile(
       preferences: {
         language: normalizeLanguage(language ?? getStoredLanguage()),
       },
-      nickname: null,
-      country: null,
       updatedAt: serverTimestamp(),
     },
     { merge: true }
@@ -150,6 +153,50 @@ export async function syncLocalProfileToCloud(profile: PlayerProfile): Promise<v
   } catch (error) {
     console.error('Profile sync failed:', error);
   }
+}
+
+export async function getUserIdentityProfile(
+  uid: string
+): Promise<UserIdentityProfile | null> {
+  const db = firebaseDb;
+  if (!firebaseEnabled || !db) return null;
+
+  try {
+    const snapshot = await getDoc(doc(db, 'users', uid));
+    if (!snapshot.exists()) return null;
+
+    const data = snapshot.data() as {
+      nickname?: string;
+      country?: string;
+    };
+
+    const nickname = data.nickname?.trim();
+    const country = data.country?.trim();
+    if (!nickname || !country) return null;
+
+    return { nickname, country };
+  } catch (error) {
+    console.error('Fetch identity profile failed:', error);
+    return null;
+  }
+}
+
+export async function upsertUserIdentityProfile(
+  uid: string,
+  identity: UserIdentityProfile
+): Promise<void> {
+  const db = firebaseDb;
+  if (!firebaseEnabled || !db) return;
+
+  await setDoc(
+    doc(db, 'users', uid),
+    {
+      nickname: identity.nickname,
+      country: identity.country,
+      updatedAt: serverTimestamp(),
+    },
+    { merge: true }
+  );
 }
 
 export async function syncLanguagePreferenceToCloud(language: string): Promise<void> {

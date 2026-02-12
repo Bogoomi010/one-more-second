@@ -10,7 +10,12 @@
     "googleAuth": "Google 登录/登出",
     "footerYear": "© 2024",
     "footerBrand": "ONE MORE SECOND",
-    "footerTagline": ". STAY FOCUSED."
+    "footerTagline": ". STAY FOCUSED.",
+    "userMenuSignedInAs": "Signed in as",
+    "userMenuSignedOut": "Not signed in",
+    "userMenuEditProfile": "Edit Profile",
+    "userMenuLogin": "Sign In",
+    "userMenuLogout": "Sign Out"
   },
   "ranking": {
     "title": "排行榜",
@@ -72,7 +77,17 @@
     "restart": "Restart",
     "error": "请填写所有字段。",
     "rewardRun": "+{{coins}}金币 (游戏)",
-    "rewardDaily": "+{{coins}}金币 (每日)"
+    "rewardDaily": "+{{coins}}金币 (每日)",
+    "signInRequired": "Please sign in with Google first.",
+    "signInDescription": "Sign in to submit and sync your score.",
+    "signInWithGoogle": "Sign in with Google",
+    "loading": "Loading...",
+    "profileRequired": "Please set up your profile first.",
+    "openProfileSetup": "Open Profile Setup",
+    "profileNickname": "Nickname",
+    "profileCountry": "Country",
+    "submitFailed": "Score submit failed.",
+    "signInFailed": "Google sign in failed."
   },
   "systemMenu": {
     "profile": "个人资料",
@@ -147,5 +162,19 @@
     "mint": "Mint",
     "sunset": "Sunset",
     "neon": "Neon"
+  },
+  "profileSetup": {
+    "title": "PROFILE SETUP",
+    "subtitle": "Set your nickname and country to submit scores.",
+    "nickname": "Nickname",
+    "nicknamePlaceholder": "Enter nickname",
+    "country": "Country",
+    "countryPlaceholder": "Select country",
+    "confirm": "Confirm",
+    "cancel": "Cancel",
+    "saving": "Saving...",
+    "errorRequired": "Please fill in all fields.",
+    "errorInvalidNickname": "Special characters are not allowed.",
+    "errorSaveFailed": "Failed to save profile."
   }
 }
