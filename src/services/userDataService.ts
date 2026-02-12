@@ -3,6 +3,7 @@ import {
   Timestamp,
   addDoc,
   collection,
+  deleteDoc,
   doc,
   getDoc,
   getDocs,
@@ -50,6 +51,16 @@ function todayDateKey(d = new Date()): string {
   return `${yyyy}-${mm}-${dd}`;
 }
 
+function normalizedNickname(value: string): string {
+  return value.trim().toLowerCase();
+}
+
+interface ExistingScoreDoc {
+  id: string;
+  score: number;
+  timestamp: number;
+}
+
 export async function appendScoreSubmissionForUser(
   user: User,
   scoreData: ScoreRecord
@@ -69,29 +80,56 @@ export async function appendScoreSubmissionForUser(
     clientVersion: 'v1',
     source: 'web-cra',
   });
-
 }
 
-async function hasHigherOrEqualScoreForSameNickname(
+async function getExistingDocsForIdentity(
   user: User,
-  scoreData: ScoreRecord
-): Promise<boolean> {
+  nickname: string
+): Promise<ExistingScoreDoc[]> {
   const db = firebaseDb;
-  if (!firebaseEnabled || !db) return false;
+  if (!firebaseEnabled || !db) return [];
 
-  const nicknameKey = scoreData.nickname.trim().toLowerCase();
-  if (!nicknameKey) return false;
+  const nicknameKey = normalizedNickname(nickname);
+  if (!nicknameKey) return [];
 
   const q = query(collection(db, 'scoreSubmissions'), where('uid', '==', user.uid));
   const snapshot = await getDocs(q);
-  if (snapshot.empty) return false;
+  if (snapshot.empty) return [];
 
-  return snapshot.docs.some((docSnap) => {
-    const data = docSnap.data() as { nickname?: string; score?: number };
-    const existingNickname = String(data.nickname ?? '').trim().toLowerCase();
-    const existingScore = Number(data.score ?? 0);
-    return existingNickname === nicknameKey && existingScore >= scoreData.score;
-  });
+  return snapshot.docs
+    .map((docSnap) => {
+      const data = docSnap.data() as {
+        nickname?: string;
+        score?: number;
+        clientTimestamp?: number;
+      };
+
+      if (normalizedNickname(String(data.nickname ?? '')) !== nicknameKey) {
+        return null;
+      }
+
+      return {
+        id: docSnap.id,
+        score: Number(data.score ?? 0),
+        timestamp: Number(data.clientTimestamp ?? 0),
+      } satisfies ExistingScoreDoc;
+    })
+    .filter((item): item is ExistingScoreDoc => item !== null);
+}
+
+function pickBestDoc(docs: ExistingScoreDoc[]): ExistingScoreDoc | null {
+  if (docs.length === 0) return null;
+
+  return [...docs].sort((a, b) => {
+    if (b.score !== a.score) return b.score - a.score;
+    return b.timestamp - a.timestamp;
+  })[0];
+}
+
+async function deleteScoreDocsByIds(ids: string[]): Promise<void> {
+  const db = firebaseDb;
+  if (!firebaseEnabled || !db || ids.length === 0) return;
+  await Promise.all(ids.map((id) => deleteDoc(doc(db, 'scoreSubmissions', id))));
 }
 
 export async function submitScoreToCloudIfSignedIn(
@@ -107,8 +145,15 @@ export async function submitScoreToCloudIfSignedIn(
   }
 
   try {
-    const shouldSkip = await hasHigherOrEqualScoreForSameNickname(user, scoreData);
-    if (shouldSkip) {
+    const existingDocs = await getExistingDocsForIdentity(user, scoreData.nickname);
+    const bestExisting = pickBestDoc(existingDocs);
+
+    if (bestExisting && bestExisting.score >= scoreData.score) {
+      const duplicateIds = existingDocs
+        .filter((docItem) => docItem.id !== bestExisting.id)
+        .map((docItem) => docItem.id);
+      await deleteScoreDocsByIds(duplicateIds);
+
       return {
         success: true,
         message: '동일 닉네임의 더 높은 기존 기록이 있어 클라우드 전송을 생략했습니다.',
@@ -117,9 +162,11 @@ export async function submitScoreToCloudIfSignedIn(
     }
 
     await appendScoreSubmissionForUser(user, scoreData);
+    await deleteScoreDocsByIds(existingDocs.map((docItem) => docItem.id));
+
     return {
       success: true,
-      message: '스코어가 클라우드에 저장되었습니다.',
+      message: '점수가 클라우드에 저장되었습니다.',
       savedToCloud: true,
     };
   } catch (error) {

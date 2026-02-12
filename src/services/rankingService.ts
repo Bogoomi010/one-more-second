@@ -17,6 +17,9 @@ import {
 import { firebaseDb, firebaseEnabled } from '../lib/firebase';
 const FETCH_MULTIPLIER = 5;
 const MAX_FETCH_LIMIT = 500;
+interface CloudRankingEntry extends RankingEntry {
+  uid: string;
+}
 
 function dateKey(d = new Date()): string {
   const yyyy = d.getFullYear();
@@ -27,11 +30,12 @@ function dateKey(d = new Date()): string {
 
 function mapDocsToRankingEntries(
   docs: QueryDocumentSnapshot<DocumentData>[]
-): RankingEntry[] {
+): CloudRankingEntry[] {
   return docs.map((snapshot) => {
     const data = snapshot.data();
     return {
       id: snapshot.id,
+      uid: String(data.uid ?? ''),
       nickname: String(data.nickname ?? 'UNKNOWN'),
       country: String(data.country ?? 'KR'),
       score: Number(data.score ?? 0),
@@ -49,14 +53,17 @@ function sortByScoreAndRecent(a: RankingEntry, b: RankingEntry): number {
   return b.timestamp - a.timestamp;
 }
 
-function dedupeByNickname(entries: RankingEntry[], limit: number): RankingEntry[] {
-  const byNickname = new Map<string, RankingEntry>();
+function dedupeByUidNickname(
+  entries: CloudRankingEntry[],
+  limit: number
+): RankingEntry[] {
+  const byIdentity = new Map<string, CloudRankingEntry>();
 
   entries.forEach((entry) => {
-    const key = entry.nickname.trim().toLowerCase();
-    const existing = byNickname.get(key);
+    const key = `${entry.uid}::${entry.nickname.trim().toLowerCase()}`;
+    const existing = byIdentity.get(key);
     if (!existing) {
-      byNickname.set(key, entry);
+      byIdentity.set(key, entry);
       return;
     }
 
@@ -64,11 +71,14 @@ function dedupeByNickname(entries: RankingEntry[], limit: number): RankingEntry[
       entry.score > existing.score ||
       (entry.score === existing.score && entry.timestamp > existing.timestamp)
     ) {
-      byNickname.set(key, entry);
+      byIdentity.set(key, entry);
     }
   });
 
-  return Array.from(byNickname.values()).sort(sortByScoreAndRecent).slice(0, limit);
+  return Array.from(byIdentity.values())
+    .sort(sortByScoreAndRecent)
+    .slice(0, limit)
+    .map(({ uid: _uid, ...entry }) => entry);
 }
 
 export async function getGlobalRanking(limit = 100): Promise<RankingEntry[]> {
@@ -83,7 +93,7 @@ export async function getGlobalRanking(limit = 100): Promise<RankingEntry[]> {
     );
     const snapshot = await getDocs(q);
     if (snapshot.empty) return getLocalGlobalRanking(limit);
-    return dedupeByNickname(mapDocsToRankingEntries(snapshot.docs), limit);
+    return dedupeByUidNickname(mapDocsToRankingEntries(snapshot.docs), limit);
   } catch {
     return getLocalGlobalRanking(limit);
   }
@@ -105,7 +115,7 @@ export async function getCountryRanking(
     );
     const snapshot = await getDocs(q);
     if (snapshot.empty) return getLocalCountryRanking(country, limit);
-    return dedupeByNickname(mapDocsToRankingEntries(snapshot.docs), limit);
+    return dedupeByUidNickname(mapDocsToRankingEntries(snapshot.docs), limit);
   } catch {
     return getLocalCountryRanking(country, limit);
   }
@@ -128,7 +138,7 @@ export async function getDailyRanking(
     );
     const snapshot = await getDocs(q);
     if (snapshot.empty) return getLocalDailyRanking(key, limit);
-    return dedupeByNickname(mapDocsToRankingEntries(snapshot.docs), limit);
+    return dedupeByUidNickname(mapDocsToRankingEntries(snapshot.docs), limit);
   } catch {
     return getLocalDailyRanking(key, limit);
   }

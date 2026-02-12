@@ -24,7 +24,8 @@ service cloud.firestore {
     match /scoreSubmissions/{docId} {
       allow read: if true;
       allow create: if isSignedIn() && request.resource.data.uid == request.auth.uid;
-      allow update, delete: if false;
+      allow update: if false;
+      allow delete: if isSignedIn() && resource.data.uid == request.auth.uid;
     }
 
     // Leaderboard 컬렉션은 서버(Cloud Functions/Admin SDK)에서만 write 하도록 제한.

@@ -6,7 +6,7 @@
       "id": "bi8Au",
       "x": 222,
       "y": -315,
-      "name": "Window_score",
+      "name": "score-submit",
       "clip": true,
       "width": 859,
       "height": 901,
@@ -438,7 +438,7 @@
       "model": "claude-4.5-sonnet",
       "width": 493,
       "height": 188,
-      "content": "@src/pages/GameOver/components/ScoreSubmitModal.tsx 의 디자인 가져와서 \"Window_score\" 에 스캐치해줘."
+      "content": "score-submit 테마 와 비슷하게 로그인 시 닉네임을 설정하는 팝업 창 디자인 생성\n\"set-nickname\" 제목으로 스케치 생성해주세요."
     }
   ]
 }
