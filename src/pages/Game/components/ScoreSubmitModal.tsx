@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { submitScore } from '../../../utils/api';
 import { ScoreRecord } from '../../../types/score';
