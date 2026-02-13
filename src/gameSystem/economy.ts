@@ -1,6 +1,10 @@
 import { GameResult, PlayerProfile } from './types';
 
 export function calcRunRewardCoins(result: GameResult): number {
+  if (result.scoreSeconds < 10) {
+    return 0;
+  }
+
   // 기본: 생존 1초 = 1코인
   // 무피격 보너스: +10
   const base = Math.max(0, Math.floor(result.scoreSeconds));

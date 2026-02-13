@@ -111,7 +111,21 @@
     "buy": "구매",
     "select": "선택",
     "selected": "선택됨",
-    "completed": "(완료)"
+    "completed": "(완료)",
+    "title": "시스템 메뉴",
+    "subtitle": "프로필, 업적, 설정을 관리하세요.",
+    "shopSubtitle": "스킨을 구매하고 장착하세요.",
+    "closeAria": "닫기",
+    "basicInfo": "기본 정보",
+    "playerSkin": "플레이어 스킨",
+    "bulletSkin": "총알 스킨",
+    "secondsValue": "{{value}}초",
+    "shopPlayerSkins": "플레이어 스킨",
+    "shopBulletSkins": "총알 스킨",
+    "coinsAmount": "{{count}} 코인",
+    "importSuccess": "프로필을 불러왔습니다.",
+    "importInvalid": "유효하지 않은 프로필 파일입니다.",
+    "importReadError": "프로필 파일을 읽을 수 없습니다."
   },
   "settings": {
     "graphics": "그래픽",
@@ -151,11 +165,51 @@
     },
     "no-hit-20": {
       "title": "무피격 20초",
-      "desc": "한 판에서 20초 이상 생존 + 피격 0회"
+      "desc": "첫 피격 전 20초 이상 버티기"
     },
     "collector-2": {
-      "title": "수집가",
-      "desc": "스킨을 2개 보유"
+      "title": "수집가 I",
+      "desc": "기본 스킨 제외 2개 이상 보유"
+    },
+    "survive-90": {
+      "title": "90초 생존",
+      "desc": "한 판에서 90초 이상 생존"
+    },
+    "survive-120": {
+      "title": "2분 생존",
+      "desc": "한 판에서 120초 이상 생존"
+    },
+    "no-hit-30": {
+      "title": "무피격 30초",
+      "desc": "첫 피격 전 30초 이상 버티기"
+    },
+    "runner-5": {
+      "title": "워밍업 러너",
+      "desc": "총 5회 플레이"
+    },
+    "runner-20": {
+      "title": "마라톤 러너",
+      "desc": "총 20회 플레이"
+    },
+    "time-300": {
+      "title": "누적 5분",
+      "desc": "누적 생존 시간 300초 달성"
+    },
+    "time-1800": {
+      "title": "누적 30분",
+      "desc": "누적 생존 시간 1800초 달성"
+    },
+    "coins-100": {
+      "title": "코인 수집가 I",
+      "desc": "코인 100개 이상 보유"
+    },
+    "coins-500": {
+      "title": "코인 수집가 II",
+      "desc": "코인 500개 이상 보유"
+    },
+    "collector-5": {
+      "title": "수집가 II",
+      "desc": "기본 스킨 제외 5개 이상 보유"
     }
   },
   "skins": {

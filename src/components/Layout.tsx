@@ -46,7 +46,10 @@ interface LayoutProps {
   profile?: PlayerProfile;
   userCountry?: string;
   rankingRefreshTrigger?: number;
+  onMarketClick?: () => void;
   onSettingsClick?: () => void;
+  onToggleMute?: () => void;
+  isMuted?: boolean;
   onLoginClick?: () => void;
   onLogoutClick?: () => void;
   onProfileEditClick?: () => void;
@@ -60,7 +63,10 @@ export default function Layout({
   profile,
   userCountry,
   rankingRefreshTrigger,
+  onMarketClick,
   onSettingsClick,
+  onToggleMute,
+  isMuted = false,
   onLoginClick,
   onLogoutClick,
   onProfileEditClick,
@@ -123,7 +129,13 @@ export default function Layout({
         <div className="flex items-center gap-6">
           <div className="flex gap-8 items-center">
             <span className="text-accent-green font-primary text-[14px] font-bold">{t('layout.navGame')}</span>
-            <span className="text-text-muted font-primary text-[14px] font-bold cursor-pointer">{t('layout.navMarket')}</span>
+            <button
+              type="button"
+              className="text-text-muted font-primary text-[14px] font-bold cursor-pointer bg-transparent border-none p-0 hover:text-text-primary transition-colors duration-200"
+              onClick={onMarketClick}
+            >
+              {t('layout.navMarket')}
+            </button>
             <span className="text-text-muted font-primary text-[14px] font-bold cursor-pointer">{t('layout.navGlobalWall')}</span>
           </div>
 
@@ -165,6 +177,22 @@ export default function Layout({
               </div>
             )}
           </div>
+
+          {onToggleMute && (
+            <button
+              type="button"
+              className="w-8 h-8 rounded-lg bg-bg-card-alt border border-white/20 flex justify-center items-center cursor-pointer transition-all duration-200 hover:bg-white/20"
+              onClick={onToggleMute}
+              title={isMuted ? 'Unmute' : 'Mute'}
+              aria-label={isMuted ? 'Unmute' : 'Mute'}
+            >
+              <svg viewBox="0 0 24 24" className="w-4 h-4 text-text-primary" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M11 6L7.5 9H5V15H7.5L11 18V6Z" fill="currentColor" />
+                <path d="M14.5 9C15.5 9.8 16 10.8 16 12C16 13.2 15.5 14.2 14.5 15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                {isMuted && <path d="M4 4L20 20" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />}
+              </svg>
+            </button>
+          )}
 
           {onSettingsClick && (
             <button

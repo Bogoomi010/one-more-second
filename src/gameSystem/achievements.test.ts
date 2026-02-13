@@ -5,78 +5,100 @@ import { defaultProfile } from './storage';
 describe('Achievements System', () => {
   it('should unlock first-run achievement', () => {
     const profile: PlayerProfile = { ...defaultProfile(), totalRuns: 1 };
-    const result: GameResult = { scoreSeconds: 5, hitsTaken: 1 };
-    
+    const result: GameResult = { scoreSeconds: 5, hitsTaken: 3, firstHitSeconds: 2 };
+
     const updated = applyAchievements(profile, result);
-    
+
     expect(updated.achievements['first-run']).toBeDefined();
   });
 
-  it('should unlock survive-10 achievement', () => {
+  it('should unlock survive-60 achievement from current run score', () => {
     const profile = defaultProfile();
-    const result: GameResult = { scoreSeconds: 10, hitsTaken: 1 };
-    
-    const updated = applyAchievements(profile, result);
-    
-    expect(updated.achievements['survive-10']).toBeDefined();
-  });
+    const result: GameResult = { scoreSeconds: 60, hitsTaken: 3, firstHitSeconds: 10 };
 
-  it('should unlock survive-30 achievement', () => {
-    const profile = defaultProfile();
-    const result: GameResult = { scoreSeconds: 30, hitsTaken: 1 };
-    
     const updated = applyAchievements(profile, result);
-    
-    expect(updated.achievements['survive-30']).toBeDefined();
-  });
 
-  it('should unlock survive-60 achievement', () => {
-    const profile = defaultProfile();
-    const result: GameResult = { scoreSeconds: 60, hitsTaken: 1 };
-    
-    const updated = applyAchievements(profile, result);
-    
     expect(updated.achievements['survive-60']).toBeDefined();
   });
 
-  it('should unlock no-hit-20 achievement', () => {
-    const profile = defaultProfile();
-    const result: GameResult = { scoreSeconds: 20, hitsTaken: 0 };
-    
+  it('should unlock survive-60 achievement from best score fallback', () => {
+    const profile: PlayerProfile = { ...defaultProfile(), bestScore: 60 };
+    const result: GameResult = { scoreSeconds: 12, hitsTaken: 3, firstHitSeconds: 3 };
+
     const updated = applyAchievements(profile, result);
-    
+
+    expect(updated.achievements['survive-60']).toBeDefined();
+  });
+
+  it('should unlock no-hit-20 based on firstHitSeconds', () => {
+    const profile = defaultProfile();
+    const result: GameResult = { scoreSeconds: 28, hitsTaken: 3, firstHitSeconds: 20 };
+
+    const updated = applyAchievements(profile, result);
+
     expect(updated.achievements['no-hit-20']).toBeDefined();
   });
 
-  it('should not unlock no-hit-20 if hit taken', () => {
+  it('should not unlock no-hit-20 when first hit is before 20 seconds', () => {
     const profile = defaultProfile();
-    const result: GameResult = { scoreSeconds: 20, hitsTaken: 1 };
-    
+    const result: GameResult = { scoreSeconds: 28, hitsTaken: 3, firstHitSeconds: 19.99 };
+
     const updated = applyAchievements(profile, result);
-    
+
     expect(updated.achievements['no-hit-20']).toBeUndefined();
   });
 
-  it('should not unlock no-hit-20 if under 20 seconds', () => {
+  it('should unlock no-hit-30 based on firstHitSeconds', () => {
     const profile = defaultProfile();
-    const result: GameResult = { scoreSeconds: 19, hitsTaken: 0 };
-    
+    const result: GameResult = { scoreSeconds: 40, hitsTaken: 3, firstHitSeconds: 30 };
+
     const updated = applyAchievements(profile, result);
-    
-    expect(updated.achievements['no-hit-20']).toBeUndefined();
+
+    expect(updated.achievements['no-hit-30']).toBeDefined();
   });
 
-  it('should unlock collector-2 achievement', () => {
+  it('should keep backward compatibility for old no-hit payloads', () => {
+    const profile = defaultProfile();
+    const result: GameResult = { scoreSeconds: 20, hitsTaken: 0 };
+
+    const updated = applyAchievements(profile, result);
+
+    expect(updated.achievements['no-hit-20']).toBeDefined();
+  });
+
+  it('should unlock collector achievements', () => {
     const profile: PlayerProfile = {
       ...defaultProfile(),
-      ownedPlayerSkins: ['player-default', 'player-girl'],
-      ownedBulletSkins: ['bullet-default'],
+      ownedPlayerSkins: ['player-default', 'player-girl', 'player-rabbit'],
+      ownedBulletSkins: ['bullet-default', 'bullet-jelly', 'bullet-neon-blue'],
     };
-    const result: GameResult = { scoreSeconds: 5, hitsTaken: 0 };
-    
+    const result: GameResult = { scoreSeconds: 5, hitsTaken: 3, firstHitSeconds: 1 };
+
     const updated = applyAchievements(profile, result);
-    
+
     expect(updated.achievements['collector-2']).toBeDefined();
+    expect(updated.achievements['collector-5']).toBeDefined();
+  });
+
+  it('should unlock progression achievements from profile stats', () => {
+    const profile: PlayerProfile = {
+      ...defaultProfile(),
+      totalRuns: 20,
+      totalSecondsSurvived: 1800,
+      coins: 500,
+    };
+    const result: GameResult = { scoreSeconds: 120, hitsTaken: 3, firstHitSeconds: 31 };
+
+    const updated = applyAchievements(profile, result);
+
+    expect(updated.achievements['runner-5']).toBeDefined();
+    expect(updated.achievements['runner-20']).toBeDefined();
+    expect(updated.achievements['time-300']).toBeDefined();
+    expect(updated.achievements['time-1800']).toBeDefined();
+    expect(updated.achievements['coins-100']).toBeDefined();
+    expect(updated.achievements['coins-500']).toBeDefined();
+    expect(updated.achievements['survive-90']).toBeDefined();
+    expect(updated.achievements['survive-120']).toBeDefined();
   });
 
   it('should not duplicate achievements', () => {
@@ -86,22 +108,27 @@ describe('Achievements System', () => {
         'survive-10': { unlockedAt: 1000 },
       },
     };
-    const result: GameResult = { scoreSeconds: 10, hitsTaken: 0 };
-    
+    const result: GameResult = { scoreSeconds: 10, hitsTaken: 3, firstHitSeconds: 2 };
+
     const updated = applyAchievements(profile, result);
-    
+
     expect(updated.achievements['survive-10'].unlockedAt).toBe(1000);
   });
 
   it('should unlock multiple achievements in one run', () => {
-    const profile: PlayerProfile = { ...defaultProfile(), totalRuns: 1 };
-    const result: GameResult = { scoreSeconds: 60, hitsTaken: 0 };
-    
+    const profile: PlayerProfile = { ...defaultProfile(), totalRuns: 5 };
+    const result: GameResult = { scoreSeconds: 120, hitsTaken: 3, firstHitSeconds: 30 };
+
     const updated = applyAchievements(profile, result);
-    
+
     expect(updated.achievements['first-run']).toBeDefined();
     expect(updated.achievements['survive-10']).toBeDefined();
     expect(updated.achievements['survive-30']).toBeDefined();
     expect(updated.achievements['survive-60']).toBeDefined();
+    expect(updated.achievements['survive-90']).toBeDefined();
+    expect(updated.achievements['survive-120']).toBeDefined();
+    expect(updated.achievements['no-hit-20']).toBeDefined();
+    expect(updated.achievements['no-hit-30']).toBeDefined();
+    expect(updated.achievements['runner-5']).toBeDefined();
   });
 });

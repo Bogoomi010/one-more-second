@@ -49,6 +49,7 @@ type GameState = {
   difficultyTimer: number;
   spawnFromTop: boolean;
   hitFlashRemainingMs: number;
+  firstHitSeconds: number | null;
   viewportWidth: number;
   viewportHeight: number;
 };
@@ -135,6 +136,7 @@ function GameCanvasComponent({
       difficultyTimer: 0,
       spawnFromTop: true,
       hitFlashRemainingMs: 0,
+      firstHitSeconds: null,
       viewportWidth: app.screen.width,
       viewportHeight: app.screen.height,
     };
@@ -261,6 +263,10 @@ function GameCanvasComponent({
     };
 
     const triggerHit = () => {
+      if (state.firstHitSeconds === null) {
+        state.firstHitSeconds = state.elapsedMs / 1000;
+      }
+
       state.hits += 1;
       state.lives -= 1;
       onLivesChangeRef.current(state.lives);
@@ -277,6 +283,7 @@ function GameCanvasComponent({
         onGameOverRef.current({
           scoreSeconds: finalScore,
           hitsTaken: state.hits,
+          firstHitSeconds: state.firstHitSeconds,
         });
       }
     };
@@ -418,7 +425,7 @@ function GameCanvasComponent({
   return (
     <div
       ref={containerRef}
-      className="w-full h-full min-h-[320px] sm:min-h-[422px] bg-zinc-900 border-2 border-zinc-800 rounded-xl overflow-hidden"
+      className="w-full h-full min-h-[320px] sm:min-h-[422px] bg-zinc-900 border-2 border-zinc-800 rounded-xl overflow-hidden cursor-none"
     />
   );
 }

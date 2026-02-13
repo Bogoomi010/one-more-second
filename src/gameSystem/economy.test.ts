@@ -14,9 +14,14 @@ describe('Economy System', () => {
       expect(calcRunRewardCoins(result)).toBe(25); // 15 + 10 bonus
     });
 
-    it('should not give bonus for no-hit run under 10 seconds', () => {
+    it('should not give any coins under 10 seconds', () => {
       const result: GameResult = { scoreSeconds: 9, hitsTaken: 0 };
-      expect(calcRunRewardCoins(result)).toBe(9); // no bonus
+      expect(calcRunRewardCoins(result)).toBe(0);
+    });
+
+    it('should not give any coins under 10 seconds even if hit taken', () => {
+      const result: GameResult = { scoreSeconds: 9, hitsTaken: 1 };
+      expect(calcRunRewardCoins(result)).toBe(0);
     });
 
     it('should not give bonus if hit taken', () => {

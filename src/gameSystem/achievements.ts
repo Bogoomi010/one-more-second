@@ -1,34 +1,75 @@
 import { GameResult, PlayerProfile } from './types';
 import { unlockAchievement } from './storage';
 
-export const ACHIEVEMENTS: { id: string; title: string; desc: string }[] = [
-  { id: 'first-run', title: '첫 판', desc: '게임을 1번 플레이' },
-  { id: 'survive-10', title: '10초 생존', desc: '한 판에서 10초 이상 생존' },
-  { id: 'survive-30', title: '30초 생존', desc: '한 판에서 30초 이상 생존' },
-  { id: 'survive-60', title: '1분 생존', desc: '한 판에서 60초 이상 생존' },
-  { id: 'no-hit-20', title: '무피격 20초', desc: '한 판에서 20초 이상 생존 + 피격 0회' },
-  { id: 'collector-2', title: '수집가', desc: '스킨을 2개 보유' },
+export type AchievementDefinition = { id: string; title: string; desc: string };
+
+export const ACHIEVEMENTS: AchievementDefinition[] = [
+  { id: 'first-run', title: 'First Run', desc: 'Play the game once' },
+  { id: 'survive-10', title: '10s Survivor', desc: 'Survive 10+ seconds in one run' },
+  { id: 'survive-30', title: '30s Survivor', desc: 'Survive 30+ seconds in one run' },
+  { id: 'survive-60', title: '1 Minute Survivor', desc: 'Survive 60+ seconds in one run' },
+  { id: 'survive-90', title: '90s Survivor', desc: 'Survive 90+ seconds in one run' },
+  { id: 'survive-120', title: '2 Minute Survivor', desc: 'Survive 120+ seconds in one run' },
+  { id: 'no-hit-20', title: 'No-Hit 20', desc: 'Stay unharmed for 20+ seconds before first hit' },
+  { id: 'no-hit-30', title: 'No-Hit 30', desc: 'Stay unharmed for 30+ seconds before first hit' },
+  { id: 'runner-5', title: 'Warm-Up Runner', desc: 'Complete 5 total runs' },
+  { id: 'runner-20', title: 'Marathon Mindset', desc: 'Complete 20 total runs' },
+  { id: 'time-300', title: '5 Minute Total', desc: 'Accumulate 300+ total seconds survived' },
+  { id: 'time-1800', title: '30 Minute Total', desc: 'Accumulate 1800+ total seconds survived' },
+  { id: 'coins-100', title: 'Coin Stash', desc: 'Reach 100+ coins' },
+  { id: 'coins-500', title: 'Coin Vault', desc: 'Reach 500+ coins' },
+  { id: 'collector-2', title: 'Collector I', desc: 'Own at least 2 skins (excluding default)' },
+  { id: 'collector-5', title: 'Collector II', desc: 'Own at least 5 skins (excluding default)' },
 ];
+
+function getOwnedSkinCount(profile: PlayerProfile): number {
+  const playerSkinCount = profile.ownedPlayerSkins?.length ?? 0;
+  const bulletSkinCount = profile.ownedBulletSkins?.length ?? 0;
+  return Math.max(1, playerSkinCount + bulletSkinCount - 1);
+}
+
+function getNoHitSeconds(result: GameResult): number {
+  if (typeof result.firstHitSeconds === 'number') {
+    return result.firstHitSeconds;
+  }
+
+  // Backward compatibility with old callers/tests that only send hitsTaken.
+  if (result.hitsTaken === 0) {
+    return result.scoreSeconds;
+  }
+
+  return 0;
+}
 
 export function applyAchievements(profile: PlayerProfile, result: GameResult): PlayerProfile {
   let p = profile;
 
+  const bestRunSeconds = Math.max(result.scoreSeconds, p.bestScore);
+  const noHitSeconds = getNoHitSeconds(result);
+  const totalOwnedSkinCount = getOwnedSkinCount(p);
+
   if (p.totalRuns >= 1) p = unlockAchievement(p, 'first-run');
 
-  if (result.scoreSeconds >= 10) p = unlockAchievement(p, 'survive-10');
-  if (result.scoreSeconds >= 30) p = unlockAchievement(p, 'survive-30');
-  if (result.scoreSeconds >= 60) p = unlockAchievement(p, 'survive-60');
+  if (bestRunSeconds >= 10) p = unlockAchievement(p, 'survive-10');
+  if (bestRunSeconds >= 30) p = unlockAchievement(p, 'survive-30');
+  if (bestRunSeconds >= 60) p = unlockAchievement(p, 'survive-60');
+  if (bestRunSeconds >= 90) p = unlockAchievement(p, 'survive-90');
+  if (bestRunSeconds >= 120) p = unlockAchievement(p, 'survive-120');
 
-  if (result.scoreSeconds >= 20 && result.hitsTaken === 0) {
-    p = unlockAchievement(p, 'no-hit-20');
-  }
+  if (noHitSeconds >= 20) p = unlockAchievement(p, 'no-hit-20');
+  if (noHitSeconds >= 30) p = unlockAchievement(p, 'no-hit-30');
 
-  const playerSkinCount = p.ownedPlayerSkins?.length ?? 0;
-  const bulletSkinCount = p.ownedBulletSkins?.length ?? 0;
-  const totalOwnedSkinCount = Math.max(1, playerSkinCount + bulletSkinCount - 1);
-  if (totalOwnedSkinCount >= 2) {
-    p = unlockAchievement(p, 'collector-2');
-  }
+  if (p.totalRuns >= 5) p = unlockAchievement(p, 'runner-5');
+  if (p.totalRuns >= 20) p = unlockAchievement(p, 'runner-20');
+
+  if (p.totalSecondsSurvived >= 300) p = unlockAchievement(p, 'time-300');
+  if (p.totalSecondsSurvived >= 1800) p = unlockAchievement(p, 'time-1800');
+
+  if (p.coins >= 100) p = unlockAchievement(p, 'coins-100');
+  if (p.coins >= 500) p = unlockAchievement(p, 'coins-500');
+
+  if (totalOwnedSkinCount >= 2) p = unlockAchievement(p, 'collector-2');
+  if (totalOwnedSkinCount >= 5) p = unlockAchievement(p, 'collector-5');
 
   return p;
 }

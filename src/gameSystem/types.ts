@@ -41,6 +41,7 @@ export interface PlayerProfile {
 export interface GameResult {
   scoreSeconds: number;
   hitsTaken: number;
+  firstHitSeconds?: number | null;
 }
 
 export interface PlayerSkinDefinition {
