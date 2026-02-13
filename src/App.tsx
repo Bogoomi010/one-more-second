@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
+import { sound } from '@pixi/sound';
 import Layout from './components/Layout';
 import ProfileSetupModal from './components/ProfileSetupModal';
 import Toast from './components/Toast';
 import ConfirmModal from './components/ConfirmModal';
 import GamePage from './pages/Game';
-import { loadProfile, ensureDailyChallenge } from './gameSystem';
+import { audioManager, ensureDailyChallenge, loadProfile, loadSettings, saveSettings } from './gameSystem';
 import SystemMenuModal from './pages/Game/components/SystemMenuModal';
+import ShopModal from './pages/Game/components/ShopModal';
 import { useAuth } from './context/AuthContext';
 import i18n from './i18n';
 import {
@@ -26,6 +28,11 @@ function App() {
   const [pendingProfileSetupCheck, setPendingProfileSetupCheck] = useState(false);
   const [rankingRefreshTrigger, setRankingRefreshTrigger] = useState(0);
   const [systemMenuOpen, setSystemMenuOpen] = useState(false);
+  const [shopOpen, setShopOpen] = useState(false);
+  const [isAudioMuted, setIsAudioMuted] = useState(() => {
+    const settings = loadSettings();
+    return !settings.audio.bgmEnabled && !settings.audio.sfxEnabled;
+  });
   const [profileSetupOpen, setProfileSetupOpen] = useState(false);
   const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -34,6 +41,29 @@ function App() {
   const showToast = (message: string, variant: ToastVariant = 'info') => {
     setToastVariant(variant);
     setToastMessage(message);
+  };
+
+  const handleToggleMute = () => {
+    const settings = loadSettings();
+    const currentlyMuted = !settings.audio.bgmEnabled && !settings.audio.sfxEnabled;
+
+    const next = {
+      ...settings,
+      audio: {
+        ...settings.audio,
+        bgmEnabled: currentlyMuted,
+        sfxEnabled: currentlyMuted,
+      },
+    };
+
+    saveSettings(next);
+    audioManager.updateVolumes();
+
+    if (!currentlyMuted) {
+      sound.stopAll();
+    }
+
+    setIsAudioMuted(!next.audio.bgmEnabled && !next.audio.sfxEnabled);
   };
 
   useEffect(() => {
@@ -114,6 +144,7 @@ function App() {
       setPendingProfileSetupCheck(false);
       setProfileSetupOpen(false);
       setSystemMenuOpen(false);
+      setShopOpen(false);
       setUserCountry('KR');
       setRankingRefreshTrigger((prev) => prev + 1);
       showToast('로그아웃 되었습니다.', 'success');
@@ -139,7 +170,10 @@ function App() {
         profile={profile}
         userCountry={userCountry}
         rankingRefreshTrigger={rankingRefreshTrigger}
+        onMarketClick={() => setShopOpen(true)}
         onSettingsClick={() => setSystemMenuOpen(true)}
+        onToggleMute={handleToggleMute}
+        isMuted={isAudioMuted}
         onProfileEditClick={() => setProfileSetupOpen(true)}
         onLoginClick={handleLoginClick}
         onLogoutClick={handleLogoutClick}
@@ -152,7 +186,7 @@ function App() {
           setProfile={setProfile}
           setUserCountry={setUserCountry}
           onRankingUpdate={() => setRankingRefreshTrigger((prev) => prev + 1)}
-          isSystemMenuOpen={systemMenuOpen}
+          isSystemMenuOpen={systemMenuOpen || shopOpen}
           profileIdentity={userIdentity}
           isProfileSetupOpen={profileSetupOpen}
           identityLoading={identityLoading}
@@ -163,6 +197,16 @@ function App() {
       <SystemMenuModal
         isOpen={systemMenuOpen}
         onClose={() => setSystemMenuOpen(false)}
+        profile={profile}
+        setProfile={setProfile}
+        onSettingsChange={(next) => {
+          setIsAudioMuted(!next.audio.bgmEnabled && !next.audio.sfxEnabled);
+        }}
+      />
+
+      <ShopModal
+        isOpen={shopOpen}
+        onClose={() => setShopOpen(false)}
         profile={profile}
         setProfile={setProfile}
       />

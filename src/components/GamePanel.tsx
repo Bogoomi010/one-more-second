@@ -23,6 +23,7 @@ export default function NewGamePanel({
   const { t } = useTranslation();
   const [score, setScore] = useState(0);
   const [spawnInterval, setSpawnInterval] = useState(500);
+  const [lives, setLives] = useState(3);
   const [gameStarted, setGameStarted] = useState(false);
 
   const formatTime = (seconds: number): string => {
@@ -59,6 +60,10 @@ export default function NewGamePanel({
     setSpawnInterval(interval);
   };
 
+  const handleLivesChange = (nextLives: number) => {
+    setLives(nextLives);
+  };
+
   return (
     <div className="w-full h-full min-w-0 min-h-0 bg-bg-secondary border border-border-primary rounded-[24px] p-6 flex flex-col gap-4 backdrop-blur-[10px] font-primary overflow-hidden box-border">
       {/* Top Bar */}
@@ -89,12 +94,15 @@ export default function NewGamePanel({
 
         {/* Right Controls */}
         <div className="flex flex-col items-end justify-center gap-1">
-          <div className="flex items-center gap-3 justify-center">
-            <img
-              src={lifeIcon}
-              alt={t('game.lifeIconAlt')}
-              className="w-12 h-12 object-contain"
-            />
+          <div className="flex items-center justify-center">
+            {Array.from({ length: lives }).map((_, index) => (
+              <img
+                key={`life-${index}`}
+                src={lifeIcon}
+                alt={t('game.lifeIconAlt')}
+                className="w-12 h-12 object-contain"
+              />
+            ))}
           </div>
           <div className="text-text-disabled font-secondary text-ui-tab font-normal">
             {t('game.spawnInterval')}: {spawnInterval}ms
@@ -160,7 +168,7 @@ export default function NewGamePanel({
           <div className="w-full h-full min-h-[360px] sm:min-h-[422px]">
             <GameCanvas
               onGameOver={handleGameOver}
-              onLivesChange={() => {}}
+              onLivesChange={handleLivesChange}
               onScoreChange={handleScoreChange}
               onSpawnIntervalChange={handleSpawnIntervalChange}
               playerImage={playerImage}
