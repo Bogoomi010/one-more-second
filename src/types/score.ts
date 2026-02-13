@@ -7,4 +7,5 @@ export interface ScoreRecord {
 export interface ScoreSubmitResponse {
   success: boolean;
   message?: string;
-} 
+  cloudSynced: boolean;
+}

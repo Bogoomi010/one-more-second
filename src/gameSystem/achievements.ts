@@ -23,7 +23,10 @@ export function applyAchievements(profile: PlayerProfile, result: GameResult): P
     p = unlockAchievement(p, 'no-hit-20');
   }
 
-  if ((p.ownedSkins?.length ?? 0) >= 2) {
+  const playerSkinCount = p.ownedPlayerSkins?.length ?? 0;
+  const bulletSkinCount = p.ownedBulletSkins?.length ?? 0;
+  const totalOwnedSkinCount = Math.max(1, playerSkinCount + bulletSkinCount - 1);
+  if (totalOwnedSkinCount >= 2) {
     p = unlockAchievement(p, 'collector-2');
   }
 
