@@ -1,30 +1,34 @@
 import React, { useEffect, useRef } from 'react';
+import { Application, Graphics, Rectangle, Sprite, Texture } from 'pixi.js';
+import { sound } from '@pixi/sound';
 import { GameResult } from '../../../gameSystem/types';
 import { loadSettings } from '../../../gameSystem/settings';
 import { audioManager } from '../../../gameSystem/audio';
+import bgmFile from '../../../Sound/Sound_main.mp3';
 
-const CANVAS_WIDTH = 400;
-const CANVAS_HEIGHT = 500;
 const PLAYER_SPEED = 240;
-const PLAYER_SIZE = 20;
-const BULLET_RADIUS = 4;
+const PLAYER_SIZE = 28;
+const BULLET_SIZE = 12;
+const BULLET_RADIUS = BULLET_SIZE / 2;
 const BULLET_SPEED = 180;
 const INITIAL_SPAWN_INTERVAL = 500;
 const INTERVAL_DECREASE = 50;
 const MIN_SPAWN_INTERVAL = 100;
 const DIFFICULTY_INTERVAL = 3000;
+const PIXI_BGM_ALIAS = 'oms-main-bgm';
 
 interface GameCanvasProps {
   onGameOver: (result: GameResult) => void;
   onLivesChange: (lives: number) => void;
   onScoreChange: (score: number) => void;
   onSpawnIntervalChange: (interval: number) => void;
-  playerColor: string;
-  bulletColor: string;
+  playerImage: string;
+  bulletImage: string;
   isModalOpen?: boolean;
 }
 
 type Bullet = {
+  sprite: Sprite;
   x: number;
   y: number;
   vx: number;
@@ -34,217 +38,302 @@ type Bullet = {
 type GameState = {
   player: { x: number; y: number };
   bullets: Bullet[];
-  keys: { [key: string]: boolean };
-  gameStarted: boolean;
+  keys: Record<string, boolean>;
   gameOver: boolean;
-  startTime: number;
+  elapsedMs: number;
   lastScoreSec: number;
   lives: number;
   hits: number;
   spawnInterval: number;
   spawnTimer: number;
   difficultyTimer: number;
-  isHit: boolean;
   spawnFromTop: boolean;
+  hitFlashRemainingMs: number;
+  viewportWidth: number;
+  viewportHeight: number;
 };
+
+function resolveBgmVolume(): number {
+  const settings = loadSettings();
+  if (!settings.audio.bgmEnabled) return 0;
+  return (settings.audio.bgmVolume / 100) * 0.4;
+}
+
+function isPromise<T>(value: T | Promise<T>): value is Promise<T> {
+  return Boolean(value && typeof (value as Promise<T>).then === 'function');
+}
 
 function GameCanvasComponent({
   onGameOver,
   onLivesChange,
   onScoreChange,
   onSpawnIntervalChange,
-  playerColor,
-  bulletColor,
+  playerImage,
+  bulletImage,
   isModalOpen = false,
 }: GameCanvasProps) {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  
-  // 콜백을 ref로 저장하여 의존성 문제 해결
+  const containerRef = useRef<HTMLDivElement>(null);
   const onGameOverRef = useRef(onGameOver);
   const onLivesChangeRef = useRef(onLivesChange);
   const onScoreChangeRef = useRef(onScoreChange);
   const onSpawnIntervalChangeRef = useRef(onSpawnIntervalChange);
-  
-  // 최신 콜백으로 업데이트
+  const isModalOpenRef = useRef(isModalOpen);
+
   useEffect(() => {
     onGameOverRef.current = onGameOver;
     onLivesChangeRef.current = onLivesChange;
     onScoreChangeRef.current = onScoreChange;
     onSpawnIntervalChangeRef.current = onSpawnIntervalChange;
-  });
+    isModalOpenRef.current = isModalOpen;
+  }, [isModalOpen, onGameOver, onLivesChange, onScoreChange, onSpawnIntervalChange]);
 
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) {
-      console.log('⚠️ Canvas not found');
-      return;
-    }
+    const container = containerRef.current;
+    if (!container) return;
 
-    const ctx = canvas.getContext('2d');
-    if (!ctx) {
-      console.log('⚠️ Context not found');
-      return;
-    }
+    const app = new Application<HTMLCanvasElement>({
+      antialias: true,
+      backgroundColor: 0x18181b,
+      autoDensity: true,
+      resizeTo: container,
+    });
 
-    console.log('🎮 Game initialized');
+    const view = app.view as HTMLCanvasElement;
+    view.tabIndex = 0;
+    view.style.outline = 'none';
+    container.appendChild(view);
 
-    // 게임 상태
+    const stage: any = app.stage;
+    stage.eventMode = 'static';
+
+    const backgroundLayer = new Graphics();
+    stage.addChild(backgroundLayer);
+
+    const hitFlashLayer = new Graphics();
+    stage.addChild(hitFlashLayer);
+
+    const playerTexture = Texture.from(playerImage);
+    const bulletTexture = Texture.from(bulletImage);
+
+    const playerSprite = new Sprite(playerTexture);
+    playerSprite.anchor.set(0.5);
+    playerSprite.width = PLAYER_SIZE;
+    playerSprite.height = PLAYER_SIZE;
+    stage.addChild(playerSprite);
+
     const state: GameState = {
-      player: { x: CANVAS_WIDTH / 2 - PLAYER_SIZE / 2, y: CANVAS_HEIGHT / 2 - PLAYER_SIZE / 2 },
+      player: { x: app.screen.width / 2, y: app.screen.height / 2 },
       bullets: [],
       keys: {},
-      gameStarted: false,
       gameOver: false,
-      startTime: Date.now(),
+      elapsedMs: 0,
       lastScoreSec: 0,
       lives: 3,
       hits: 0,
       spawnInterval: INITIAL_SPAWN_INTERVAL,
       spawnTimer: 0,
       difficultyTimer: 0,
-      isHit: false,
       spawnFromTop: true,
+      hitFlashRemainingMs: 0,
+      viewportWidth: app.screen.width,
+      viewportHeight: app.screen.height,
     };
 
-    let lastFrameTime = 0;
-    let animationId = 0;
-    let frameCount = 0;
-    let lastLogTime = Date.now();
+    onLivesChangeRef.current(3);
+    onScoreChangeRef.current(0);
+    onSpawnIntervalChangeRef.current(INITIAL_SPAWN_INTERVAL);
 
-    // 오디오 초기화
-    audioManager.init();
+    void audioManager.init();
+    let destroyed = false;
+    let bgmStarted = false;
 
-    // 게임 초기화
-    const resetGame = () => {
-      state.player = { x: CANVAS_WIDTH / 2 - PLAYER_SIZE / 2, y: CANVAS_HEIGHT / 2 - PLAYER_SIZE / 2 };
-      state.bullets = [];
-      state.keys = {};
-      state.gameStarted = false;
-      state.gameOver = false;
-      state.startTime = Date.now();
-      state.lastScoreSec = 0;
-      state.lives = 3;
-      state.hits = 0;
-      state.spawnInterval = INITIAL_SPAWN_INTERVAL;
-      state.spawnTimer = 0;
-      state.difficultyTimer = 0;
-      state.isHit = false;
-      state.spawnFromTop = true;
-      
-      onLivesChangeRef.current(3);
-      onScoreChangeRef.current(0);
-      onSpawnIntervalChangeRef.current(INITIAL_SPAWN_INTERVAL);
+    if (!sound.exists(PIXI_BGM_ALIAS)) {
+      sound.add(PIXI_BGM_ALIAS, {
+        url: bgmFile,
+        loop: true,
+        volume: resolveBgmVolume(),
+      });
+    } else {
+      sound.volume(PIXI_BGM_ALIAS, resolveBgmVolume());
+    }
+
+    const ensureBgmPlayback = () => {
+      if (destroyed || bgmStarted) return;
+      const settings = loadSettings();
+      if (!settings.audio.bgmEnabled) return;
+
+      bgmStarted = true;
+      try {
+        const playback = sound.play(PIXI_BGM_ALIAS, {
+          loop: true,
+          singleInstance: true,
+          volume: resolveBgmVolume(),
+        });
+
+        if (isPromise(playback)) {
+          void playback.catch(() => {
+            bgmStarted = false;
+          });
+        }
+      } catch {
+        bgmStarted = false;
+      }
     };
 
-    // 총알 생성
+    const stopBgm = () => {
+      if (sound.exists(PIXI_BGM_ALIAS)) {
+        sound.stop(PIXI_BGM_ALIAS);
+      }
+      bgmStarted = false;
+    };
+
+    const drawBackground = (width: number, height: number) => {
+      backgroundLayer.clear();
+      backgroundLayer.beginFill(0x18181b);
+      backgroundLayer.drawRect(0, 0, width, height);
+      backgroundLayer.endFill();
+
+      hitFlashLayer.clear();
+      hitFlashLayer.beginFill(0xff0000);
+      hitFlashLayer.drawRect(0, 0, width, height);
+      hitFlashLayer.endFill();
+      hitFlashLayer.visible = false;
+
+      stage.hitArea = new Rectangle(0, 0, width, height);
+    };
+
+    const clampPlayer = () => {
+      const maxX = state.viewportWidth - PLAYER_SIZE / 2;
+      const maxY = state.viewportHeight - PLAYER_SIZE / 2;
+      const minX = PLAYER_SIZE / 2;
+      const minY = PLAYER_SIZE / 2;
+      state.player.x = Math.max(minX, Math.min(maxX, state.player.x));
+      state.player.y = Math.max(minY, Math.min(maxY, state.player.y));
+    };
+
+    const syncViewport = () => {
+      const width = app.screen.width;
+      const height = app.screen.height;
+      if (width === state.viewportWidth && height === state.viewportHeight) {
+        return;
+      }
+
+      state.viewportWidth = width;
+      state.viewportHeight = height;
+      drawBackground(width, height);
+      clampPlayer();
+    };
+
     const spawnBullet = () => {
       const margin = BULLET_RADIUS * 2;
-      const x = Math.random() * (CANVAS_WIDTH - margin * 2) + margin;
-      const y = state.spawnFromTop ? BULLET_RADIUS * 2 : CANVAS_HEIGHT - BULLET_RADIUS * 2;
+      const x = Math.random() * (state.viewportWidth - margin * 2) + margin;
+      const y = state.spawnFromTop ? margin : state.viewportHeight - margin;
 
-      const dx = state.player.x + PLAYER_SIZE / 2 - x;
-      const dy = state.player.y + PLAYER_SIZE / 2 - y;
-      const distance = Math.sqrt(dx * dx + dy * dy);
-      
+      const dx = state.player.x - x;
+      const dy = state.player.y - y;
+      const distance = Math.hypot(dx, dy) || 1;
       const vx = (dx / distance) * BULLET_SPEED;
       const vy = (dy / distance) * BULLET_SPEED;
 
-      state.bullets.push({ x, y, vx, vy });
+      const bulletSprite = new Sprite(bulletTexture);
+      bulletSprite.anchor.set(0.5);
+      bulletSprite.width = BULLET_SIZE;
+      bulletSprite.height = BULLET_SIZE;
+      bulletSprite.x = x;
+      bulletSprite.y = y;
+      stage.addChild(bulletSprite);
+
+      state.bullets.push({
+        sprite: bulletSprite,
+        x,
+        y,
+        vx,
+        vy,
+      });
       state.spawnFromTop = !state.spawnFromTop;
-      
-      console.log(`🔴 Bullet spawned! Total: ${state.bullets.length}`);
     };
 
-    // 충돌 체크
-    const checkCollision = (px: number, py: number, bx: number, by: number): boolean => {
-      const dx = px + PLAYER_SIZE / 2 - bx;
-      const dy = py + PLAYER_SIZE / 2 - by;
-      const distance = Math.sqrt(dx * dx + dy * dy);
-      return distance < BULLET_RADIUS + PLAYER_SIZE / 2;
+    const removeBulletAt = (index: number) => {
+      const [removed] = state.bullets.splice(index, 1);
+      if (!removed) return;
+      stage.removeChild(removed.sprite);
+      removed.sprite.destroy();
     };
 
-    // 충돌 처리
-    const handleCollision = () => {
-      state.hits++;
-      state.lives--;
-      console.log(`💥 Hit! Lives remaining: ${state.lives}`);
+    const triggerHit = () => {
+      state.hits += 1;
+      state.lives -= 1;
       onLivesChangeRef.current(state.lives);
-
       audioManager.playHitSound();
 
       const settings = loadSettings();
-      const flashDuration = 150 * (settings.graphics.hitFlashIntensity / 100);
-      state.isHit = true;
-      setTimeout(() => {
-        state.isHit = false;
-      }, flashDuration);
+      state.hitFlashRemainingMs = 150 * (settings.graphics.hitFlashIntensity / 100);
 
       if (state.lives <= 0) {
         state.gameOver = true;
-        const finalScore = Math.floor((Date.now() - state.startTime) / 1000);
-        console.log(`☠️ Game Over! Score: ${finalScore}s, Hits: ${state.hits}`);
-        audioManager.stopBGM(); // BGM 중지
+        const finalScore = Math.floor(state.elapsedMs / 1000);
+        stopBgm();
         audioManager.playGameOverSound();
-        onGameOverRef.current({ scoreSeconds: finalScore, hitsTaken: state.hits });
+        onGameOverRef.current({
+          scoreSeconds: finalScore,
+          hitsTaken: state.hits,
+        });
       }
     };
 
-    // 업데이트
-    const update = (deltaTime: number) => {
-      if (!state.gameStarted || state.gameOver) return;
+    const update = (deltaTimeSec: number) => {
+      if (state.gameOver || isModalOpenRef.current) return;
 
-      const deltaMs = deltaTime * 1000;
+      const deltaMs = deltaTimeSec * 1000;
+      state.elapsedMs += deltaMs;
+      state.hitFlashRemainingMs = Math.max(0, state.hitFlashRemainingMs - deltaMs);
 
-      // 플레이어 이동
-      const moveDistance = PLAYER_SPEED * deltaTime;
-      if (state.keys['ArrowLeft']) state.player.x -= moveDistance;
-      if (state.keys['ArrowRight']) state.player.x += moveDistance;
-      if (state.keys['ArrowUp']) state.player.y -= moveDistance;
-      if (state.keys['ArrowDown']) state.player.y += moveDistance;
+      const moveDistance = PLAYER_SPEED * deltaTimeSec;
+      if (state.keys.ArrowLeft) state.player.x -= moveDistance;
+      if (state.keys.ArrowRight) state.player.x += moveDistance;
+      if (state.keys.ArrowUp) state.player.y -= moveDistance;
+      if (state.keys.ArrowDown) state.player.y += moveDistance;
+      clampPlayer();
 
-      state.player.x = Math.max(0, Math.min(CANVAS_WIDTH - PLAYER_SIZE, state.player.x));
-      state.player.y = Math.max(0, Math.min(CANVAS_HEIGHT - PLAYER_SIZE, state.player.y));
-
-      // 총알 이동
-      state.bullets.forEach(bullet => {
-        bullet.x += bullet.vx * deltaTime;
-        bullet.y += bullet.vy * deltaTime;
-      });
-
-      // 충돌 체크
-      for (let i = state.bullets.length - 1; i >= 0; i--) {
+      for (let i = state.bullets.length - 1; i >= 0; i -= 1) {
         const bullet = state.bullets[i];
-        if (checkCollision(state.player.x, state.player.y, bullet.x, bullet.y)) {
-          state.bullets.splice(i, 1);
-          handleCollision();
+        bullet.x += bullet.vx * deltaTimeSec;
+        bullet.y += bullet.vy * deltaTimeSec;
+        bullet.sprite.x = bullet.x;
+        bullet.sprite.y = bullet.y;
+
+        const distance = Math.hypot(state.player.x - bullet.x, state.player.y - bullet.y);
+        if (distance < BULLET_RADIUS + PLAYER_SIZE / 2) {
+          removeBulletAt(i);
+          triggerHit();
           if (state.gameOver) return;
+          continue;
+        }
+
+        const outOfBounds =
+          bullet.x < -BULLET_SIZE ||
+          bullet.x > state.viewportWidth + BULLET_SIZE ||
+          bullet.y < -BULLET_SIZE ||
+          bullet.y > state.viewportHeight + BULLET_SIZE;
+
+        if (outOfBounds) {
+          removeBulletAt(i);
         }
       }
 
-      // 화면 밖 총알 제거
-      state.bullets = state.bullets.filter(
-        b => b.x >= 0 && b.x <= CANVAS_WIDTH && b.y >= 0 && b.y <= CANVAS_HEIGHT
-      );
-
-      // 점수 업데이트
-      const elapsedSec = Math.floor((Date.now() - state.startTime) / 1000);
+      const elapsedSec = Math.floor(state.elapsedMs / 1000);
       if (elapsedSec !== state.lastScoreSec) {
         state.lastScoreSec = elapsedSec;
-        console.log(`⏱️ Score: ${elapsedSec}s`);
         onScoreChangeRef.current(elapsedSec);
-        // TODO: 10초 또는 20초 돌파 시 효과음 추가 예정
       }
 
-      // 난이도 증가
       state.difficultyTimer += deltaMs;
       if (state.difficultyTimer >= DIFFICULTY_INTERVAL) {
         state.difficultyTimer -= DIFFICULTY_INTERVAL;
         state.spawnInterval = Math.max(MIN_SPAWN_INTERVAL, state.spawnInterval - INTERVAL_DECREASE);
-        console.log(`📈 Difficulty increased! Spawn interval: ${state.spawnInterval}ms`);
         onSpawnIntervalChangeRef.current(state.spawnInterval);
       }
 
-      // 총알 생성
       state.spawnTimer += deltaMs;
       while (state.spawnTimer >= state.spawnInterval) {
         state.spawnTimer -= state.spawnInterval;
@@ -252,135 +341,92 @@ function GameCanvasComponent({
       }
     };
 
-    // 그리기
-    const draw = () => {
-      ctx.fillStyle = '#18181b';
-      ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+    const render = () => {
+      playerSprite.x = state.player.x;
+      playerSprite.y = state.player.y;
 
-      if (state.isHit) {
+      if (state.hitFlashRemainingMs > 0) {
         const settings = loadSettings();
-        const opacity = 0.5 * (settings.graphics.hitFlashIntensity / 100);
-        ctx.fillStyle = `rgba(255, 0, 0, ${opacity})`;
-        ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-      }
-
-      ctx.fillStyle = playerColor;
-      ctx.fillRect(state.player.x, state.player.y, PLAYER_SIZE, PLAYER_SIZE);
-
-      ctx.fillStyle = bulletColor;
-      state.bullets.forEach(bullet => {
-        ctx.beginPath();
-        ctx.arc(bullet.x, bullet.y, BULLET_RADIUS, 0, Math.PI * 2);
-        ctx.fill();
-      });
-
-      if (!state.gameStarted && !state.gameOver) {
-        ctx.fillStyle = '#fff';
-        ctx.font = 'bold 24px monospace';
-        ctx.textAlign = 'center';
-        ctx.fillText('Press ENTER to Start', CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2);
-        ctx.textAlign = 'left';
-      }
-
-      if (state.gameOver) {
-        ctx.fillStyle = '#fff';
-        ctx.font = 'bold 32px monospace';
-        ctx.textAlign = 'center';
-        ctx.fillText('GAME OVER', CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2);
-        ctx.font = 'bold 16px monospace';
-        ctx.fillText('Press R to restart', CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 + 32);
-        ctx.textAlign = 'left';
+        hitFlashLayer.alpha = 0.5 * (settings.graphics.hitFlashIntensity / 100);
+        hitFlashLayer.visible = true;
+      } else {
+        hitFlashLayer.visible = false;
       }
     };
 
-    // 게임 루프
-    const gameLoop = (timestamp: number) => {
-      if (!lastFrameTime) {
-        lastFrameTime = timestamp;
-        console.log('🎮 Game loop started');
+    const focusCanvas = () => {
+      try {
+        view.focus({ preventScroll: true });
+      } catch {
+        view.focus();
       }
-
-      const deltaTime = Math.min((timestamp - lastFrameTime) / 1000, 0.05);
-      lastFrameTime = timestamp;
-
-      // 업데이트 및 그리기
-      update(deltaTime);
-      draw();
-
-      // FPS 로깅 (1초마다)
-      frameCount++;
-      const now = Date.now();
-      if (now - lastLogTime >= 1000) {
-        console.log(`🎮 FPS: ${frameCount} | Bullets: ${state.bullets.length} | Started: ${state.gameStarted} | GameOver: ${state.gameOver} | Lives: ${state.lives}`);
-        frameCount = 0;
-        lastLogTime = now;
-      }
-
-      animationId = requestAnimationFrame(gameLoop);
     };
 
-    // 키보드 이벤트
-    const handleKeyDown = (e: KeyboardEvent) => {
+    const handlePointerDown = () => {
       audioManager.resume();
-      
-      if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key)) {
-        e.preventDefault();
-      }
-      
-      state.keys[e.key] = true;
-
-      // 모달이 열려있을 때는 게임 시작/재시작 키를 무시
-      if (isModalOpen) {
-        return;
-      }
-
-      if (!state.gameStarted && !state.gameOver && e.key === 'Enter') {
-        console.log('🎮 Game started!');
-        state.gameStarted = true;
-        state.startTime = Date.now();
-        // 게임 시작 시 BGM 재생
-        audioManager.playBGM();
-      }
-
-      if (state.gameOver && (e.key === 'r' || e.key === 'R' || e.key === 'ㄱ')) {
-        console.log('🎮 Game reset!');
-        resetGame();
-      }
+      ensureBgmPlayback();
+      focusCanvas();
     };
 
-    const handleKeyUp = (e: KeyboardEvent) => {
-      state.keys[e.key] = false;
+    const handleKeyDown = (event: KeyboardEvent) => {
+      audioManager.resume();
+      ensureBgmPlayback();
+      if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(event.key)) {
+        event.preventDefault();
+      }
+      state.keys[event.key] = true;
     };
 
-    window.addEventListener('keydown', handleKeyDown);
-    window.addEventListener('keyup', handleKeyUp);
+    const handleKeyUp = (event: KeyboardEvent) => {
+      state.keys[event.key] = false;
+    };
 
-    // 게임 루프 시작
-    console.log('🚀 Starting game loop...');
-    animationId = requestAnimationFrame(gameLoop);
+    const handleBlur = () => {
+      state.keys = {};
+    };
 
-    // 클린업
+    const ticker = () => {
+      syncViewport();
+      const deltaTime = Math.min(app.ticker.deltaMS / 1000, 0.05);
+      update(deltaTime);
+      render();
+    };
+
+    drawBackground(state.viewportWidth, state.viewportHeight);
+    app.ticker.add(ticker);
+    stage.on('pointerdown', handlePointerDown);
+    view.addEventListener('keydown', handleKeyDown);
+    view.addEventListener('keyup', handleKeyUp);
+    view.addEventListener('blur', handleBlur);
+
+    focusCanvas();
+    ensureBgmPlayback();
+
     return () => {
-      console.log('🛑 Game cleanup');
-      cancelAnimationFrame(animationId);
-      window.removeEventListener('keydown', handleKeyDown);
-      window.removeEventListener('keyup', handleKeyUp);
+      destroyed = true;
+      app.ticker.remove(ticker);
+      stage.off('pointerdown', handlePointerDown);
+      view.removeEventListener('keydown', handleKeyDown);
+      view.removeEventListener('keyup', handleKeyUp);
+      view.removeEventListener('blur', handleBlur);
+      state.bullets.forEach((bullet) => bullet.sprite.destroy());
+      stopBgm();
+      app.destroy(true, true);
     };
-  }, [playerColor, bulletColor, isModalOpen]);
+  }, [bulletImage, playerImage]);
 
   return (
-    <canvas
-      ref={canvasRef}
-      width={CANVAS_WIDTH}
-      height={CANVAS_HEIGHT}
-      className="block mx-auto bg-zinc-900 border-2 border-zinc-800 max-w-[400px] h-[500px]"
+    <div
+      ref={containerRef}
+      className="w-full h-full min-h-[320px] sm:min-h-[422px] bg-zinc-900 border-2 border-zinc-800 rounded-xl overflow-hidden"
     />
   );
 }
 
-// React.memo로 감싸서 props가 변경되지 않으면 리렌더링 방지
 export default React.memo(GameCanvasComponent, (prevProps, nextProps) => {
-  // playerColor와 bulletColor만 비교 (콜백 함수는 비교하지 않음)
-  return prevProps.playerColor === nextProps.playerColor && 
-         prevProps.bulletColor === nextProps.bulletColor;
+  return (
+    prevProps.playerImage === nextProps.playerImage &&
+    prevProps.bulletImage === nextProps.bulletImage &&
+    prevProps.isModalOpen === nextProps.isModalOpen
+  );
 });

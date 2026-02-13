@@ -69,7 +69,8 @@ describe('Achievements System', () => {
   it('should unlock collector-2 achievement', () => {
     const profile: PlayerProfile = {
       ...defaultProfile(),
-      ownedSkins: ['classic-blue', 'mint'],
+      ownedPlayerSkins: ['player-default', 'player-girl'],
+      ownedBulletSkins: ['bullet-default'],
     };
     const result: GameResult = { scoreSeconds: 5, hitsTaken: 0 };
     

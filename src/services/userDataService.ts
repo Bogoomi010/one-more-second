@@ -3,24 +3,23 @@ import {
   Timestamp,
   addDoc,
   collection,
-  deleteDoc,
   doc,
   getDoc,
   getDocs,
   limit as limitFn,
   query,
+  runTransaction,
   serverTimestamp,
   setDoc,
   where,
 } from 'firebase/firestore';
 import { PlayerProfile } from '../gameSystem/types';
+import { resolveLegacySkinState } from '../gameSystem/skins';
 import { firebaseDb, firebaseEnabled } from '../lib/firebase';
 import { getCurrentUser } from './authService';
 import { ScoreRecord, ScoreSubmitResponse } from '../types/score';
 
-export interface ScoreSubmitResult extends ScoreSubmitResponse {
-  savedToCloud: boolean;
-}
+export interface ScoreSubmitResult extends ScoreSubmitResponse {}
 
 export interface UserIdentityProfile {
   nickname: string;
@@ -29,6 +28,7 @@ export interface UserIdentityProfile {
 
 type SupportedLanguage = 'ko' | 'en' | 'ja' | 'zh-CN';
 const LANGUAGE_STORAGE_KEY = 'oms.language';
+const USER_PUBLIC_PROFILES_COLLECTION = 'userPublicProfiles';
 
 function normalizeLanguage(language?: string | null): SupportedLanguage {
   if (!language) return 'en';
@@ -55,10 +55,24 @@ function normalizedNickname(value: string): string {
   return value.trim().toLowerCase();
 }
 
-interface ExistingScoreDoc {
-  id: string;
-  score: number;
-  timestamp: number;
+async function upsertPublicIdentityProfile(
+  uid: string,
+  identity: UserIdentityProfile
+): Promise<void> {
+  const db = firebaseDb;
+  if (!firebaseEnabled || !db) return;
+
+  await setDoc(
+    doc(db, USER_PUBLIC_PROFILES_COLLECTION, uid),
+    {
+      uid,
+      nickname: identity.nickname,
+      normalizedNickname: normalizedNickname(identity.nickname),
+      country: identity.country,
+      updatedAt: serverTimestamp(),
+    },
+    { merge: true }
+  );
 }
 
 export async function appendScoreSubmissionForUser(
@@ -82,54 +96,69 @@ export async function appendScoreSubmissionForUser(
   });
 }
 
-async function getExistingDocsForIdentity(
+async function resolveRankingIdentity(
   user: User,
-  nickname: string
-): Promise<ExistingScoreDoc[]> {
-  const db = firebaseDb;
-  if (!firebaseEnabled || !db) return [];
-
-  const nicknameKey = normalizedNickname(nickname);
-  if (!nicknameKey) return [];
-
-  const q = query(collection(db, 'scoreSubmissions'), where('uid', '==', user.uid));
-  const snapshot = await getDocs(q);
-  if (snapshot.empty) return [];
-
-  return snapshot.docs
-    .map((docSnap) => {
-      const data = docSnap.data() as {
-        nickname?: string;
-        score?: number;
-        clientTimestamp?: number;
-      };
-
-      if (normalizedNickname(String(data.nickname ?? '')) !== nicknameKey) {
-        return null;
-      }
-
-      return {
-        id: docSnap.id,
-        score: Number(data.score ?? 0),
-        timestamp: Number(data.clientTimestamp ?? 0),
-      } satisfies ExistingScoreDoc;
-    })
-    .filter((item): item is ExistingScoreDoc => item !== null);
+  fallback: ScoreRecord
+): Promise<{ nickname: string; country: string }> {
+  const profileIdentity = await getUserIdentityProfile(user.uid);
+  return {
+    nickname: profileIdentity?.nickname ?? fallback.nickname,
+    country: profileIdentity?.country ?? fallback.country,
+  };
 }
 
-function pickBestDoc(docs: ExistingScoreDoc[]): ExistingScoreDoc | null {
-  if (docs.length === 0) return null;
+async function upsertLeaderboardEntry(
+  path: [string, string, string],
+  uid: string,
+  nickname: string,
+  score: number,
+  country: string,
+  dateKey?: string
+): Promise<void> {
+  const db = firebaseDb;
+  if (!firebaseEnabled || !db) return;
 
-  return [...docs].sort((a, b) => {
-    if (b.score !== a.score) return b.score - a.score;
-    return b.timestamp - a.timestamp;
-  })[0];
+  const entryRef = doc(db, path[0], path[1], path[2], uid);
+  await runTransaction(db, async (transaction) => {
+    const existing = await transaction.get(entryRef);
+    const existingScore = Number(existing.data()?.score ?? 0);
+    const bestScore = Math.max(existingScore, score);
+
+    transaction.set(
+      entryRef,
+      {
+        uid,
+        nickname,
+        country,
+        score: bestScore,
+        lastSubmittedScore: score,
+        dateKey: dateKey ?? null,
+        updatedAt: serverTimestamp(),
+      },
+      { merge: true }
+    );
+  });
 }
 
-async function deleteScoreDocsByIds(ids: string[]): Promise<void> {
-  const db = firebaseDb;
-  if (!firebaseEnabled || !db || ids.length === 0) return;
-  await Promise.all(ids.map((id) => deleteDoc(doc(db, 'scoreSubmissions', id))));
+async function upsertAllLeaderboardEntries(
+  uid: string,
+  nickname: string,
+  score: number,
+  country: string,
+  dateKey: string
+): Promise<void> {
+  await Promise.all([
+    upsertLeaderboardEntry(['leaderboardsGlobal', 'all', 'entries'], uid, nickname, score, country),
+    upsertLeaderboardEntry(['leaderboardsCountry', country, 'entries'], uid, nickname, score, country),
+    upsertLeaderboardEntry(
+      ['leaderboardsDaily', dateKey, 'entries'],
+      uid,
+      nickname,
+      score,
+      country,
+      dateKey
+    ),
+  ]);
 }
 
 export async function submitScoreToCloudIfSignedIn(
@@ -138,43 +167,52 @@ export async function submitScoreToCloudIfSignedIn(
   const user = getCurrentUser();
   if (!user || !firebaseEnabled || !firebaseDb) {
     return {
-      success: true,
-      message: '로컬 기록만 저장되었습니다. 로그인 후 클라우드 동기화가 가능합니다.',
-      savedToCloud: false,
+      success: false,
+      cloudSynced: false,
+      message: 'Sign in and Firebase are required for cloud ranking.',
     };
   }
 
   try {
-    const existingDocs = await getExistingDocsForIdentity(user, scoreData.nickname);
-    const bestExisting = pickBestDoc(existingDocs);
-
-    if (bestExisting && bestExisting.score >= scoreData.score) {
-      const duplicateIds = existingDocs
-        .filter((docItem) => docItem.id !== bestExisting.id)
-        .map((docItem) => docItem.id);
-      await deleteScoreDocsByIds(duplicateIds);
-
-      return {
-        success: true,
-        message: '동일 닉네임의 더 높은 기존 기록이 있어 클라우드 전송을 생략했습니다.',
-        savedToCloud: false,
-      };
+    const identity = await resolveRankingIdentity(user, scoreData);
+    try {
+      await upsertPublicIdentityProfile(user.uid, identity);
+    } catch (profileError) {
+      console.warn('Public identity profile sync failed:', profileError);
     }
 
-    await appendScoreSubmissionForUser(user, scoreData);
-    await deleteScoreDocsByIds(existingDocs.map((docItem) => docItem.id));
+    const normalizedScoreData: ScoreRecord = {
+      nickname: identity.nickname,
+      country: identity.country,
+      score: scoreData.score,
+    };
+    const today = todayDateKey();
+
+    await upsertAllLeaderboardEntries(
+      user.uid,
+      normalizedScoreData.nickname,
+      normalizedScoreData.score,
+      normalizedScoreData.country,
+      today
+    );
+
+    try {
+      await appendScoreSubmissionForUser(user, normalizedScoreData);
+    } catch (legacyError) {
+      console.warn('Legacy scoreSubmissions append failed:', legacyError);
+    }
 
     return {
       success: true,
-      message: '점수가 클라우드에 저장되었습니다.',
-      savedToCloud: true,
+      cloudSynced: true,
+      message: 'Score synced to leaderboard.',
     };
   } catch (error) {
     console.error('Cloud score submit failed:', error);
     return {
       success: false,
-      message: '클라우드 저장에 실패했습니다. 로컬 기록은 유지됩니다.',
-      savedToCloud: false,
+      cloudSynced: false,
+      message: 'Cloud leaderboard sync failed.',
     };
   }
 }
@@ -187,6 +225,13 @@ export async function upsertUserProfile(
   const db = firebaseDb;
   if (!firebaseEnabled || !db) return;
 
+  const legacySkinState = resolveLegacySkinState(
+    profile.ownedPlayerSkins,
+    profile.ownedBulletSkins,
+    profile.selectedPlayerSkinId,
+    profile.selectedBulletSkinId
+  );
+
   await setDoc(
     doc(db, 'users', uid),
     {
@@ -195,8 +240,12 @@ export async function upsertUserProfile(
       totalRuns: profile.totalRuns,
       totalSecondsSurvived: profile.totalSecondsSurvived,
       bestScore: profile.bestScore,
-      selectedSkinId: profile.selectedSkinId,
-      ownedSkins: profile.ownedSkins,
+      selectedPlayerSkinId: profile.selectedPlayerSkinId,
+      selectedBulletSkinId: profile.selectedBulletSkinId,
+      ownedPlayerSkins: profile.ownedPlayerSkins,
+      ownedBulletSkins: profile.ownedBulletSkins,
+      selectedSkinId: legacySkinState.selectedSkinId,
+      ownedSkins: legacySkinState.ownedSkins,
       preferences: {
         language: normalizeLanguage(language ?? getStoredLanguage()),
       },
@@ -279,6 +328,8 @@ export async function upsertUserIdentityProfile(
     },
     { merge: true }
   );
+
+  await upsertPublicIdentityProfile(uid, identity);
 }
 
 export async function isNicknameAvailable(
@@ -292,18 +343,16 @@ export async function isNicknameAvailable(
   if (!trimmed) return false;
 
   try {
+    const normalized = normalizedNickname(trimmed);
     const q = query(
-      collection(db, 'scoreSubmissions'),
-      where('nickname', '==', trimmed),
+      collection(db, USER_PUBLIC_PROFILES_COLLECTION),
+      where('normalizedNickname', '==', normalized),
       limitFn(20)
     );
     const snapshot = await getDocs(q);
     if (snapshot.empty) return true;
 
-    return snapshot.docs.every((docSnap) => {
-      const data = docSnap.data() as { uid?: string };
-      return Boolean(currentUid && data.uid === currentUid);
-    });
+    return snapshot.docs.every((docSnap) => Boolean(currentUid && docSnap.id === currentUid));
   } catch (error) {
     console.error('Nickname availability check failed:', error);
     return true;

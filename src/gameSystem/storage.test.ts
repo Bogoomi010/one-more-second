@@ -14,8 +14,10 @@ describe('Storage System', () => {
       expect(profile.coins).toBe(0);
       expect(profile.totalRuns).toBe(0);
       expect(profile.bestScore).toBe(0);
-      expect(profile.selectedSkinId).toBe('classic-blue');
-      expect(profile.ownedSkins).toContain('classic-blue');
+      expect(profile.selectedPlayerSkinId).toBe('player-default');
+      expect(profile.selectedBulletSkinId).toBe('bullet-default');
+      expect(profile.ownedPlayerSkins).toContain('player-default');
+      expect(profile.ownedBulletSkins).toContain('bullet-default');
     });
   });
 
@@ -110,16 +112,19 @@ describe('Storage System', () => {
   });
 
   describe('profile validation', () => {
-    it('should fix invalid selectedSkinId', () => {
+    it('should fix invalid selected player and bullet skins', () => {
       const profile: PlayerProfile = {
         ...defaultProfile(),
-        selectedSkinId: 'invalid-skin' as any,
-        ownedSkins: ['classic-blue'] as any,
+        selectedPlayerSkinId: 'invalid-player-skin' as any,
+        selectedBulletSkinId: 'invalid-bullet-skin' as any,
+        ownedPlayerSkins: ['player-default'] as any,
+        ownedBulletSkins: ['bullet-default'] as any,
       };
       saveProfile(profile);
       
       const loaded = loadProfile();
-      expect(loaded.selectedSkinId).toBe('classic-blue');
+      expect(loaded.selectedPlayerSkinId).toBe('player-default');
+      expect(loaded.selectedBulletSkinId).toBe('bullet-default');
     });
 
     it('should merge missing fields with defaults', () => {
@@ -131,7 +136,27 @@ describe('Storage System', () => {
       
       const loaded = loadProfile();
       expect(loaded.totalRuns).toBe(0);
-      expect(loaded.ownedSkins).toContain('classic-blue');
+      expect(loaded.ownedPlayerSkins).toContain('player-default');
+      expect(loaded.ownedBulletSkins).toContain('bullet-default');
+    });
+
+    it('should migrate legacy skin fields to split skin fields', () => {
+      const legacyProfile: Record<string, unknown> = {
+        ...defaultProfile(),
+        selectedSkinId: 'mint',
+        ownedSkins: ['classic-blue', 'mint'],
+      };
+      delete legacyProfile.selectedPlayerSkinId;
+      delete legacyProfile.selectedBulletSkinId;
+      delete legacyProfile.ownedPlayerSkins;
+      delete legacyProfile.ownedBulletSkins;
+      localStorage.setItem('oms.profile.v1', JSON.stringify(legacyProfile));
+
+      const loaded = loadProfile();
+      expect(loaded.selectedPlayerSkinId).toBe('player-girl');
+      expect(loaded.selectedBulletSkinId).toBe('bullet-gimic');
+      expect(loaded.ownedPlayerSkins).toContain('player-girl');
+      expect(loaded.ownedBulletSkins).toContain('bullet-gimic');
     });
   });
 });

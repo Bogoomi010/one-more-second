@@ -6,7 +6,8 @@ import {
   applyDailyChallengeResult,
   applyRunToProfile,
   ensureDailyChallenge,
-  getSkin,
+  getBulletSkin,
+  getPlayerSkin,
   saveProfile,
 } from '../../gameSystem';
 import { GameResult, PlayerProfile } from '../../gameSystem/types';
@@ -36,16 +37,21 @@ export default function Game({
   onRequestProfileSetup,
 }: GameProps) {
   const [score, setScore] = useState(0);
-  const [canSubmitByScore, setCanSubmitByScore] = useState(true);
   const [isNewHighScore, setIsNewHighScore] = useState(false);
   const [showScoreModal, setShowScoreModal] = useState(false);
   const [lastRunMessage, setLastRunMessage] = useState<string[]>([]);
 
-  const skin = useMemo(() => getSkin(profile.selectedSkinId), [profile.selectedSkinId]);
+  const playerSkin = useMemo(
+    () => getPlayerSkin(profile.selectedPlayerSkinId),
+    [profile.selectedPlayerSkinId]
+  );
+  const bulletSkin = useMemo(
+    () => getBulletSkin(profile.selectedBulletSkinId),
+    [profile.selectedBulletSkinId]
+  );
 
   const handleGameOver = (result: GameResult) => {
     setScore(result.scoreSeconds);
-    setCanSubmitByScore(result.scoreSeconds >= profile.bestScore);
     setIsNewHighScore(result.scoreSeconds > profile.bestScore);
 
     // 프로필 업데이트 (코인/통계/업적/데일리)
@@ -73,7 +79,6 @@ export default function Game({
 
   const handleRestartGame = () => {
     setScore(0);
-    setCanSubmitByScore(true);
     setIsNewHighScore(false);
     setShowScoreModal(false);
     setLastRunMessage([]);
@@ -83,8 +88,8 @@ export default function Game({
     <>
       <NewGamePanel
         profile={profile}
-        playerColor={skin.playerColor}
-        bulletColor={skin.bulletColor}
+        playerImage={playerSkin.image}
+        bulletImage={bulletSkin.image}
         onGameOver={handleGameOver}
         isModalOpen={showScoreModal || isSystemMenuOpen}
       />
@@ -101,7 +106,6 @@ export default function Game({
         isProfileSetupOpen={isProfileSetupOpen}
         identityLoading={identityLoading}
         onRequestProfileSetup={onRequestProfileSetup}
-        canSubmitByScore={canSubmitByScore}
         isNewHighScore={isNewHighScore}
       />
     </>

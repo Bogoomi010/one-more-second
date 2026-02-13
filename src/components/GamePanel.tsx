@@ -7,16 +7,16 @@ import lifeIcon from '../assets/icon_life.png';
 
 interface NewGamePanelProps {
   profile: PlayerProfile;
-  playerColor: string;
-  bulletColor: string;
+  playerImage: string;
+  bulletImage: string;
   onGameOver: (result: GameResult) => void;
   isModalOpen?: boolean;
 }
 
 export default function NewGamePanel({
   profile,
-  playerColor,
-  bulletColor,
+  playerImage,
+  bulletImage,
   onGameOver,
   isModalOpen = false,
 }: NewGamePanelProps) {
@@ -103,9 +103,9 @@ export default function NewGamePanel({
       </div>
 
       {/* Main Content */}
-      <div className="flex flex-col items-center justify-center gap-6 p-[24px_12px] sm:p-[40px_20px] w-full min-h-[360px] sm:min-h-[422px]">
+      <div className="w-full flex-1 min-h-0 p-[24px_12px] sm:p-[40px_20px]">
         {!gameStarted ? (
-          <>
+          <div className="h-full min-h-[360px] sm:min-h-[422px] flex flex-col items-center justify-center gap-6">
             {/* Press Text */}
             <div className="text-text-primary font-secondary text-ui-tab font-bold tracking-[2px]">
               {t('game.press')}
@@ -155,16 +155,16 @@ export default function NewGamePanel({
                 </div>
               </div>
             </div>
-          </>
+          </div>
         ) : (
-          <div className="w-full flex justify-center">
+          <div className="w-full h-full min-h-[360px] sm:min-h-[422px]">
             <GameCanvas
               onGameOver={handleGameOver}
               onLivesChange={() => {}}
               onScoreChange={handleScoreChange}
               onSpawnIntervalChange={handleSpawnIntervalChange}
-              playerColor={playerColor}
-              bulletColor={bulletColor}
+              playerImage={playerImage}
+              bulletImage={bulletImage}
               isModalOpen={isModalOpen}
             />
           </div>

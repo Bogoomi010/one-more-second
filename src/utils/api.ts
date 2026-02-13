@@ -2,13 +2,13 @@ import { ScoreRecord, ScoreSubmitResponse } from '../types/score';
 import { submitScoreToCloudIfSignedIn } from '../services/userDataService';
 
 export const submitScore = async (scoreData: ScoreRecord): Promise<ScoreSubmitResponse> => {
-  const cloudResult = await submitScoreToCloudIfSignedIn(scoreData);
-  if (cloudResult.success) {
-    return cloudResult;
+  try {
+    return await submitScoreToCloudIfSignedIn(scoreData);
+  } catch (error) {
+    return {
+      success: false,
+      cloudSynced: false,
+      message: error instanceof Error ? error.message : 'Failed to submit score.',
+    };
   }
-
-  return {
-    success: true,
-    message: '클라우드 저장에 실패했지만 로컬 기록은 저장되었습니다.',
-  };
-}; 
+};

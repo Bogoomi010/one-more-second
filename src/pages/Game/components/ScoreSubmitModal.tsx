@@ -19,7 +19,6 @@ interface ScoreSubmitModalProps {
   isProfileSetupOpen: boolean;
   identityLoading: boolean;
   onRequestProfileSetup: () => void;
-  canSubmitByScore: boolean;
   isNewHighScore: boolean;
 }
 
@@ -35,7 +34,6 @@ const ScoreSubmitModal: React.FC<ScoreSubmitModalProps> = ({
   isProfileSetupOpen,
   identityLoading,
   onRequestProfileSetup,
-  canSubmitByScore,
   isNewHighScore,
 }) => {
   const { t } = useTranslation();
@@ -78,20 +76,17 @@ const ScoreSubmitModal: React.FC<ScoreSubmitModalProps> = ({
       score,
     };
 
-    addRankingEntry(scoreData.nickname, scoreData.country, scoreData.score);
-
-    if (onCountrySelect) {
-      onCountrySelect(scoreData.country);
-    }
-
-    if (onRankingUpdate) {
-      onRankingUpdate();
-    }
-
     const response = await submitScore(scoreData);
     setIsSubmitting(false);
 
     if (response.success) {
+      addRankingEntry(scoreData.nickname, scoreData.country, scoreData.score);
+      if (onCountrySelect) {
+        onCountrySelect(scoreData.country);
+      }
+      if (onRankingUpdate) {
+        onRankingUpdate();
+      }
       onClose();
     } else {
       setError(response.message || t('scoreSubmit.submitFailed'));
@@ -219,7 +214,7 @@ const ScoreSubmitModal: React.FC<ScoreSubmitModalProps> = ({
           )}
         </div>
 
-        <div className={!user ? 'w-full' : canSubmitByScore ? 'mt-auto w-full' : 'w-full flex-1 flex items-center justify-center'}>
+        <div className={!user ? 'w-full' : 'mt-auto w-full'}>
           {error && (
             <div className="text-center mb-4">
               <p className="font-primary text-sm text-accent-green tracking-[0.5px]">{error}</p>
@@ -236,7 +231,7 @@ const ScoreSubmitModal: React.FC<ScoreSubmitModalProps> = ({
                 {t('scoreSubmit.restart')}
               </button>
             </div>
-          ) : canSubmitByScore ? (
+          ) : (
             <div className="flex flex-col gap-3">
               <button
                 onClick={submitScoreData}
@@ -257,18 +252,6 @@ const ScoreSubmitModal: React.FC<ScoreSubmitModalProps> = ({
               >
                 <img src={retryIcon} alt="retry" className="w-5 h-5 object-contain" />
                 <span>{t('scoreSubmit.restart')}</span>
-              </button>
-            </div>
-          ) : (
-            <div className="w-full flex items-center justify-center">
-              <button
-                type="button"
-                onClick={onClose}
-                className="w-36 h-36 rounded-full border-none bg-accent-green cursor-pointer hover:brightness-110 flex items-center justify-center shadow-[0_0_24px_rgba(74,222,128,0.4)]"
-                aria-label={t('scoreSubmit.restart')}
-                title={t('scoreSubmit.restart')}
-              >
-                <img src={retryIcon} alt="retry" className="w-20 h-20 object-contain" />
               </button>
             </div>
           )}

@@ -56,6 +56,10 @@ export default function NewStatsPanel({ profile }: NewStatsPanelProps) {
   const bestTime = formatBestTime(profile.bestScore);
   const avgSurvival = Math.floor(profile.totalSecondsSurvived / Math.max(1, profile.totalRuns));
   const challengeProgress = Math.min((profile.bestScore / profile.dailyChallenge.targetSeconds) * 100, 100);
+  const ownedSkinCount = Math.max(
+    1,
+    (profile.ownedPlayerSkins?.length ?? 0) + (profile.ownedBulletSkins?.length ?? 0) - 1
+  );
 
   return (
     <div className="w-full h-full min-w-0 min-h-0 overflow-y-auto bg-bg-secondary border border-border-primary rounded-[24px] p-6 flex flex-col gap-4 backdrop-blur-[10px] font-primary">
@@ -158,7 +162,7 @@ export default function NewStatsPanel({ profile }: NewStatsPanelProps) {
                   </div>
                 </div>
                 <div className="text-ui-value font-bold text-text-primary">
-                  <span className="font-secondary">{profile.ownedSkins.length}</span>
+                  <span className="font-secondary">{ownedSkinCount}</span>
                   <span className="font-primary">{t('stats.countUnit')}</span>
                 </div>
               </div>
