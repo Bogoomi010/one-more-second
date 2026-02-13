@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
+import { getName } from 'country-list';
 import { useTranslation } from 'react-i18next';
 import { submitScore } from '../../../utils/api';
 import { ScoreRecord } from '../../../types/score';
@@ -6,6 +7,7 @@ import { addRankingEntry } from '../../../gameSystem/ranking';
 import { useAuth } from '../../../context/AuthContext';
 import { UserIdentityProfile } from '../../../services/userDataService';
 import retryIcon from '../../../assets/icon-retry.png';
+import { getFlagEmoji } from '../../../utils/flags';
 
 interface ScoreSubmitModalProps {
   score: number;
@@ -139,6 +141,10 @@ const ScoreSubmitModal: React.FC<ScoreSubmitModalProps> = ({
     onRequestProfileSetup();
   };
 
+  const profileCountryLabel = profileIdentity?.country
+    ? `${getFlagEmoji(profileIdentity.country)} ${getName(profileIdentity.country) ?? profileIdentity.country}`
+    : '-';
+
   if (!isOpen) return null;
 
   return (
@@ -197,7 +203,7 @@ const ScoreSubmitModal: React.FC<ScoreSubmitModalProps> = ({
                 {t('scoreSubmit.profileNickname')}: {profileIdentity.nickname}
               </p>
               <p className="m-0 text-[12px] text-text-secondary font-primary">
-                {t('scoreSubmit.profileCountry')}: {profileIdentity.country}
+                {t('scoreSubmit.profileCountry')}: {profileCountryLabel}
               </p>
             </div>
           ) : (

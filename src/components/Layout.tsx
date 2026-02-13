@@ -112,6 +112,10 @@ export default function Layout({
     setIsLanguageMenuOpen(false);
   };
 
+  const handleBrandClick = () => {
+    window.location.assign('/');
+  };
+
   return (
     <div className="h-screen bg-bg-primary flex flex-col items-center w-full overflow-hidden box-border">
       <div className="relative z-40 w-full bg-bg-secondary border border-border-primary px-6 py-4 flex justify-between items-center backdrop-blur-[10px]">
@@ -119,11 +123,16 @@ export default function Layout({
           <div className="w-[40px] h-[40px] rounded-xl bg-bg-card flex justify-center items-center">
             <span className="text-[24px] font-tertiary font-bold text-bg-primary">O</span>
           </div>
-          <div className="flex items-center gap-1 font-primary">
+          <button
+            type="button"
+            onClick={handleBrandClick}
+            className="flex items-center gap-1 font-primary bg-transparent border-none p-0 cursor-pointer"
+            aria-label="Go to homepage"
+          >
             <span className="text-[24px] italic font-bold text-text-primary">ONE</span>
             <span className="text-[24px] italic font-bold text-accent-green">MORE</span>
             <span className="text-[24px] italic font-bold text-text-primary">SECOND</span>
-          </div>
+          </button>
         </div>
 
         <div className="flex items-center gap-6">

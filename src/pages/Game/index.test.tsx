@@ -3,6 +3,16 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import Game from './index';
 import { defaultProfile } from '../../gameSystem/storage';
 
+jest.mock('react-i18next', () => ({
+  useTranslation: () => ({
+    t: (key: string) => {
+      if (key === 'game.enter') return 'ENTER';
+      if (key === 'game.lifeIconAlt') return 'Life icon';
+      return key;
+    },
+  }),
+}));
+
 // Mock the GameCanvas component since it uses canvas API
 jest.mock('./components/GameCanvas', () => {
   return function MockGameCanvas({ onGameOver }: any) {
@@ -37,7 +47,7 @@ describe('Game Page Integration', () => {
   });
 
   const startGame = () => {
-    const enterButton = screen.getByText('ENTER');
+    const enterButton = screen.getByText(/ENTER|game\.enter/i);
     fireEvent.click(enterButton);
   };
 
@@ -57,8 +67,8 @@ describe('Game Page Integration', () => {
 
   it('should display initial lives', () => {
     render(<Game {...defaultProps} />);
-    
-    expect(screen.getByText(/❤️/)).toBeInTheDocument();
+
+    expect(screen.getAllByAltText(/Life icon|game\.lifeIconAlt/).length).toBe(3);
   });
 
   it('should update profile on game over', async () => {

@@ -36,8 +36,12 @@ export function ensureDailyChallenge(profile: PlayerProfile, now = new Date()): 
   };
 }
 
-export function applyDailyChallengeResult(profile: PlayerProfile, scoreSeconds: number): { profile: PlayerProfile; rewarded: number } {
-  const p = ensureDailyChallenge(profile);
+export function applyDailyChallengeResult(
+  profile: PlayerProfile,
+  scoreSeconds: number,
+  now = new Date()
+): { profile: PlayerProfile; rewarded: number } {
+  const p = ensureDailyChallenge(profile, now);
   if (p.dailyChallenge.completed) return { profile: p, rewarded: 0 };
 
   if (scoreSeconds >= p.dailyChallenge.targetSeconds) {

@@ -1,11 +1,13 @@
 import { ensureDailyChallenge, applyDailyChallengeResult } from './dailyChallenge';
 import { defaultProfile } from './storage';
 
+const FIXED_DAY = new Date('2026-02-01');
+
 describe('Daily Challenge System', () => {
   describe('ensureDailyChallenge', () => {
     it('should create new challenge for new day', () => {
       const profile = defaultProfile();
-      const today = new Date('2026-02-01');
+      const today = FIXED_DAY;
       
       const updated = ensureDailyChallenge(profile, today);
       
@@ -17,7 +19,7 @@ describe('Daily Challenge System', () => {
 
     it('should not change challenge for same day', () => {
       const profile = defaultProfile();
-      const today = new Date('2026-02-01');
+      const today = FIXED_DAY;
       
       const updated1 = ensureDailyChallenge(profile, today);
       const updated2 = ensureDailyChallenge(updated1, today);
@@ -29,7 +31,7 @@ describe('Daily Challenge System', () => {
     it('should generate consistent challenge for same date', () => {
       const profile1 = defaultProfile();
       const profile2 = defaultProfile();
-      const today = new Date('2026-02-01');
+      const today = FIXED_DAY;
       
       const updated1 = ensureDailyChallenge(profile1, today);
       const updated2 = ensureDailyChallenge(profile2, today);
@@ -48,7 +50,7 @@ describe('Daily Challenge System', () => {
           completed: true,
         },
       };
-      const today = new Date('2026-02-01');
+      const today = FIXED_DAY;
       
       const updated = ensureDailyChallenge(profile, today);
       
@@ -70,7 +72,7 @@ describe('Daily Challenge System', () => {
         },
       };
       
-      const { profile: updated, rewarded } = applyDailyChallengeResult(profile, 20);
+      const { profile: updated, rewarded } = applyDailyChallengeResult(profile, 20, FIXED_DAY);
       
       expect(rewarded).toBe(30);
       expect(updated.coins).toBe(130);
@@ -89,7 +91,7 @@ describe('Daily Challenge System', () => {
         },
       };
       
-      const { profile: updated, rewarded } = applyDailyChallengeResult(profile, 25);
+      const { profile: updated, rewarded } = applyDailyChallengeResult(profile, 25, FIXED_DAY);
       
       expect(rewarded).toBe(30);
       expect(updated.coins).toBe(130);
@@ -108,7 +110,7 @@ describe('Daily Challenge System', () => {
         },
       };
       
-      const { profile: updated, rewarded } = applyDailyChallengeResult(profile, 19);
+      const { profile: updated, rewarded } = applyDailyChallengeResult(profile, 19, FIXED_DAY);
       
       expect(rewarded).toBe(0);
       expect(updated.coins).toBe(100);
@@ -127,7 +129,7 @@ describe('Daily Challenge System', () => {
         },
       };
       
-      const { profile: updated, rewarded } = applyDailyChallengeResult(profile, 25);
+      const { profile: updated, rewarded } = applyDailyChallengeResult(profile, 25, FIXED_DAY);
       
       expect(rewarded).toBe(0);
       expect(updated.coins).toBe(100);
