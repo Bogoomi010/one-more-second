@@ -127,7 +127,7 @@ export default function Layout({
             type="button"
             onClick={handleBrandClick}
             className="flex items-center gap-1 font-primary bg-transparent border-none p-0 cursor-pointer"
-            aria-label="Go to homepage"
+            aria-label={t('layout.goHome')}
           >
             <span className="text-[24px] italic font-bold text-text-primary">ONE</span>
             <span className="text-[24px] italic font-bold text-accent-green">MORE</span>
@@ -142,10 +142,11 @@ export default function Layout({
               type="button"
               className="text-text-muted font-primary text-[14px] font-bold cursor-pointer bg-transparent border-none p-0 hover:text-text-primary transition-colors duration-200"
               onClick={onMarketClick}
+              title={t('layout.navMarket')}
+              aria-label={t('layout.navMarket')}
             >
               {t('layout.navMarket')}
             </button>
-            <span className="text-text-muted font-primary text-[14px] font-bold cursor-pointer">{t('layout.navGlobalWall')}</span>
           </div>
 
           <div className="w-px h-6 bg-bg-card-alt" />
@@ -192,8 +193,8 @@ export default function Layout({
               type="button"
               className="w-8 h-8 rounded-lg bg-bg-card-alt border border-white/20 flex justify-center items-center cursor-pointer transition-all duration-200 hover:bg-white/20"
               onClick={onToggleMute}
-              title={isMuted ? 'Unmute' : 'Mute'}
-              aria-label={isMuted ? 'Unmute' : 'Mute'}
+              title={isMuted ? t('layout.unmute') : t('layout.mute')}
+              aria-label={isMuted ? t('layout.unmute') : t('layout.mute')}
             >
               <svg viewBox="0 0 24 24" className="w-4 h-4 text-text-primary" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M11 6L7.5 9H5V15H7.5L11 18V6Z" fill="currentColor" />
@@ -208,6 +209,8 @@ export default function Layout({
               type="button"
               className="w-8 h-8 rounded-lg bg-bg-card-alt border border-white/20 flex justify-center items-center cursor-pointer transition-all duration-200 hover:bg-white/20"
               onClick={onSettingsClick}
+              title={t('layout.systemMenu')}
+              aria-label={t('layout.systemMenu')}
             >
               <span className="text-base font-tertiary text-text-primary">M</span>
             </button>
@@ -230,7 +233,7 @@ export default function Layout({
               <div className="absolute right-0 top-[calc(100%+8px)] min-w-[220px] rounded-xl border border-border-primary bg-bg-secondary shadow-lg z-[60] p-2">
                 <div className="px-2 py-1.5 text-[11px] uppercase tracking-wide text-text-muted font-primary">
                   {isLoggedIn
-                    ? `${t('layout.userMenuSignedInAs')}: ${userDisplayName ?? 'User'}`
+                    ? `${t('layout.userMenuSignedInAs')}: ${userDisplayName ?? t('layout.userDefaultName')}`
                     : t('layout.userMenuSignedOut')}
                 </div>
 

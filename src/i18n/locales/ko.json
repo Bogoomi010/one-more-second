@@ -3,19 +3,24 @@
     "title": "one more second"
   },
   "layout": {
-    "navGame": "Game",
-    "navMarket": "Market",
-    "navGlobalWall": "Global Wall",
+    "navGame": "게임",
+    "navMarket": "상점",
+    "navGlobalWall": "글로벌 월",
+    "goHome": "홈으로 이동",
     "languageSwitch": "언어 변경",
     "googleAuth": "Google 로그인/로그아웃",
+    "mute": "음소거",
+    "unmute": "음소거 해제",
+    "systemMenu": "시스템 메뉴",
     "footerYear": "© 2024",
     "footerBrand": "ONE MORE SECOND",
     "footerTagline": ". STAY FOCUSED.",
-    "userMenuSignedInAs": "Signed in as",
-    "userMenuSignedOut": "Not signed in",
-    "userMenuEditProfile": "Edit Profile",
-    "userMenuLogin": "Sign In",
-    "userMenuLogout": "Sign Out"
+    "userMenuSignedInAs": "로그인 계정",
+    "userMenuSignedOut": "로그인되지 않음",
+    "userMenuEditProfile": "프로필 수정",
+    "userMenuLogin": "로그인",
+    "userMenuLogout": "로그아웃",
+    "userDefaultName": "사용자"
   },
   "ranking": {
     "title": "랭킹",
