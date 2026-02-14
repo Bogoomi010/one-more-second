@@ -4,52 +4,52 @@
   },
   "layout": {
     "navGame": "ゲーム",
-    "navMarket": "マーケット",
+    "navMarket": "ショップ",
     "navGlobalWall": "グローバルウォール",
     "goHome": "ホームへ移動",
     "languageSwitch": "言語を変更",
-    "googleAuth": "Google ログイン/ログアウト",
+    "googleAuth": "Googleでログイン/ログアウト",
     "mute": "ミュート",
     "unmute": "ミュート解除",
     "systemMenu": "システムメニュー",
-    "footerYear": "© 2024",
-    "footerBrand": "ONE MORE SECOND",
-    "footerTagline": ". STAY FOCUSED.",
     "userMenuSignedInAs": "ログイン中",
     "userMenuSignedOut": "未ログイン",
     "userMenuEditProfile": "プロフィール編集",
     "userMenuLogin": "ログイン",
     "userMenuLogout": "ログアウト",
-    "userDefaultName": "ユーザー"
+    "userDefaultName": "ユーザー",
+    "footerYear": "© 2024",
+    "footerBrand": "ONE MORE SECOND",
+    "footerTagline": ". STAY FOCUSED."
   },
   "ranking": {
     "title": "ランキング",
-    "global": "全体",
+    "global": "グローバル",
     "country": "国別",
     "daily": "デイリー",
     "noRecords": "まだ記録がありません",
     "records": "{{count}}件の記録"
   },
   "stats": {
-    "title": "統計 & 実績",
+    "title": "統計と実績",
     "tabStats": "統計",
     "tabTrophy": "トロフィー ({{unlocked}}/{{total}})",
     "tabAchievements": "実績",
-    "bestScore": "ベストスコア",
+    "bestScore": "最高スコア",
     "personalBest": "PERSONAL BEST",
     "totalRuns": "総プレイ回数",
     "totalRunsValue": "{{count}}回",
-    "coins": "所持コイン",
+    "coins": "コイン",
     "totalTime": "総生存時間",
     "averageTime": "平均生存時間",
     "ownedSkins": "所持スキン",
     "countUnit": "個",
-    "achievementProgress": "実績達成",
+    "achievementProgress": "実績進捗",
     "dailyChallenge": "デイリーチャレンジ",
     "dailyChallengeTarget": "目標: {{seconds}}秒生存",
     "dailyChallengeReward": "報酬: {{coins}}コイン",
     "timeRemaining": "残り {{time}}",
-    "dailyChallengeCompleted": "完了！",
+    "dailyChallengeCompleted": "達成！",
     "achievementRate": "達成率"
   },
   "game": {
@@ -57,12 +57,12 @@
     "score": "スコア",
     "best": "ベスト",
     "coins": "コイン",
-    "spawnInterval": "生成間隔",
+    "spawnInterval": "出現間隔",
     "press": "PRESS",
     "enter": "ENTER",
     "toStart": "TO START",
     "move": "MOVE",
-    "moveKeys": "WASD / ARROWS",
+    "moveKeys": "WASD / 矢印キー",
     "slowmo": "SLOWMO",
     "slowmoKey": "SHIFT",
     "lifeIconAlt": "ライフアイコン",
@@ -72,74 +72,75 @@
   },
   "scoreSubmit": {
     "title": "GAME OVER",
-    "score": "Score: {{score}}",
-    "nickname": "Nickname",
-    "country": "Country",
-    "enterNickname": "Enter nickname",
-    "selectCountry": "Select country",
-    "submit": "Submit",
-    "submitting": "Submitting...",
-    "restart": "Restart",
-    "error": "すべてのフィールドを入力してください。",
-    "rewardRun": "+{{coins}}コイン (プレイ)",
-    "rewardDaily": "+{{coins}}コイン (デイリー)",
-    "signInRequired": "Please sign in with Google first.",
-    "signInDescription": "Sign in to submit and sync your score.",
-    "signInWithGoogle": "Sign in with Google",
-    "loading": "Loading...",
-    "profileRequired": "Please set up your profile first.",
-    "openProfileSetup": "Open Profile Setup",
-    "profileNickname": "Nickname",
-    "profileCountry": "Country",
-    "submitFailed": "Score submit failed.",
-    "signInFailed": "Google sign in failed.",
-    "profileSetupCanceled": "Profile setup was canceled, so score submission was skipped."
+    "score": "スコア: {{score}}",
+    "nickname": "ニックネーム",
+    "country": "国",
+    "enterNickname": "ニックネームを入力",
+    "selectCountry": "国を選択",
+    "submit": "送信",
+    "submitting": "送信中...",
+    "restart": "再スタート",
+    "error": "すべての項目を入力してください。",
+    "rewardRun": "+{{coins}} コイン（プレイ）",
+    "rewardDaily": "+{{coins}} コイン（デイリー）",
+    "signInRequired": "先にGoogleでログインしてください。",
+    "signInDescription": "ログインしてスコアを送信・同期しましょう。",
+    "signInWithGoogle": "Googleでログイン",
+    "loading": "読み込み中...",
+    "profileRequired": "先にプロフィールを設定してください。",
+    "openProfileSetup": "プロフィール設定を開く",
+    "profileNickname": "ニックネーム",
+    "profileCountry": "国",
+    "submitFailed": "スコア送信に失敗しました。",
+    "signInFailed": "Googleログインに失敗しました。",
+    "profileSetupCanceled": "プロフィール設定がキャンセルされたため、スコア送信をスキップしました。"
   },
   "systemMenu": {
     "profile": "プロフィール",
     "shop": "ショップ",
     "achievements": "実績",
     "settings": "設定",
-    "coins": "Coins",
-    "best": "Best",
-    "totalRuns": "Total Runs",
-    "totalTime": "Total Time",
-    "skin": "Skin",
-    "dailyChallenge": "Daily Challenge",
+    "coins": "コイン",
+    "best": "ベスト",
+    "totalRuns": "総プレイ回数",
+    "totalTime": "総時間",
+    "skin": "スキン",
+    "dailyChallenge": "デイリーチャレンジ",
     "dailyChallengeGoal": "目標: {{seconds}}秒生存",
     "dailyChallengeReward": "報酬: {{coins}}コイン",
     "dailyChallengeStatus": "状態: {{status}}",
-    "dailyChallengeCompleted": "完了",
-    "dailyChallengeIncomplete": "未完了",
+    "dailyChallengeCompleted": "達成",
+    "dailyChallengeIncomplete": "未達成",
     "resetProgress": "進行状況をリセット",
     "close": "閉じる",
     "buy": "購入",
     "select": "選択",
     "selected": "選択中",
-    "completed": "(完了)",
-    "title": "????????",
-    "subtitle": "????????????????????????",
-    "closeAria": "???",
-    "basicInfo": "????",
-    "playerSkin": "????????",
-    "bulletSkin": "????",
-    "secondsValue": "{{value}}?",
-    "shopPlayerSkins": "????????",
-    "shopBulletSkins": "????",
-    "coinsAmount": "{{count}}???",
-    "importSuccess": "???????????????",
-    "importInvalid": "????????????????",
-    "importReadError": "??????????????????????"
+    "completed": "（達成）",
+    "title": "システムメニュー",
+    "subtitle": "実績や設定を管理できます。",
+    "shopSubtitle": "スキンを購入して装備しましょう。",
+    "closeAria": "閉じる",
+    "basicInfo": "基本情報",
+    "playerSkin": "プレイヤースキン",
+    "bulletSkin": "弾スキン",
+    "secondsValue": "{{value}}秒",
+    "shopPlayerSkins": "プレイヤースキン",
+    "shopBulletSkins": "弾スキン",
+    "coinsAmount": "{{count}}コイン",
+    "importSuccess": "プロフィールを読み込みました。",
+    "importInvalid": "無効なプロフィールファイルです。",
+    "importReadError": "プロフィールファイルを読み込めませんでした。"
   },
   "settings": {
     "graphics": "グラフィック",
-    "particles": "パーティクルエフェクト",
-    "hitFlash": "ヒットフラッシュ強度: {{intensity}}%",
-    "fpsLimit": "FPS制限",
+    "particles": "パーティクル効果",
+    "hitFlash": "被弾フラッシュ強度: {{intensity}}%",
+    "fpsLimit": "FPS上限",
     "fps30": "30 FPS",
     "fps60": "60 FPS",
     "fpsUnlimited": "無制限",
-    "audio": "サウンド",
+    "audio": "オーディオ",
     "bgmEnabled": "BGM有効",
     "bgmVolume": "BGM音量: {{volume}}%",
     "sfxEnabled": "効果音有効",
@@ -153,67 +154,67 @@
   "achievements": {
     "first-run": {
       "title": "初プレイ",
-      "desc": "ゲームを1回プレイ"
+      "desc": "ゲームを1回プレイする"
     },
     "survive-10": {
-      "title": "10秒生存",
-      "desc": "1回のプレイで10秒以上生存"
+      "title": "10秒サバイバー",
+      "desc": "1プレイで10秒以上生存する"
     },
     "survive-30": {
-      "title": "30秒生存",
-      "desc": "1回のプレイで30秒以上生存"
+      "title": "30秒サバイバー",
+      "desc": "1プレイで30秒以上生存する"
     },
     "survive-60": {
-      "title": "1分生存",
-      "desc": "1回のプレイで60秒以上生存"
+      "title": "1分サバイバー",
+      "desc": "1プレイで60秒以上生存する"
     },
     "no-hit-20": {
-      "title": "?????20",
-      "desc": "???????20?????"
+      "title": "ノーヒット20",
+      "desc": "初被弾まで20秒以上無傷で生存する"
     },
     "collector-2": {
-      "title": "????? I",
-      "desc": "????????????2?????"
+      "title": "コレクター I",
+      "desc": "デフォルト以外のスキンを2つ以上所持する"
     },
     "survive-90": {
-      "title": "90???",
-      "desc": "1????90?????"
+      "title": "90秒サバイバー",
+      "desc": "1プレイで90秒以上生存する"
     },
     "survive-120": {
-      "title": "2???",
-      "desc": "1????120?????"
+      "title": "2分サバイバー",
+      "desc": "1プレイで120秒以上生存する"
     },
     "no-hit-30": {
-      "title": "?????30",
-      "desc": "???????30?????"
+      "title": "ノーヒット30",
+      "desc": "初被弾まで30秒以上無傷で生存する"
     },
     "runner-5": {
-      "title": "????5",
-      "desc": "??5????"
+      "title": "ウォームアップランナー",
+      "desc": "総プレイ回数5回達成"
     },
     "runner-20": {
-      "title": "????20",
-      "desc": "??20????"
+      "title": "マラソンマインド",
+      "desc": "総プレイ回数20回達成"
     },
     "time-300": {
-      "title": "??5?",
-      "desc": "??????300???"
+      "title": "累計5分",
+      "desc": "累計生存時間300秒以上達成"
     },
     "time-1800": {
-      "title": "??30?",
-      "desc": "??????1800???"
+      "title": "累計30分",
+      "desc": "累計生存時間1800秒以上達成"
     },
     "coins-100": {
-      "title": "????? I",
-      "desc": "100???????"
+      "title": "コインコレクター I",
+      "desc": "コインを100枚以上集める"
     },
     "coins-500": {
-      "title": "????? II",
-      "desc": "500???????"
+      "title": "コインコレクター II",
+      "desc": "コインを500枚以上集める"
     },
     "collector-5": {
-      "title": "????? II",
-      "desc": "????????????5?????"
+      "title": "コレクター II",
+      "desc": "デフォルト以外のスキンを5つ以上所持する"
     }
   },
   "skins": {
@@ -223,18 +224,18 @@
     "neon": "Neon"
   },
   "profileSetup": {
-    "title": "PROFILE SETUP",
-    "subtitle": "Set your nickname and country to submit scores.",
-    "nickname": "Nickname",
-    "nicknamePlaceholder": "Enter nickname",
-    "country": "Country",
-    "countryPlaceholder": "Select country",
-    "confirm": "Confirm",
-    "cancel": "Cancel",
-    "saving": "Saving...",
-    "errorRequired": "Please fill in all fields.",
-    "errorInvalidNickname": "Special characters are not allowed.",
-    "errorSaveFailed": "Failed to save profile.",
-    "errorNicknameTaken": "This nickname is already in use."
+    "title": "プロフィール設定",
+    "subtitle": "スコア送信のためにニックネームと国を設定してください。",
+    "nickname": "ニックネーム",
+    "nicknamePlaceholder": "ニックネームを入力",
+    "country": "国",
+    "countryPlaceholder": "国を選択",
+    "confirm": "確認",
+    "cancel": "キャンセル",
+    "saving": "保存中...",
+    "errorRequired": "すべての項目を入力してください。",
+    "errorInvalidNickname": "特殊文字は使用できません。",
+    "errorSaveFailed": "プロフィールの保存に失敗しました。",
+    "errorNicknameTaken": "このニックネームは既に使用されています。"
   }
 }

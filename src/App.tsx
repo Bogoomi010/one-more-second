@@ -10,6 +10,7 @@ import SystemMenuModal from './pages/Game/components/SystemMenuModal';
 import ShopModal from './pages/Game/components/ShopModal';
 import { useAuth } from './context/AuthContext';
 import i18n from './i18n';
+import { getFirebaseAuthErrorMessage } from './utils/firebaseAuthError';
 import {
   getUserIdentityProfile,
   getUserLanguagePreference,
@@ -28,6 +29,7 @@ function App() {
   const [pendingProfileSetupCheck, setPendingProfileSetupCheck] = useState(false);
   const [rankingRefreshTrigger, setRankingRefreshTrigger] = useState(0);
   const [systemMenuOpen, setSystemMenuOpen] = useState(false);
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [shopOpen, setShopOpen] = useState(false);
   const [isAudioMuted, setIsAudioMuted] = useState(() => {
     const settings = loadSettings();
@@ -123,11 +125,7 @@ function App() {
       setPendingProfileSetupCheck(true);
     } catch (error) {
       console.error('Auth action failed:', error);
-      const message =
-        error instanceof Error && error.message.includes('auth/configuration-not-found')
-          ? 'Firebase Authentication 설정을 확인해주세요. 콘솔에서 Google 로그인을 활성화하고 Authorized domains를 점검해주세요.'
-          : '로그인 처리 중 오류가 발생했습니다. Firebase 설정을 확인해주세요.';
-      showToast(message, 'error');
+      showToast(getFirebaseAuthErrorMessage(error), 'error');
     }
   };
 
@@ -144,6 +142,7 @@ function App() {
       setPendingProfileSetupCheck(false);
       setProfileSetupOpen(false);
       setSystemMenuOpen(false);
+      setProfileMenuOpen(false);
       setShopOpen(false);
       setUserCountry('KR');
       setRankingRefreshTrigger((prev) => prev + 1);
@@ -171,7 +170,14 @@ function App() {
         userCountry={userCountry}
         rankingRefreshTrigger={rankingRefreshTrigger}
         onMarketClick={() => setShopOpen(true)}
-        onSettingsClick={() => setSystemMenuOpen(true)}
+        onSettingsClick={() => {
+          setProfileMenuOpen(false);
+          setSystemMenuOpen(true);
+        }}
+        onProfileMenuClick={() => {
+          setSystemMenuOpen(false);
+          setProfileMenuOpen(true);
+        }}
         onToggleMute={handleToggleMute}
         isMuted={isAudioMuted}
         onProfileEditClick={() => setProfileSetupOpen(true)}
@@ -186,7 +192,7 @@ function App() {
           setProfile={setProfile}
           setUserCountry={setUserCountry}
           onRankingUpdate={() => setRankingRefreshTrigger((prev) => prev + 1)}
-          isSystemMenuOpen={systemMenuOpen || shopOpen}
+          isSystemMenuOpen={systemMenuOpen || profileMenuOpen || shopOpen}
           profileIdentity={userIdentity}
           isProfileSetupOpen={profileSetupOpen}
           identityLoading={identityLoading}
@@ -199,6 +205,22 @@ function App() {
         onClose={() => setSystemMenuOpen(false)}
         profile={profile}
         setProfile={setProfile}
+        isLoggedIn={Boolean(user)}
+        visibleTabs={['achievements', 'settings']}
+        initialTab="settings"
+        onSettingsChange={(next) => {
+          setIsAudioMuted(!next.audio.bgmEnabled && !next.audio.sfxEnabled);
+        }}
+      />
+
+      <SystemMenuModal
+        isOpen={profileMenuOpen}
+        onClose={() => setProfileMenuOpen(false)}
+        profile={profile}
+        setProfile={setProfile}
+        isLoggedIn={Boolean(user)}
+        visibleTabs={['profile']}
+        initialTab="profile"
         onSettingsChange={(next) => {
           setIsAudioMuted(!next.audio.bgmEnabled && !next.audio.sfxEnabled);
         }}

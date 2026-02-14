@@ -16,6 +16,16 @@ const INTERVAL_DECREASE = 50;
 const MIN_SPAWN_INTERVAL = 100;
 const DIFFICULTY_INTERVAL = 3000;
 const PIXI_BGM_ALIAS = 'oms-main-bgm';
+const MOVEMENT_CODES = new Set([
+  'ArrowLeft',
+  'ArrowRight',
+  'ArrowUp',
+  'ArrowDown',
+  'KeyW',
+  'KeyA',
+  'KeyS',
+  'KeyD',
+]);
 
 interface GameCanvasProps {
   onGameOver: (result: GameResult) => void;
@@ -296,10 +306,10 @@ function GameCanvasComponent({
       state.hitFlashRemainingMs = Math.max(0, state.hitFlashRemainingMs - deltaMs);
 
       const moveDistance = PLAYER_SPEED * deltaTimeSec;
-      if (state.keys.ArrowLeft) state.player.x -= moveDistance;
-      if (state.keys.ArrowRight) state.player.x += moveDistance;
-      if (state.keys.ArrowUp) state.player.y -= moveDistance;
-      if (state.keys.ArrowDown) state.player.y += moveDistance;
+      if (state.keys.ArrowLeft || state.keys.KeyA) state.player.x -= moveDistance;
+      if (state.keys.ArrowRight || state.keys.KeyD) state.player.x += moveDistance;
+      if (state.keys.ArrowUp || state.keys.KeyW) state.player.y -= moveDistance;
+      if (state.keys.ArrowDown || state.keys.KeyS) state.player.y += moveDistance;
       clampPlayer();
 
       for (let i = state.bullets.length - 1; i >= 0; i -= 1) {
@@ -378,14 +388,14 @@ function GameCanvasComponent({
     const handleKeyDown = (event: KeyboardEvent) => {
       audioManager.resume();
       ensureBgmPlayback();
-      if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(event.key)) {
+      if (MOVEMENT_CODES.has(event.code)) {
         event.preventDefault();
       }
-      state.keys[event.key] = true;
+      state.keys[event.code] = true;
     };
 
     const handleKeyUp = (event: KeyboardEvent) => {
-      state.keys[event.key] = false;
+      state.keys[event.code] = false;
     };
 
     const handleBlur = () => {

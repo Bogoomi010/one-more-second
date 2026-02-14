@@ -48,6 +48,7 @@ interface LayoutProps {
   rankingRefreshTrigger?: number;
   onMarketClick?: () => void;
   onSettingsClick?: () => void;
+  onProfileMenuClick?: () => void;
   onToggleMute?: () => void;
   isMuted?: boolean;
   onLoginClick?: () => void;
@@ -65,6 +66,7 @@ export default function Layout({
   rankingRefreshTrigger,
   onMarketClick,
   onSettingsClick,
+  onProfileMenuClick,
   onToggleMute,
   isMuted = false,
   onLoginClick,
@@ -154,15 +156,14 @@ export default function Layout({
           <div className="relative" ref={languageMenuRef}>
             <button
               type="button"
-              className="flex items-center gap-2 px-3 py-2 rounded-lg cursor-pointer"
+              className="w-8 h-8 flex justify-center items-center cursor-pointer bg-transparent border-none p-0 text-text-primary/80 hover:text-text-primary transition-colors duration-200"
               onClick={handleLanguageButtonClick}
               title={t('layout.languageSwitch')}
               aria-label={t('layout.languageSwitch')}
               aria-expanded={isLanguageMenuOpen}
               aria-haspopup="menu"
             >
-              <span className="text-base font-tertiary">L</span>
-              <span className="text-text-muted font-primary text-[14px] font-semibold">{getLanguageLabel(currentLanguage)}</span>
+              <i className="fi-br-language text-[23px] leading-none" aria-hidden="true" />
             </button>
 
             {isLanguageMenuOpen && (
@@ -191,42 +192,41 @@ export default function Layout({
           {onToggleMute && (
             <button
               type="button"
-              className="w-8 h-8 rounded-lg bg-bg-card-alt border border-white/20 flex justify-center items-center cursor-pointer transition-all duration-200 hover:bg-white/20"
+              className="w-8 h-8 flex justify-center items-center cursor-pointer bg-transparent border-none p-0 text-text-primary/80 hover:text-text-primary transition-colors duration-200"
               onClick={onToggleMute}
               title={isMuted ? t('layout.unmute') : t('layout.mute')}
               aria-label={isMuted ? t('layout.unmute') : t('layout.mute')}
             >
-              <svg viewBox="0 0 24 24" className="w-4 h-4 text-text-primary" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M11 6L7.5 9H5V15H7.5L11 18V6Z" fill="currentColor" />
-                <path d="M14.5 9C15.5 9.8 16 10.8 16 12C16 13.2 15.5 14.2 14.5 15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                {isMuted && <path d="M4 4L20 20" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />}
-              </svg>
+              <i
+                className={isMuted ? 'fi-br-volume-mute text-[23px] leading-none' : 'fi-sr-volume-down text-[23px] leading-none'}
+                aria-hidden="true"
+              />
             </button>
           )}
 
           {onSettingsClick && (
             <button
               type="button"
-              className="w-8 h-8 rounded-lg bg-bg-card-alt border border-white/20 flex justify-center items-center cursor-pointer transition-all duration-200 hover:bg-white/20"
+              className="w-8 h-8 flex justify-center items-center cursor-pointer bg-transparent border-none p-0 text-text-primary/80 hover:text-text-primary transition-colors duration-200"
               onClick={onSettingsClick}
               title={t('layout.systemMenu')}
               aria-label={t('layout.systemMenu')}
             >
-              <span className="text-base font-tertiary text-text-primary">M</span>
+              <i className="fi-ss-settings text-[23px] leading-none" aria-hidden="true" />
             </button>
           )}
 
           <div className="relative" ref={userMenuRef}>
             <button
               type="button"
-              className="w-[40px] h-[40px] rounded-xl bg-bg-card border border-border-primary flex justify-center items-center cursor-pointer"
+              className="w-8 h-8 flex justify-center items-center cursor-pointer bg-transparent border-none p-0 text-text-primary/80 hover:text-text-primary transition-colors duration-200"
               onClick={handleUserButtonClick}
               title={t('layout.googleAuth')}
               aria-label={t('layout.googleAuth')}
               aria-expanded={isUserMenuOpen}
               aria-haspopup="menu"
             >
-              <span className="text-[16px] font-tertiary text-text-primary">{userInitial ?? 'U'}</span>
+              <i className="fi-rr-circle-user text-[27px] leading-none text-text-primary" aria-hidden="true" />
             </button>
 
             {isUserMenuOpen && (
@@ -239,6 +239,16 @@ export default function Layout({
 
                 {isLoggedIn ? (
                   <>
+                    <button
+                      type="button"
+                      className="w-full px-3 py-2 rounded-lg text-left text-[13px] font-primary text-text-primary hover:bg-bg-card-alt"
+                      onClick={() => {
+                        setIsUserMenuOpen(false);
+                        onProfileMenuClick?.();
+                      }}
+                    >
+                      {t('systemMenu.profile')}
+                    </button>
                     <button
                       type="button"
                       className="w-full px-3 py-2 rounded-lg text-left text-[13px] font-primary text-text-primary hover:bg-bg-card-alt"

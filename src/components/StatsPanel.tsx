@@ -96,7 +96,7 @@ export default function NewStatsPanel({ profile }: NewStatsPanelProps) {
       {activeTab === 'stats' ? (
         <>
           <div className="rounded-2xl p-[14px] bg-transparent border border-border-primary flex flex-col gap-2">
-            <div className="text-ui-meta font-black text-accent-green font-secondary tracking-wide">
+            <div className="text-ui-tab font-black text-accent-green font-secondary tracking-wide">
               {t('stats.personalBest')}
             </div>
             <div className="flex items-baseline gap-1">
@@ -112,7 +112,7 @@ export default function NewStatsPanel({ profile }: NewStatsPanelProps) {
           <div className="flex flex-col gap-2.5">
             <div className="flex gap-4">
               <div className="flex-1 rounded-2xl p-2 bg-bg-card border border-bg-card flex flex-col gap-2">
-                <div className="text-ui-label font-black text-text-placeholder font-secondary tracking-wide">
+                <div className="text-ui-tab font-black text-text-placeholder font-secondary tracking-wide">
                   {t('stats.totalRuns')}
                 </div>
                 <div className="text-ui-value font-bold text-accent-green font-secondary">
@@ -123,7 +123,7 @@ export default function NewStatsPanel({ profile }: NewStatsPanelProps) {
               <div className="flex-1 rounded-2xl p-2 bg-bg-card border border-bg-card flex flex-col gap-2">
                 <div className="flex items-center gap-1.5">
                   <span className="text-ui-icon font-tertiary">💎</span>
-                  <div className="text-ui-label font-black text-text-placeholder font-secondary tracking-wide">
+                  <div className="text-ui-tab font-black text-text-placeholder font-secondary tracking-wide">
                     {t('stats.coins')}
                   </div>
                 </div>
@@ -135,7 +135,7 @@ export default function NewStatsPanel({ profile }: NewStatsPanelProps) {
 
             <div className="flex gap-4">
               <div className="flex-1 rounded-2xl p-2 bg-bg-card border border-bg-card flex flex-col gap-2">
-                <div className="text-ui-label font-black text-text-placeholder font-secondary tracking-wide">
+                <div className="text-ui-tab font-black text-text-placeholder font-secondary tracking-wide">
                   {t('stats.totalTime')}
                 </div>
                 <div className="text-ui-value font-bold text-accent-blue font-secondary">
@@ -144,7 +144,7 @@ export default function NewStatsPanel({ profile }: NewStatsPanelProps) {
               </div>
 
               <div className="flex-1 rounded-2xl p-2 bg-bg-card border border-bg-card flex flex-col gap-2">
-                <div className="text-ui-label font-black text-text-placeholder font-secondary tracking-wide">
+                <div className="text-ui-tab font-black text-text-placeholder font-secondary tracking-wide">
                   {t('stats.averageTime')}
                 </div>
                 <div className="text-ui-value font-bold text-text-primary font-secondary">
@@ -157,7 +157,7 @@ export default function NewStatsPanel({ profile }: NewStatsPanelProps) {
               <div className="flex-1 rounded-2xl p-2 bg-bg-card border border-bg-card flex flex-col gap-2">
                 <div className="flex items-center gap-1.5">
                   <span className="text-ui-icon font-tertiary">🧠</span>
-                  <div className="text-ui-label font-black text-text-placeholder font-secondary tracking-wide">
+                  <div className="text-ui-tab font-black text-text-placeholder font-secondary tracking-wide">
                     {t('stats.ownedSkins')}
                   </div>
                 </div>
@@ -170,7 +170,7 @@ export default function NewStatsPanel({ profile }: NewStatsPanelProps) {
               <div className="flex-1 rounded-2xl p-2 bg-bg-card border border-bg-card flex flex-col gap-2">
                 <div className="flex items-center gap-1.5">
                   <span className="text-ui-icon font-tertiary">🏆</span>
-                  <div className="text-ui-label font-black text-text-placeholder font-secondary tracking-wide">
+                  <div className="text-ui-tab font-black text-text-placeholder font-secondary tracking-wide">
                     {t('stats.achievementProgress')}
                   </div>
                 </div>
@@ -184,7 +184,7 @@ export default function NewStatsPanel({ profile }: NewStatsPanelProps) {
           <div className="rounded-2xl p-2.5 bg-transparent border-4 border-accent-blue flex flex-col gap-1.5">
             <div className="flex items-center gap-2">
               <span className="text-ui-icon-lg font-tertiary">🛡️</span>
-              <div className="text-ui-meta font-black text-accent-blue font-secondary tracking-wide">
+              <div className="text-ui-tab font-black text-accent-blue font-secondary tracking-wide">
                 {t('stats.dailyChallenge')}
               </div>
             </div>
@@ -195,7 +195,7 @@ export default function NewStatsPanel({ profile }: NewStatsPanelProps) {
 
             <div className="flex justify-between items-center">
               <div className="rounded-[4px] px-2 py-1 bg-accent-green-alpha border border-[#4ade8033]">
-                <div className="text-ui-label font-black text-accent-green font-secondary tracking-wide">
+                <div className="text-ui-tab font-black text-accent-green font-secondary tracking-wide">
                   {t('stats.dailyChallengeReward', { coins: profile.dailyChallenge.rewardCoins })}
                 </div>
               </div>

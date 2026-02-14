@@ -6,6 +6,7 @@ import { ScoreRecord } from '../../../types/score';
 import { addRankingEntry } from '../../../gameSystem/ranking';
 import { useAuth } from '../../../context/AuthContext';
 import { UserIdentityProfile } from '../../../services/userDataService';
+import { getFirebaseAuthErrorMessage } from '../../../utils/firebaseAuthError';
 import retryIcon from '../../../assets/icon-retry.png';
 import { getFlagEmoji } from '../../../utils/flags';
 
@@ -103,7 +104,7 @@ const ScoreSubmitModal: React.FC<ScoreSubmitModalProps> = ({
       // 로그인 후에는 기존 유저 여부와 관계없이 프로필 설정 모달을 연다.
       onRequestProfileSetup();
     } catch (err) {
-      setError(err instanceof Error ? err.message : t('scoreSubmit.signInFailed'));
+      setError(getFirebaseAuthErrorMessage(err));
     }
   };
 

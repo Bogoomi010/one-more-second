@@ -26,6 +26,9 @@ interface Props {
   profile: PlayerProfile;
   setProfile: (p: PlayerProfile) => void;
   onSettingsChange?: (next: GameSettings) => void;
+  isLoggedIn?: boolean;
+  visibleTabs?: SystemMenuTabId[];
+  initialTab?: SystemMenuTabId;
 }
 
 export default function SystemMenuModal({
@@ -34,12 +37,23 @@ export default function SystemMenuModal({
   profile,
   setProfile,
   onSettingsChange,
+  isLoggedIn = true,
+  visibleTabs,
+  initialTab,
 }: Props) {
   const { t } = useTranslation();
-  const [tab, setTab] = useState<SystemMenuTabId>('profile');
+  const [tab, setTab] = useState<SystemMenuTabId>('settings');
   const [settings, setSettings] = useState<GameSettings>(() => loadSettings());
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [toastVariant, setToastVariant] = useState<'info' | 'success' | 'error'>('info');
+
+  const availableTabs = useMemo<SystemMenuTabId[]>(() => {
+    const defaultTabs: SystemMenuTabId[] = ['profile', 'achievements', 'settings'];
+    const baseTabs: SystemMenuTabId[] = visibleTabs && visibleTabs.length > 0 ? visibleTabs : defaultTabs;
+    const uniqueTabs = Array.from(new Set<SystemMenuTabId>(baseTabs));
+    const filteredTabs = isLoggedIn ? uniqueTabs : uniqueTabs.filter((tabId) => tabId !== 'profile');
+    return filteredTabs.length > 0 ? filteredTabs : ['settings'];
+  }, [isLoggedIn, visibleTabs]);
 
   const daily = useMemo(() => ensureDailyChallenge(profile).dailyChallenge, [profile]);
 
@@ -52,16 +66,20 @@ export default function SystemMenuModal({
   useEffect(() => {
     if (!isOpen) return;
 
-    setTab('profile');
+    const nextInitialTab =
+      initialTab && availableTabs.includes(initialTab)
+        ? initialTab
+        : availableTabs[0];
+
+    setTab(nextInitialTab);
     setSettings(loadSettings());
-  }, [isOpen]);
+  }, [availableTabs, initialTab, isOpen]);
 
   if (!isOpen) return null;
 
   function handleReset() {
     const next = resetProfile();
     setProfile(next);
-    setTab('profile');
   }
 
   function updateSetting<K extends keyof GameSettings>(
@@ -145,7 +163,7 @@ export default function SystemMenuModal({
 
   return (
     <div className="fixed inset-0 z-[10001] bg-black/75 backdrop-blur-lg flex items-center justify-center p-4">
-      <div className="w-[min(920px,calc(100vw-24px))] h-[min(760px,calc(100vh-24px))] rounded-[24px] border border-border-primary bg-bg-primary shadow-[0_24px_70px_rgba(0,0,0,0.55)] px-6 py-6 sm:px-8 sm:py-8 flex flex-col overflow-hidden">
+      <div className="w-fit max-w-[min(920px,calc(100vw-24px))] max-h-[calc(100vh-24px)] rounded-[24px] border border-border-primary bg-bg-primary shadow-[0_24px_70px_rgba(0,0,0,0.55)] px-6 py-6 sm:px-8 sm:py-8 flex flex-col overflow-hidden">
         <div className="flex items-center justify-between mb-5">
           <div>
             <h2 className="m-0 text-[28px] font-bold font-primary text-accent-green tracking-[1px]">{t('systemMenu.title')}</h2>
@@ -162,12 +180,10 @@ export default function SystemMenuModal({
         </div>
 
         <div className="flex flex-wrap gap-2 mb-5">
-          {tabButton('profile', t('systemMenu.profile'))}
-          {tabButton('achievements', t('systemMenu.achievements'))}
-          {tabButton('settings', t('systemMenu.settings'))}
+          {availableTabs.map((tabId) => tabButton(tabId, t(`systemMenu.${tabId}`)))}
         </div>
 
-        <div className="flex-1 overflow-auto pr-1">
+        <div className="flex-1 min-h-0 overflow-auto pr-1">
           {tab === 'profile' && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="rounded-2xl border border-border-secondary bg-bg-card p-4">

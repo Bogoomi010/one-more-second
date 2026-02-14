@@ -4,7 +4,7 @@
   },
   "layout": {
     "navGame": "Game",
-    "navMarket": "Market",
+    "navMarket": "Shop",
     "navGlobalWall": "Global Wall",
     "goHome": "Go to homepage",
     "languageSwitch": "Change language",
@@ -118,7 +118,7 @@
     "selected": "Selected",
     "completed": "(Completed)",
     "title": "SYSTEM MENU",
-    "subtitle": "Manage profile, achievements and settings.",
+    "subtitle": "Manage achievements and settings.",
     "shopSubtitle": "Buy and equip skins.",
     "closeAria": "Close",
     "basicInfo": "Basic Info",

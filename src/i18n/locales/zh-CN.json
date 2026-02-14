@@ -12,15 +12,15 @@
     "mute": "静音",
     "unmute": "取消静音",
     "systemMenu": "系统菜单",
-    "footerYear": "© 2024",
-    "footerBrand": "ONE MORE SECOND",
-    "footerTagline": ". STAY FOCUSED.",
-    "userMenuSignedInAs": "已登录账号",
+    "userMenuSignedInAs": "当前登录",
     "userMenuSignedOut": "未登录",
     "userMenuEditProfile": "编辑资料",
     "userMenuLogin": "登录",
     "userMenuLogout": "登出",
-    "userDefaultName": "用户"
+    "userDefaultName": "用户",
+    "footerYear": "© 2024",
+    "footerBrand": "ONE MORE SECOND",
+    "footerTagline": ". STAY FOCUSED."
   },
   "ranking": {
     "title": "排行榜",
@@ -28,26 +28,26 @@
     "country": "国家",
     "daily": "每日",
     "noRecords": "暂无记录",
-    "records": "{{count}}条记录"
+    "records": "{{count}} 条记录"
   },
   "stats": {
-    "title": "统计 & 成就",
+    "title": "统计与成就",
     "tabStats": "统计",
     "tabTrophy": "奖杯 ({{unlocked}}/{{total}})",
     "tabAchievements": "成就",
-    "bestScore": "最佳成绩",
+    "bestScore": "最高分",
     "personalBest": "PERSONAL BEST",
-    "totalRuns": "总游戏次数",
-    "totalRunsValue": "{{count}}局",
-    "coins": "持有金币",
+    "totalRuns": "总局数",
+    "totalRunsValue": "{{count}} 局",
+    "coins": "硬币",
     "totalTime": "总生存时间",
     "averageTime": "平均生存时间",
-    "ownedSkins": "拥有皮肤",
+    "ownedSkins": "已拥有皮肤",
     "countUnit": "个",
     "achievementProgress": "成就进度",
     "dailyChallenge": "每日挑战",
-    "dailyChallengeTarget": "目标: 生存{{seconds}}秒",
-    "dailyChallengeReward": "奖励: {{coins}}金币",
+    "dailyChallengeTarget": "目标：生存 {{seconds}} 秒",
+    "dailyChallengeReward": "奖励：{{coins}} 硬币",
     "timeRemaining": "剩余 {{time}}",
     "dailyChallengeCompleted": "已完成！",
     "achievementRate": "完成率"
@@ -56,59 +56,59 @@
     "lives": "生命",
     "score": "分数",
     "best": "最佳",
-    "coins": "金币",
+    "coins": "硬币",
     "spawnInterval": "生成间隔",
-    "press": "PRESS",
-    "enter": "ENTER",
-    "toStart": "TO START",
-    "move": "MOVE",
-    "moveKeys": "WASD / ARROWS",
-    "slowmo": "SLOWMO",
+    "press": "按下",
+    "enter": "回车",
+    "toStart": "开始",
+    "move": "移动",
+    "moveKeys": "WASD / 方向键",
+    "slowmo": "慢动作",
     "slowmoKey": "SHIFT",
     "lifeIconAlt": "生命图标",
     "gameOver": "游戏结束",
-    "pressRToRestart": "按R重新开始",
+    "pressRToRestart": "按 R 重新开始",
     "menu": "菜单"
   },
   "scoreSubmit": {
     "title": "游戏结束",
-    "score": "Score: {{score}}",
-    "nickname": "Nickname",
-    "country": "Country",
-    "enterNickname": "Enter nickname",
-    "selectCountry": "Select country",
-    "submit": "Submit",
-    "submitting": "Submitting...",
-    "restart": "Restart",
+    "score": "分数: {{score}}",
+    "nickname": "昵称",
+    "country": "国家",
+    "enterNickname": "输入昵称",
+    "selectCountry": "选择国家",
+    "submit": "提交",
+    "submitting": "提交中...",
+    "restart": "重新开始",
     "error": "请填写所有字段。",
-    "rewardRun": "+{{coins}}金币 (游戏)",
-    "rewardDaily": "+{{coins}}金币 (每日)",
-    "signInRequired": "Please sign in with Google first.",
-    "signInDescription": "Sign in to submit and sync your score.",
-    "signInWithGoogle": "Sign in with Google",
-    "loading": "Loading...",
-    "profileRequired": "Please set up your profile first.",
-    "openProfileSetup": "Open Profile Setup",
-    "profileNickname": "Nickname",
-    "profileCountry": "Country",
-    "submitFailed": "Score submit failed.",
-    "signInFailed": "Google sign in failed.",
-    "profileSetupCanceled": "Profile setup was canceled, so score submission was skipped."
+    "rewardRun": "+{{coins}} 硬币（本局）",
+    "rewardDaily": "+{{coins}} 硬币（每日）",
+    "signInRequired": "请先使用 Google 登录。",
+    "signInDescription": "登录后即可提交并同步你的分数。",
+    "signInWithGoogle": "使用 Google 登录",
+    "loading": "加载中...",
+    "profileRequired": "请先完成个人资料设置。",
+    "openProfileSetup": "打开个人资料设置",
+    "profileNickname": "昵称",
+    "profileCountry": "国家",
+    "submitFailed": "分数提交失败。",
+    "signInFailed": "Google 登录失败。",
+    "profileSetupCanceled": "个人资料设置已取消，已跳过分数提交。"
   },
   "systemMenu": {
     "profile": "个人资料",
     "shop": "商店",
     "achievements": "成就",
     "settings": "设置",
-    "coins": "Coins",
-    "best": "Best",
-    "totalRuns": "Total Runs",
-    "totalTime": "Total Time",
-    "skin": "Skin",
-    "dailyChallenge": "Daily Challenge",
-    "dailyChallengeGoal": "目标: 生存{{seconds}}秒",
-    "dailyChallengeReward": "奖励: {{coins}}金币",
-    "dailyChallengeStatus": "状态: {{status}}",
+    "coins": "硬币",
+    "best": "最佳",
+    "totalRuns": "总局数",
+    "totalTime": "总时间",
+    "skin": "皮肤",
+    "dailyChallenge": "每日挑战",
+    "dailyChallengeGoal": "目标：生存 {{seconds}} 秒",
+    "dailyChallengeReward": "奖励：{{coins}} 硬币",
+    "dailyChallengeStatus": "状态：{{status}}",
     "dailyChallengeCompleted": "已完成",
     "dailyChallengeIncomplete": "未完成",
     "resetProgress": "重置进度",
@@ -116,35 +116,36 @@
     "buy": "购买",
     "select": "选择",
     "selected": "已选择",
-    "completed": "(已完成)",
-    "title": "????",
-    "subtitle": "??????????????",
-    "closeAria": "??",
-    "basicInfo": "????",
-    "playerSkin": "????",
-    "bulletSkin": "????",
-    "secondsValue": "{{value}}?",
-    "shopPlayerSkins": "????",
-    "shopBulletSkins": "????",
-    "coinsAmount": "{{count}}??",
-    "importSuccess": "??????",
-    "importInvalid": "???????",
-    "importReadError": "?????????"
+    "completed": "（已完成）",
+    "title": "系统菜单",
+    "subtitle": "管理成就和设置。",
+    "shopSubtitle": "购买并装备皮肤。",
+    "closeAria": "关闭",
+    "basicInfo": "基本信息",
+    "playerSkin": "玩家皮肤",
+    "bulletSkin": "子弹皮肤",
+    "secondsValue": "{{value}}秒",
+    "shopPlayerSkins": "玩家皮肤",
+    "shopBulletSkins": "子弹皮肤",
+    "coinsAmount": "{{count}} 硬币",
+    "importSuccess": "已导入个人资料。",
+    "importInvalid": "无效的个人资料文件。",
+    "importReadError": "无法读取个人资料文件。"
   },
   "settings": {
     "graphics": "图形",
     "particles": "粒子效果",
     "hitFlash": "受击闪光强度: {{intensity}}%",
-    "fpsLimit": "FPS限制",
+    "fpsLimit": "FPS 限制",
     "fps30": "30 FPS",
     "fps60": "60 FPS",
-    "fpsUnlimited": "无限制",
+    "fpsUnlimited": "不限",
     "audio": "音频",
-    "bgmEnabled": "启用BGM",
-    "bgmVolume": "BGM音量: {{volume}}%",
+    "bgmEnabled": "启用 BGM",
+    "bgmVolume": "BGM 音量: {{volume}}%",
     "sfxEnabled": "启用音效",
     "sfxVolume": "音效音量: {{volume}}%",
-    "profileManagement": "个人资料管理",
+    "profileManagement": "资料管理",
     "export": "导出",
     "import": "导入",
     "resetSettings": "重置设置",
@@ -152,68 +153,68 @@
   },
   "achievements": {
     "first-run": {
-      "title": "首次游戏",
-      "desc": "游玩游戏1次"
+      "title": "首次开跑",
+      "desc": "游玩一次游戏"
     },
     "survive-10": {
-      "title": "生存10秒",
-      "desc": "单局生存10秒以上"
+      "title": "10秒生存者",
+      "desc": "单局生存 10 秒以上"
     },
     "survive-30": {
-      "title": "生存30秒",
-      "desc": "单局生存30秒以上"
+      "title": "30秒生存者",
+      "desc": "单局生存 30 秒以上"
     },
     "survive-60": {
-      "title": "生存1分钟",
-      "desc": "单局生存60秒以上"
+      "title": "1分钟生存者",
+      "desc": "单局生存 60 秒以上"
     },
     "no-hit-20": {
-      "title": "??20?",
-      "desc": "???????20???"
+      "title": "20秒无伤",
+      "desc": "首次受击前无伤生存 20 秒以上"
     },
     "collector-2": {
-      "title": "??? I",
-      "desc": "????2?????????"
+      "title": "收藏家 I",
+      "desc": "拥有至少 2 个皮肤（不含默认）"
     },
     "survive-90": {
-      "title": "90???",
-      "desc": "????90???"
+      "title": "90秒生存者",
+      "desc": "单局生存 90 秒以上"
     },
     "survive-120": {
-      "title": "2????",
-      "desc": "????120???"
+      "title": "2分钟生存者",
+      "desc": "单局生存 120 秒以上"
     },
     "no-hit-30": {
-      "title": "??30?",
-      "desc": "???????30???"
+      "title": "30秒无伤",
+      "desc": "首次受击前无伤生存 30 秒以上"
     },
     "runner-5": {
-      "title": "??5",
-      "desc": "????5?"
+      "title": "热身跑者",
+      "desc": "总计完成 5 局"
     },
     "runner-20": {
-      "title": "??20",
-      "desc": "????20?"
+      "title": "马拉松心态",
+      "desc": "总计完成 20 局"
     },
     "time-300": {
-      "title": "??5??",
-      "desc": "????????300?"
+      "title": "累计5分钟",
+      "desc": "累计生存时间达到 300 秒以上"
     },
     "time-1800": {
-      "title": "??30??",
-      "desc": "????????1800?"
+      "title": "累计30分钟",
+      "desc": "累计生存时间达到 1800 秒以上"
     },
     "coins-100": {
-      "title": "???? I",
-      "desc": "??100?????"
+      "title": "硬币储备",
+      "desc": "硬币达到 100 枚以上"
     },
     "coins-500": {
-      "title": "???? II",
-      "desc": "??500?????"
+      "title": "硬币金库",
+      "desc": "硬币达到 500 枚以上"
     },
     "collector-5": {
-      "title": "??? II",
-      "desc": "????5?????????"
+      "title": "收藏家 II",
+      "desc": "拥有至少 5 个皮肤（不含默认）"
     }
   },
   "skins": {
@@ -223,18 +224,18 @@
     "neon": "Neon"
   },
   "profileSetup": {
-    "title": "PROFILE SETUP",
-    "subtitle": "Set your nickname and country to submit scores.",
-    "nickname": "Nickname",
-    "nicknamePlaceholder": "Enter nickname",
-    "country": "Country",
-    "countryPlaceholder": "Select country",
-    "confirm": "Confirm",
-    "cancel": "Cancel",
-    "saving": "Saving...",
-    "errorRequired": "Please fill in all fields.",
-    "errorInvalidNickname": "Special characters are not allowed.",
-    "errorSaveFailed": "Failed to save profile.",
-    "errorNicknameTaken": "This nickname is already in use."
+    "title": "个人资料设置",
+    "subtitle": "请设置昵称和国家后再提交分数。",
+    "nickname": "昵称",
+    "nicknamePlaceholder": "输入昵称",
+    "country": "国家",
+    "countryPlaceholder": "选择国家",
+    "confirm": "确认",
+    "cancel": "取消",
+    "saving": "保存中...",
+    "errorRequired": "请填写所有字段。",
+    "errorInvalidNickname": "不允许使用特殊字符。",
+    "errorSaveFailed": "保存资料失败。",
+    "errorNicknameTaken": "该昵称已被使用。"
   }
 }
