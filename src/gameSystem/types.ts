@@ -2,7 +2,7 @@ export type LegacySkinId = 'classic-blue' | 'mint' | 'sunset' | 'neon';
 
 export type PlayerSkinId =
   | 'player-default'
-  | 'player-girl'
+  | 'player-rabbit-girl'
   | 'player-rabbit'
   | 'player-warrior'
   | 'player-skeleton'

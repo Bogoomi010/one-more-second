@@ -221,7 +221,20 @@
     "classic-blue": "Classic Blue",
     "mint": "Mint",
     "sunset": "Sunset",
-    "neon": "Neon"
+    "neon": "Neon",
+    "player-default": "Default",
+    "player-rabbit-girl": "Rabbit Girl",
+    "player-rabbit": "Rabbit",
+    "player-warrior": "Warrior",
+    "player-skeleton": "Skeleton",
+    "player-snowman": "Snowman",
+    "player-fire": "Fire",
+    "player-demon": "Demon",
+    "bullet-default": "Default",
+    "bullet-gimic": "Gimic",
+    "bullet-neon-blue": "Neon Blue",
+    "bullet-jelly": "Jelly",
+    "bullet-demon": "Demon"
   },
   "profileSetup": {
     "title": "PROFILE SETUP",

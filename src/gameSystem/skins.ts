@@ -34,7 +34,7 @@ const LEGACY_SKIN_TO_COMBINATION: Record<
     bulletSkinId: 'bullet-default',
   },
   mint: {
-    playerSkinId: 'player-girl',
+    playerSkinId: 'player-rabbit-girl',
     bulletSkinId: 'bullet-gimic',
   },
   sunset: {
@@ -42,7 +42,7 @@ const LEGACY_SKIN_TO_COMBINATION: Record<
     bulletSkinId: 'bullet-neon-blue',
   },
   neon: {
-    playerSkinId: 'player-girl',
+    playerSkinId: 'player-rabbit-girl',
     bulletSkinId: 'bullet-neon-blue',
   },
 };
@@ -63,8 +63,8 @@ export const PLAYER_SKINS: PlayerSkinDefinition[] = [
     image: playerDefaultImage,
   },
   {
-    id: 'player-girl',
-    name: 'Girl',
+    id: 'player-rabbit-girl',
+    name: 'Rabbit Girl',
     priceCoins: 120,
     image: playerGirlImage,
   },

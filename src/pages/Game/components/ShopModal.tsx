@@ -19,9 +19,19 @@ interface ShopModalProps {
   setProfile: (profile: PlayerProfile) => void;
 }
 
+const MIN_SHOP_PRICE = 1000;
+
+function getShopPrice(priceCoins: number): number {
+  if (priceCoins <= 0) return 0;
+  return Math.max(priceCoins, MIN_SHOP_PRICE);
+}
+
 export default function ShopModal({ isOpen, onClose, profile, setProfile }: ShopModalProps) {
   const { t } = useTranslation();
   const [shopSkinTab, setShopSkinTab] = useState<ShopSkinTab>('player');
+
+  const getSkinName = (id: string, fallbackName: string) =>
+    t(`skins.${id}`, { defaultValue: fallbackName });
 
   useEffect(() => {
     if (!isOpen) return;
@@ -38,12 +48,13 @@ export default function ShopModal({ isOpen, onClose, profile, setProfile }: Shop
 
   function buyPlayerSkin(id: PlayerSkinId) {
     const skin = getPlayerSkin(id);
+    const shopPrice = getShopPrice(skin.priceCoins);
     if (profile.ownedPlayerSkins.includes(id)) return;
-    if (profile.coins < skin.priceCoins) return;
+    if (profile.coins < shopPrice) return;
 
     persist({
       ...profile,
-      coins: profile.coins - skin.priceCoins,
+      coins: profile.coins - shopPrice,
       ownedPlayerSkins: [...profile.ownedPlayerSkins, id],
       selectedPlayerSkinId: id,
     });
@@ -51,12 +62,13 @@ export default function ShopModal({ isOpen, onClose, profile, setProfile }: Shop
 
   function buyBulletSkin(id: BulletSkinId) {
     const skin = getBulletSkin(id);
+    const shopPrice = getShopPrice(skin.priceCoins);
     if (profile.ownedBulletSkins.includes(id)) return;
-    if (profile.coins < skin.priceCoins) return;
+    if (profile.coins < shopPrice) return;
 
     persist({
       ...profile,
-      coins: profile.coins - skin.priceCoins,
+      coins: profile.coins - shopPrice,
       ownedBulletSkins: [...profile.ownedBulletSkins, id],
       selectedBulletSkinId: id,
     });
@@ -95,12 +107,15 @@ export default function ShopModal({ isOpen, onClose, profile, setProfile }: Shop
             {t('systemMenu.coins')}: <b className="text-text-primary">{profile.coins}</b>
           </div>
 
-          <div className="flex gap-1 p-1.5 bg-bg-card rounded-2xl w-full">
+          <div className="flex gap-2 p-1.5 bg-bg-card-alt border border-border-secondary rounded-2xl w-full">
             <button
               type="button"
               onClick={() => setShopSkinTab('player')}
-              className={`flex-1 py-2 bg-transparent border-none rounded-xl cursor-pointer text-[12px] font-bold transition-all duration-200 font-primary flex items-center justify-center ${
-                shopSkinTab === 'player' ? 'text-bg-primary bg-accent-green' : 'text-text-disabled'
+              aria-pressed={shopSkinTab === 'player'}
+              className={`flex-1 h-[42px] rounded-xl cursor-pointer text-[12px] font-bold transition-all duration-200 font-primary flex items-center justify-center border ${
+                shopSkinTab === 'player'
+                  ? 'bg-accent-green text-bg-primary border-accent-green shadow-[0_0_0_1px_rgba(74,222,128,0.45),0_6px_16px_rgba(74,222,128,0.22)]'
+                  : 'bg-bg-card text-text-secondary border-border-secondary hover:bg-bg-card-alt hover:text-text-primary'
               }`}
             >
               {t('systemMenu.shopPlayerSkins')}
@@ -108,8 +123,11 @@ export default function ShopModal({ isOpen, onClose, profile, setProfile }: Shop
             <button
               type="button"
               onClick={() => setShopSkinTab('bullet')}
-              className={`flex-1 py-2 bg-transparent border-none rounded-xl cursor-pointer text-[12px] font-bold transition-all duration-200 font-primary flex items-center justify-center ${
-                shopSkinTab === 'bullet' ? 'text-bg-primary bg-accent-green' : 'text-text-disabled'
+              aria-pressed={shopSkinTab === 'bullet'}
+              className={`flex-1 h-[42px] rounded-xl cursor-pointer text-[12px] font-bold transition-all duration-200 font-primary flex items-center justify-center border ${
+                shopSkinTab === 'bullet'
+                  ? 'bg-accent-green text-bg-primary border-accent-green shadow-[0_0_0_1px_rgba(74,222,128,0.45),0_6px_16px_rgba(74,222,128,0.22)]'
+                  : 'bg-bg-card text-text-secondary border-border-secondary hover:bg-bg-card-alt hover:text-text-primary'
               }`}
             >
               {t('systemMenu.shopBulletSkins')}
@@ -120,18 +138,19 @@ export default function ShopModal({ isOpen, onClose, profile, setProfile }: Shop
             <section>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {PLAYER_SKINS.map((skin) => {
+                  const shopPrice = getShopPrice(skin.priceCoins);
                   const owned = profile.ownedPlayerSkins.includes(skin.id);
                   const selected = profile.selectedPlayerSkinId === skin.id;
-                  const canBuy = profile.coins >= skin.priceCoins;
+                  const canBuy = profile.coins >= shopPrice;
 
                   return (
                     <div key={skin.id} className="rounded-2xl border border-border-secondary bg-bg-card p-4 flex items-center justify-between gap-3">
                       <div>
-                        <div className="text-[14px] text-text-primary font-semibold font-primary">{skin.name}</div>
-                        <div className="mt-1 text-[12px] text-text-secondary font-primary">{t('systemMenu.coinsAmount', { count: skin.priceCoins })}</div>
+                        <div className="text-[14px] text-text-primary font-semibold font-primary">{getSkinName(skin.id, skin.name)}</div>
+                        <div className="mt-1 text-[12px] text-text-secondary font-primary">{t('systemMenu.coinsAmount', { count: shopPrice })}</div>
                         <img
                           src={skin.image}
-                          alt={`${skin.name} player`}
+                          alt={`${getSkinName(skin.id, skin.name)} ${t('systemMenu.playerSkin')}`}
                           className="mt-2 w-8 h-8 object-contain rounded-md border border-border-secondary bg-bg-card-alt p-0.5"
                         />
                       </div>
@@ -171,18 +190,19 @@ export default function ShopModal({ isOpen, onClose, profile, setProfile }: Shop
             <section>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {BULLET_SKINS.map((skin) => {
+                  const shopPrice = getShopPrice(skin.priceCoins);
                   const owned = profile.ownedBulletSkins.includes(skin.id);
                   const selected = profile.selectedBulletSkinId === skin.id;
-                  const canBuy = profile.coins >= skin.priceCoins;
+                  const canBuy = profile.coins >= shopPrice;
 
                   return (
                     <div key={skin.id} className="rounded-2xl border border-border-secondary bg-bg-card p-4 flex items-center justify-between gap-3">
                       <div>
-                        <div className="text-[14px] text-text-primary font-semibold font-primary">{skin.name}</div>
-                        <div className="mt-1 text-[12px] text-text-secondary font-primary">{t('systemMenu.coinsAmount', { count: skin.priceCoins })}</div>
+                        <div className="text-[14px] text-text-primary font-semibold font-primary">{getSkinName(skin.id, skin.name)}</div>
+                        <div className="mt-1 text-[12px] text-text-secondary font-primary">{t('systemMenu.coinsAmount', { count: shopPrice })}</div>
                         <img
                           src={skin.image}
-                          alt={`${skin.name} bullet`}
+                          alt={`${getSkinName(skin.id, skin.name)} ${t('systemMenu.bulletSkin')}`}
                           className="mt-2 w-8 h-8 object-contain rounded-md border border-border-secondary bg-bg-card-alt p-0.5"
                         />
                       </div>

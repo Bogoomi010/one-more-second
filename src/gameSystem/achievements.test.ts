@@ -69,7 +69,7 @@ describe('Achievements System', () => {
   it('should unlock collector achievements', () => {
     const profile: PlayerProfile = {
       ...defaultProfile(),
-      ownedPlayerSkins: ['player-default', 'player-girl', 'player-rabbit'],
+      ownedPlayerSkins: ['player-default', 'player-rabbit-girl', 'player-rabbit'],
       ownedBulletSkins: ['bullet-default', 'bullet-jelly', 'bullet-neon-blue'],
     };
     const result: GameResult = { scoreSeconds: 5, hitsTaken: 3, firstHitSeconds: 1 };

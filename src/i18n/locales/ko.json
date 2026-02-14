@@ -218,10 +218,23 @@
     }
   },
   "skins": {
-    "classic-blue": "Classic Blue",
-    "mint": "Mint",
-    "sunset": "Sunset",
-    "neon": "Neon"
+    "classic-blue": "??? ??",
+    "mint": "??",
+    "sunset": "??",
+    "neon": "??",
+    "player-default": "??",
+    "player-rabbit-girl": "?? ?",
+    "player-rabbit": "??",
+    "player-warrior": "???",
+    "player-skeleton": "????",
+    "player-snowman": "????",
+    "player-fire": "???",
+    "player-demon": "??",
+    "bullet-default": "??",
+    "bullet-gimic": "??",
+    "bullet-neon-blue": "?? ??",
+    "bullet-jelly": "??",
+    "bullet-demon": "??"
   },
   "profileSetup": {
     "title": "PROFILE SETUP",
