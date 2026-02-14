@@ -237,18 +237,18 @@
     "bullet-demon": "??"
   },
   "profileSetup": {
-    "title": "PROFILE SETUP",
-    "subtitle": "Set your nickname and country to submit scores.",
-    "nickname": "Nickname",
-    "nicknamePlaceholder": "Enter nickname",
-    "country": "Country",
-    "countryPlaceholder": "Select country",
-    "confirm": "Confirm",
-    "cancel": "Cancel",
-    "saving": "Saving...",
-    "errorRequired": "Please fill in all fields.",
-    "errorInvalidNickname": "Special characters are not allowed.",
-    "errorSaveFailed": "Failed to save profile.",
-    "errorNicknameTaken": "This nickname is already in use."
+    "title": "프로필 설정",
+    "subtitle": "점수 제출을 위해 닉네임과 국가를 설정해주세요.",
+    "nickname": "닉네임",
+    "nicknamePlaceholder": "닉네임 입력",
+    "country": "국가",
+    "countryPlaceholder": "국가 선택",
+    "confirm": "확인",
+    "cancel": "취소",
+    "saving": "저장 중...",
+    "errorRequired": "모든 항목을 입력해주세요.",
+    "errorInvalidNickname": "특수문자는 사용할 수 없습니다.",
+    "errorSaveFailed": "프로필 저장에 실패했습니다.",
+    "errorNicknameTaken": "이미 사용 중인 닉네임입니다."
   }
 }

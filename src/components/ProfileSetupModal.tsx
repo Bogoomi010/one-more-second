@@ -22,13 +22,6 @@ interface CountryOption {
 
 const majorCountryCodes = ['KR', 'US', 'JP', 'CN', 'GB', 'DE', 'FR', 'CA', 'AU', 'IN'];
 
-const countries: CountryOption[] = majorCountryCodes
-  .map((code: string) => ({
-    value: code,
-    label: getName(code) || code,
-  }))
-  .filter((country) => country.label);
-
 const NICKNAME_REGEX = /^[\p{L}\p{N} ]+$/u;
 
 export default function ProfileSetupModal({
@@ -37,7 +30,7 @@ export default function ProfileSetupModal({
   onConfirm,
   onClose,
 }: ProfileSetupModalProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { user } = useAuth();
   const [nickname, setNickname] = useState('');
   const [country, setCountry] = useState('KR');
@@ -46,9 +39,24 @@ export default function ProfileSetupModal({
   const [error, setError] = useState<string | null>(null);
   const countryMenuRef = useRef<HTMLDivElement | null>(null);
 
+  const countries = useMemo<CountryOption[]>(() => {
+    const locale = i18n.resolvedLanguage ?? i18n.language ?? 'en';
+    const displayNames =
+      typeof Intl !== 'undefined' && typeof Intl.DisplayNames !== 'undefined'
+        ? new Intl.DisplayNames([locale], { type: 'region' })
+        : null;
+
+    return majorCountryCodes
+      .map((code: string) => ({
+        value: code,
+        label: displayNames?.of(code) || getName(code) || code,
+      }))
+      .filter((item) => Boolean(item.label));
+  }, [i18n.language, i18n.resolvedLanguage]);
+
   const selectedCountry = useMemo(
     () => countries.find((item) => item.value === country),
-    [country]
+    [countries, country]
   );
 
   useEffect(() => {
