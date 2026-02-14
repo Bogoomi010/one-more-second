@@ -169,8 +169,11 @@ class AudioManager {
   }
 
   resume() {
-    if (this.audioContext && this.audioContext.state === 'suspended') {
-      this.audioContext.resume();
+    if (!this.audioContext) return;
+    if (this.audioContext.state !== 'running') {
+      void this.audioContext.resume().catch(() => {
+        // Browser may block until a valid user gesture.
+      });
     }
   }
 }

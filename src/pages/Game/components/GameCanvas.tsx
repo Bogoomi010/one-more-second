@@ -191,7 +191,6 @@ function GameCanvasComponent({
 
     void audioManager.init();
     let destroyed = false;
-    let bgmStarted = false;
 
     if (!sound.exists(PIXI_BGM_ALIAS)) {
       sound.add(PIXI_BGM_ALIAS, {
@@ -203,12 +202,24 @@ function GameCanvasComponent({
       sound.volume(PIXI_BGM_ALIAS, resolveBgmVolume());
     }
 
+    const resumeAllAudioContexts = () => {
+      audioManager.resume();
+      const pixiAudioContext = sound.context?.audioContext;
+      if (pixiAudioContext && pixiAudioContext.state === 'suspended') {
+        void pixiAudioContext.resume().catch(() => {
+          // Browser can reject before user activation.
+        });
+      }
+      sound.resumeAll();
+    };
+
     const ensureBgmPlayback = () => {
-      if (destroyed || bgmStarted) return;
+      if (destroyed) return;
       const settings = loadSettings();
       if (!settings.audio.bgmEnabled) return;
+      if (!sound.exists(PIXI_BGM_ALIAS)) return;
+      if (sound.find(PIXI_BGM_ALIAS).isPlaying) return;
 
-      bgmStarted = true;
       try {
         const playback = sound.play(PIXI_BGM_ALIAS, {
           loop: true,
@@ -218,19 +229,24 @@ function GameCanvasComponent({
 
         if (isPromise(playback)) {
           void playback.catch(() => {
-            bgmStarted = false;
+            // Autoplay lock can reject; retry on next gesture.
           });
         }
       } catch {
-        bgmStarted = false;
+        // Autoplay lock can throw; retry on next gesture.
       }
+    };
+
+    const unlockAndPlayAudio = () => {
+      void audioManager.init();
+      resumeAllAudioContexts();
+      ensureBgmPlayback();
     };
 
     const stopBgm = () => {
       if (sound.exists(PIXI_BGM_ALIAS)) {
         sound.stop(PIXI_BGM_ALIAS);
       }
-      bgmStarted = false;
     };
 
     const drawBackground = (width: number, height: number) => {
@@ -434,19 +450,12 @@ function GameCanvasComponent({
     };
 
     const handlePointerDown = () => {
-      audioManager.resume();
-      ensureBgmPlayback();
+      unlockAndPlayAudio();
       focusCanvas();
     };
 
-    const handleGlobalPointerDown = () => {
-      audioManager.resume();
-      ensureBgmPlayback();
-    };
-
     const handleKeyDown = (event: KeyboardEvent) => {
-      audioManager.resume();
-      ensureBgmPlayback();
+      unlockAndPlayAudio();
       if (MOVEMENT_CODES.has(event.code)) {
         event.preventDefault();
       }
@@ -473,34 +482,57 @@ function GameCanvasComponent({
     drawBackground(state.viewportWidth, state.viewportHeight);
     app.ticker.add(ticker);
     view.addEventListener('pointerdown', handlePointerDown);
+    window.addEventListener('pointerdown', unlockAndPlayAudio);
+    window.addEventListener('touchstart', unlockAndPlayAudio, { passive: true });
+    window.addEventListener('mousedown', unlockAndPlayAudio);
+    window.addEventListener('keydown', unlockAndPlayAudio);
     view.addEventListener('keydown', handleKeyDown);
     view.addEventListener('keyup', handleKeyUp);
     view.addEventListener('blur', handleBlur);
     window.addEventListener(SETTINGS_UPDATED_EVENT, syncTouchControls as EventListener);
-    window.addEventListener('pointerdown', handleGlobalPointerDown);
 
     focusCanvas();
-    ensureBgmPlayback();
 
     return () => {
       destroyed = true;
       app.ticker.remove(ticker);
       view.removeEventListener('pointerdown', handlePointerDown);
+      window.removeEventListener('pointerdown', unlockAndPlayAudio);
+      window.removeEventListener('touchstart', unlockAndPlayAudio);
+      window.removeEventListener('mousedown', unlockAndPlayAudio);
+      window.removeEventListener('keydown', unlockAndPlayAudio);
       view.removeEventListener('keydown', handleKeyDown);
       view.removeEventListener('keyup', handleKeyUp);
       view.removeEventListener('blur', handleBlur);
       window.removeEventListener(SETTINGS_UPDATED_EVENT, syncTouchControls as EventListener);
-      window.removeEventListener('pointerdown', handleGlobalPointerDown);
       state.bullets.forEach((bullet) => bullet.sprite.destroy());
       stopBgm();
       app.destroy(true, true);
     };
   }, [bulletImage, playerImage]);
 
+  const handleCanvasDoubleClick = (event: React.MouseEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+  };
+
+  const handleCanvasContextMenu = (event: React.MouseEvent<HTMLDivElement>) => {
+    event.preventDefault();
+  };
+
   return (
     <div
       ref={containerRef}
-      className="w-full h-full min-h-[320px] sm:min-h-[422px] bg-zinc-900 border-2 border-zinc-800 rounded-xl overflow-hidden cursor-none touch-none"
+      className="w-full h-full min-h-[320px] sm:min-h-[422px] bg-zinc-900 border-2 border-zinc-800 rounded-xl overflow-hidden cursor-none select-none"
+      style={{
+        touchAction: 'manipulation',
+        WebkitTapHighlightColor: 'transparent',
+        userSelect: 'none',
+        WebkitUserSelect: 'none',
+        WebkitTouchCallout: 'none',
+      }}
+      onDoubleClick={handleCanvasDoubleClick}
+      onContextMenu={handleCanvasContextMenu}
     />
   );
 }
