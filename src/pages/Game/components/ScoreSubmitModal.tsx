@@ -45,10 +45,12 @@ const ScoreSubmitModal: React.FC<ScoreSubmitModalProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [submitAfterProfileSetup, setSubmitAfterProfileSetup] = useState(false);
   const [requestedProfileSetup, setRequestedProfileSetup] = useState(false);
+  const [autoSubmitAttempted, setAutoSubmitAttempted] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
       setError(null);
+      setAutoSubmitAttempted(false);
     }
   }, [isOpen]);
 
@@ -56,10 +58,13 @@ const ScoreSubmitModal: React.FC<ScoreSubmitModalProps> = ({
     if (!isOpen) {
       setSubmitAfterProfileSetup(false);
       setRequestedProfileSetup(false);
+      setAutoSubmitAttempted(false);
     }
   }, [isOpen]);
 
-  const submitScoreData = useCallback(async () => {
+  const submitScoreData = useCallback(async (options?: { closeOnSuccess?: boolean }) => {
+    const closeOnSuccess = options?.closeOnSuccess ?? true;
+
     if (!user) {
       setError(t('scoreSubmit.signInRequired'));
       return;
@@ -90,11 +95,34 @@ const ScoreSubmitModal: React.FC<ScoreSubmitModalProps> = ({
       if (onRankingUpdate) {
         onRankingUpdate();
       }
-      onClose();
+      if (closeOnSuccess) {
+        onClose();
+      }
     } else {
       setError(response.message || t('scoreSubmit.submitFailed'));
     }
   }, [onClose, onCountrySelect, onRankingUpdate, profileIdentity, score, t, user]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    if (autoSubmitAttempted) return;
+    if (isSubmitting) return;
+    if (!user || identityLoading) return;
+    if (isProfileSetupOpen) return;
+    if (!profileIdentity?.nickname || !profileIdentity?.country) return;
+
+    setAutoSubmitAttempted(true);
+    void submitScoreData({ closeOnSuccess: false });
+  }, [
+    autoSubmitAttempted,
+    identityLoading,
+    isOpen,
+    isProfileSetupOpen,
+    isSubmitting,
+    profileIdentity,
+    submitScoreData,
+    user,
+  ]);
 
   const handleGoogleSignIn = async () => {
     try {
@@ -114,16 +142,13 @@ const ScoreSubmitModal: React.FC<ScoreSubmitModalProps> = ({
     if (isProfileSetupOpen) return;
     if (!user || identityLoading) return;
 
+    setSubmitAfterProfileSetup(false);
+    setRequestedProfileSetup(false);
+
     if (!profileIdentity?.nickname || !profileIdentity?.country) {
-      setSubmitAfterProfileSetup(false);
-      setRequestedProfileSetup(false);
       setError(t('scoreSubmit.profileSetupCanceled'));
       return;
     }
-
-    setSubmitAfterProfileSetup(false);
-    setRequestedProfileSetup(false);
-    void submitScoreData();
   }, [
     identityLoading,
     isOpen,
@@ -131,7 +156,6 @@ const ScoreSubmitModal: React.FC<ScoreSubmitModalProps> = ({
     profileIdentity,
     requestedProfileSetup,
     submitAfterProfileSetup,
-    submitScoreData,
     t,
     user,
   ]);
@@ -150,7 +174,7 @@ const ScoreSubmitModal: React.FC<ScoreSubmitModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-[9999] bg-black/75 backdrop-blur-lg flex items-center justify-center">
-      <div className={`w-[min(520px,calc(100vw-24px))] ${user ? 'h-[min(760px,calc(100vh-16px))]' : 'h-[min(600px,calc(100vh-16px))]'} rounded-[24px] border border-border-primary shadow-[0_20px_60px_rgba(0,0,0,0.5)] bg-bg-primary px-5 sm:px-8 md:px-10 py-8 sm:py-10 md:py-12 flex flex-col overflow-y-auto overflow-x-visible`}>
+      <div className="w-[min(520px,calc(100vw-24px))] max-h-[calc(100vh-16px)] rounded-[24px] border border-border-primary shadow-[0_20px_60px_rgba(0,0,0,0.5)] bg-bg-primary px-5 sm:px-8 md:px-10 py-8 sm:py-10 md:py-12 flex flex-col overflow-y-auto overflow-x-visible">
         <div className="w-full mb-8">
           <h2 className="font-primary text-[48px] font-bold text-green-500 tracking-[3px] mb-4 text-center drop-shadow-[0_0_12px_rgba(34,197,94,0.6)]">
             GAME OVER
@@ -241,24 +265,26 @@ const ScoreSubmitModal: React.FC<ScoreSubmitModalProps> = ({
           ) : (
             <div className="flex flex-col gap-3">
               <button
-                onClick={submitScoreData}
-                disabled={isSubmitting || !user || !profileIdentity}
-                className={`w-full h-[52px] rounded-xl border-none font-primary text-[15px] font-semibold transition-all duration-200 ${
-                  isSubmitting
-                    ? 'bg-accent-green-alpha text-bg-primary cursor-not-allowed'
-                    : 'bg-accent-green text-bg-primary cursor-pointer hover:brightness-110 disabled:opacity-60 disabled:cursor-not-allowed'
-                }`}
-              >
-                {isSubmitting ? t('scoreSubmit.submitting') : t('scoreSubmit.submit')}
-              </button>
-
-              <button
                 type="button"
                 onClick={onClose}
-                className="w-full h-[52px] rounded-xl border-none font-primary text-[15px] font-semibold transition-all duration-200 bg-accent-green text-bg-primary cursor-pointer hover:brightness-110 flex items-center justify-center gap-2"
+                disabled={isSubmitting}
+                className={`w-full h-[52px] rounded-xl border-none font-primary text-[15px] font-semibold transition-all duration-200 bg-accent-green text-bg-primary flex items-center justify-center gap-2 ${
+                  isSubmitting
+                    ? 'opacity-70 cursor-not-allowed'
+                    : 'cursor-pointer hover:brightness-110'
+                }`}
               >
-                <img src={retryIcon} alt="retry" className="w-5 h-5 object-contain" />
-                <span>{t('scoreSubmit.restart')}</span>
+                {isSubmitting ? (
+                  <>
+                    <span className="w-4 h-4 border-2 border-bg-primary/60 border-t-bg-primary rounded-full animate-spin" />
+                    <span>{t('scoreSubmit.submitting')}</span>
+                  </>
+                ) : (
+                  <>
+                    <img src={retryIcon} alt="retry" className="w-5 h-5 object-contain" />
+                    <span>{t('scoreSubmit.restart')}</span>
+                  </>
+                )}
               </button>
             </div>
           )}
