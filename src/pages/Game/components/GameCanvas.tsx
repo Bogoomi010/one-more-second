@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { Application, Graphics, Rectangle, Sprite, Texture } from 'pixi.js';
 import { sound } from '@pixi/sound';
 import { GameResult } from '../../../gameSystem/types';
-import { loadSettings } from '../../../gameSystem/settings';
+import { loadSettings, SETTINGS_UPDATED_EVENT } from '../../../gameSystem/settings';
 import { audioManager } from '../../../gameSystem/audio';
 import bgmFile from '../../../Sound/Sound_main.mp3';
 
@@ -35,6 +35,7 @@ interface GameCanvasProps {
   playerImage: string;
   bulletImage: string;
   isModalOpen?: boolean;
+  joystickVectorRef?: React.MutableRefObject<{ x: number; y: number }>;
 }
 
 type Bullet = {
@@ -70,6 +71,18 @@ function resolveBgmVolume(): number {
   return (settings.audio.bgmVolume / 100) * 0.4;
 }
 
+function resolveTouchControls() {
+  const settings = loadSettings();
+  const speedMultiplier = settings.graphics.touchMoveSpeed / 100;
+  const normalizedSpeed = (Math.max(0.5, Math.min(2, speedMultiplier)) - 0.5) / 1.5;
+
+  return {
+    speedMultiplier: Math.max(0.5, Math.min(2, speedMultiplier)),
+    responseAlphaActive: 0.2 + normalizedSpeed * 0.28,
+    responseAlphaRelease: 0.16 + normalizedSpeed * 0.2,
+  };
+}
+
 function isPromise<T>(value: T | Promise<T>): value is Promise<T> {
   return Boolean(value && typeof (value as Promise<T>).then === 'function');
 }
@@ -82,6 +95,7 @@ function GameCanvasComponent({
   playerImage,
   bulletImage,
   isModalOpen = false,
+  joystickVectorRef,
 }: GameCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const onGameOverRef = useRef(onGameOver);
@@ -89,6 +103,7 @@ function GameCanvasComponent({
   const onScoreChangeRef = useRef(onScoreChange);
   const onSpawnIntervalChangeRef = useRef(onSpawnIntervalChange);
   const isModalOpenRef = useRef(isModalOpen);
+  const joystickVectorSourceRef = useRef(joystickVectorRef);
 
   useEffect(() => {
     onGameOverRef.current = onGameOver;
@@ -97,6 +112,10 @@ function GameCanvasComponent({
     onSpawnIntervalChangeRef.current = onSpawnIntervalChange;
     isModalOpenRef.current = isModalOpen;
   }, [isModalOpen, onGameOver, onLivesChange, onScoreChange, onSpawnIntervalChange]);
+
+  useEffect(() => {
+    joystickVectorSourceRef.current = joystickVectorRef;
+  }, [joystickVectorRef]);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -151,9 +170,24 @@ function GameCanvasComponent({
       viewportHeight: app.screen.height,
     };
 
+    const touchControls = {
+      speedMultiplier: 1,
+      responseAlphaActive: 0.3,
+      responseAlphaRelease: 0.24,
+    };
+    const joystickMotion = { x: 0, y: 0 };
+
+    const syncTouchControls = () => {
+      const next = resolveTouchControls();
+      touchControls.speedMultiplier = next.speedMultiplier;
+      touchControls.responseAlphaActive = next.responseAlphaActive;
+      touchControls.responseAlphaRelease = next.responseAlphaRelease;
+    };
+
     onLivesChangeRef.current(3);
     onScoreChangeRef.current(0);
     onSpawnIntervalChangeRef.current(INITIAL_SPAWN_INTERVAL);
+    syncTouchControls();
 
     void audioManager.init();
     let destroyed = false;
@@ -306,10 +340,30 @@ function GameCanvasComponent({
       state.hitFlashRemainingMs = Math.max(0, state.hitFlashRemainingMs - deltaMs);
 
       const moveDistance = PLAYER_SPEED * deltaTimeSec;
-      if (state.keys.ArrowLeft || state.keys.KeyA) state.player.x -= moveDistance;
-      if (state.keys.ArrowRight || state.keys.KeyD) state.player.x += moveDistance;
-      if (state.keys.ArrowUp || state.keys.KeyW) state.player.y -= moveDistance;
-      if (state.keys.ArrowDown || state.keys.KeyS) state.player.y += moveDistance;
+      if (joystickVectorSourceRef.current) {
+        const joystickVector = joystickVectorSourceRef.current.current;
+        const targetX = joystickVector?.x ?? 0;
+        const targetY = joystickVector?.y ?? 0;
+        const hasJoystickInput = Math.abs(targetX) > 0.001 || Math.abs(targetY) > 0.001;
+        const responseAlpha = hasJoystickInput
+          ? touchControls.responseAlphaActive
+          : touchControls.responseAlphaRelease;
+
+        joystickMotion.x += (targetX - joystickMotion.x) * responseAlpha;
+        joystickMotion.y += (targetY - joystickMotion.y) * responseAlpha;
+
+        if (Math.abs(joystickMotion.x) < 0.0005) joystickMotion.x = 0;
+        if (Math.abs(joystickMotion.y) < 0.0005) joystickMotion.y = 0;
+
+        const adjustedMoveDistance = moveDistance * touchControls.speedMultiplier;
+        state.player.x += joystickMotion.x * adjustedMoveDistance;
+        state.player.y += joystickMotion.y * adjustedMoveDistance;
+      } else {
+        if (state.keys.ArrowLeft || state.keys.KeyA) state.player.x -= moveDistance;
+        if (state.keys.ArrowRight || state.keys.KeyD) state.player.x += moveDistance;
+        if (state.keys.ArrowUp || state.keys.KeyW) state.player.y -= moveDistance;
+        if (state.keys.ArrowDown || state.keys.KeyS) state.player.y += moveDistance;
+      }
       clampPlayer();
 
       for (let i = state.bullets.length - 1; i >= 0; i -= 1) {
@@ -385,6 +439,11 @@ function GameCanvasComponent({
       focusCanvas();
     };
 
+    const handleGlobalPointerDown = () => {
+      audioManager.resume();
+      ensureBgmPlayback();
+    };
+
     const handleKeyDown = (event: KeyboardEvent) => {
       audioManager.resume();
       ensureBgmPlayback();
@@ -400,6 +459,8 @@ function GameCanvasComponent({
 
     const handleBlur = () => {
       state.keys = {};
+      joystickMotion.x = 0;
+      joystickMotion.y = 0;
     };
 
     const ticker = () => {
@@ -411,10 +472,12 @@ function GameCanvasComponent({
 
     drawBackground(state.viewportWidth, state.viewportHeight);
     app.ticker.add(ticker);
-    stage.on('pointerdown', handlePointerDown);
+    view.addEventListener('pointerdown', handlePointerDown);
     view.addEventListener('keydown', handleKeyDown);
     view.addEventListener('keyup', handleKeyUp);
     view.addEventListener('blur', handleBlur);
+    window.addEventListener(SETTINGS_UPDATED_EVENT, syncTouchControls as EventListener);
+    window.addEventListener('pointerdown', handleGlobalPointerDown);
 
     focusCanvas();
     ensureBgmPlayback();
@@ -422,10 +485,12 @@ function GameCanvasComponent({
     return () => {
       destroyed = true;
       app.ticker.remove(ticker);
-      stage.off('pointerdown', handlePointerDown);
+      view.removeEventListener('pointerdown', handlePointerDown);
       view.removeEventListener('keydown', handleKeyDown);
       view.removeEventListener('keyup', handleKeyUp);
       view.removeEventListener('blur', handleBlur);
+      window.removeEventListener(SETTINGS_UPDATED_EVENT, syncTouchControls as EventListener);
+      window.removeEventListener('pointerdown', handleGlobalPointerDown);
       state.bullets.forEach((bullet) => bullet.sprite.destroy());
       stopBgm();
       app.destroy(true, true);
@@ -435,7 +500,7 @@ function GameCanvasComponent({
   return (
     <div
       ref={containerRef}
-      className="w-full h-full min-h-[320px] sm:min-h-[422px] bg-zinc-900 border-2 border-zinc-800 rounded-xl overflow-hidden cursor-none"
+      className="w-full h-full min-h-[320px] sm:min-h-[422px] bg-zinc-900 border-2 border-zinc-800 rounded-xl overflow-hidden cursor-none touch-none"
     />
   );
 }
@@ -444,6 +509,7 @@ export default React.memo(GameCanvasComponent, (prevProps, nextProps) => {
   return (
     prevProps.playerImage === nextProps.playerImage &&
     prevProps.bulletImage === nextProps.bulletImage &&
-    prevProps.isModalOpen === nextProps.isModalOpen
+    prevProps.isModalOpen === nextProps.isModalOpen &&
+    prevProps.joystickVectorRef === nextProps.joystickVectorRef
   );
 });
