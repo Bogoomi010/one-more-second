@@ -299,6 +299,36 @@ export default function SystemMenuModal({
                       <option value="0">{t('settings.fpsUnlimited')}</option>
                     </select>
                   </div>
+
+                  <div>
+                    <div className="mb-1">
+                      {t('settings.touchMoveSpeed', { value: settings.graphics.touchMoveSpeed })}
+                    </div>
+                    <input
+                      type="range"
+                      min="50"
+                      max="200"
+                      step="5"
+                      value={settings.graphics.touchMoveSpeed}
+                      onChange={(e) => updateSetting('graphics', 'touchMoveSpeed', Number(e.target.value))}
+                      className="w-full"
+                    />
+                  </div>
+
+                  <div>
+                    <div className="mb-1">
+                      {t('settings.touchDeadzone', { value: settings.graphics.touchDeadzone })}
+                    </div>
+                    <input
+                      type="range"
+                      min="0"
+                      max="80"
+                      step="1"
+                      value={settings.graphics.touchDeadzone}
+                      onChange={(e) => updateSetting('graphics', 'touchDeadzone', Number(e.target.value))}
+                      className="w-full"
+                    />
+                  </div>
                 </div>
               </div>
 
