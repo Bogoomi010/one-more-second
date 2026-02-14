@@ -139,10 +139,7 @@ export default function Layout({
   return (
     <div className="h-screen bg-bg-primary flex flex-col items-center w-full overflow-hidden box-border">
       <div className="relative z-40 w-full bg-bg-secondary border border-border-primary px-3 py-3 sm:px-6 sm:py-4 flex justify-between items-center backdrop-blur-[10px]">
-        <div className="flex items-center gap-2 sm:gap-3">
-          <div className="w-9 h-9 sm:w-[40px] sm:h-[40px] rounded-xl bg-bg-card flex justify-center items-center shrink-0">
-            <span className="text-[20px] sm:text-[24px] font-tertiary font-bold text-bg-primary">O</span>
-          </div>
+        <div className="flex items-center">
           <button
             type="button"
             onClick={handleBrandClick}
