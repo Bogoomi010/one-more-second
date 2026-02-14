@@ -189,7 +189,7 @@ export default function ShopModal({ isOpen, onClose, profile, setProfile }: Shop
           ) : (
             <section>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {BULLET_SKINS.map((skin) => {
+                {BULLET_SKINS.filter((skin) => skin.id !== 'bullet-gimic').map((skin) => {
                   const shopPrice = getShopPrice(skin.priceCoins);
                   const owned = profile.ownedBulletSkins.includes(skin.id);
                   const selected = profile.selectedBulletSkinId === skin.id;
