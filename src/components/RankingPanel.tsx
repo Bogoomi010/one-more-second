@@ -68,6 +68,8 @@ export default function NewRankingPanel({ userCountry, refreshTrigger = 0 }: New
     return `${mins}m ${secs}s`;
   };
 
+  const formatScore = (score: number): string => score.toLocaleString();
+
   const getRankColor = (rank: number): string => {
     if (rank === 1) return '#FFD700';
     if (rank === 2) return '#C0C0C0';
@@ -174,6 +176,8 @@ export default function NewRankingPanel({ userCountry, refreshTrigger = 0 }: New
               const rank = index + 1;
               const isTopThree = rank <= 3;
               const rankColor = getRankColor(rank);
+              const finalScore = entry.finalScore ?? entry.score;
+              const survivedTime = entry.normalScore ?? entry.score;
 
               return (
                 <div
@@ -206,11 +210,16 @@ export default function NewRankingPanel({ userCountry, refreshTrigger = 0 }: New
                     {entry.nickname}
                   </div>
 
-                  <div
-                    className="text-[14px] font-bold flex-shrink-0 font-secondary"
-                    style={{ color: isTopThree ? rankColor : '#94a3b8' }}
-                  >
-                    {formatTime(entry.score)}
+                  <div className="flex flex-col items-end justify-center gap-0.5 leading-none flex-shrink-0">
+                    <div
+                      className="text-[14px] font-bold font-secondary"
+                      style={{ color: isTopThree ? rankColor : '#94a3b8' }}
+                    >
+                      {formatScore(finalScore)}
+                    </div>
+                    <div className="text-[10px] font-medium text-text-placeholder font-secondary">
+                      {formatTime(survivedTime)}
+                    </div>
                   </div>
                 </div>
               );
