@@ -13,6 +13,8 @@ export interface RankingEntry {
   nickname: string;
   country: string;
   score: number;
+  finalScore?: number;
+  normalScore?: number;
   timestamp: number;
   dateKey: string;
 }
@@ -102,7 +104,8 @@ function upsertBestByNickname(
 export function addRankingEntry(
   nickname: string,
   country: string,
-  score: number
+  score: number,
+  options?: { finalScore?: number; normalScore?: number }
 ): RankingEntry {
   const data = loadRankingData();
   const today = dateKey();
@@ -112,6 +115,8 @@ export function addRankingEntry(
     nickname,
     country,
     score,
+    finalScore: options?.finalScore ?? score,
+    normalScore: options?.normalScore,
     timestamp: Date.now(),
     dateKey: today,
   };

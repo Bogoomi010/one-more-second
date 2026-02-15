@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { getName } from 'country-list';
+import 'flag-icons/css/flag-icons.min.css';
 import { RankingEntry } from '../gameSystem/ranking';
 import {
   getCountryRanking,
@@ -7,7 +8,6 @@ import {
   getGlobalRanking,
 } from '../services/rankingService';
 import rankingIcon from '../assets/icon-ranking-background.png';
-import { getFlagEmoji } from '../utils/flags';
 
 type RankingType = 'global' | 'country' | 'daily';
 
@@ -17,6 +17,21 @@ interface NewRankingPanelProps {
 }
 
 const COUNTRY_OPTIONS = ['KR', 'US', 'JP', 'CN', 'GB', 'DE', 'FR'] as const;
+
+interface CountryFlagProps {
+  countryCode: string;
+  className?: string;
+}
+
+function CountryFlag({ countryCode, className = '' }: CountryFlagProps) {
+  const normalized = countryCode.toLowerCase().replace(/[^a-z]/g, '').slice(0, 2);
+
+  if (normalized.length !== 2) {
+    return <span className="text-[10px] font-bold text-text-placeholder">{countryCode.toUpperCase()}</span>;
+  }
+
+  return <span className={`fi fi-${normalized} ${className}`} aria-hidden="true" />;
+}
 
 export default function NewRankingPanel({ userCountry, refreshTrigger = 0 }: NewRankingPanelProps) {
   const [rankingType, setRankingType] = useState<RankingType>('global');
@@ -71,13 +86,18 @@ export default function NewRankingPanel({ userCountry, refreshTrigger = 0 }: New
     }
   };
 
-  const getFooterText = (): string => {
+  const getFooterText = (): React.ReactNode => {
     switch (rankingType) {
       case 'global':
         return `TOTAL ${rankings.length} RECORDS`;
       case 'country': {
         const countryName = getName(selectedCountry) ?? selectedCountry;
-        return `${getFlagEmoji(selectedCountry)} ${countryName.toUpperCase()} ${rankings.length} RECORDS`;
+        return (
+          <span className="inline-flex items-center gap-1.5">
+            <CountryFlag countryCode={selectedCountry} className="rounded-[2px]" />
+            <span>{`${countryName.toUpperCase()} ${rankings.length} RECORDS`}</span>
+          </span>
+        );
       }
       case 'daily':
         return `TODAY ${rankings.length} RECORDS`;
@@ -109,20 +129,25 @@ export default function NewRankingPanel({ userCountry, refreshTrigger = 0 }: New
 
       {rankingType === 'country' && (
         <div>
-          <select
-            value={selectedCountry}
-            onChange={(e) => setSelectedCountry(e.target.value)}
-            className="w-full py-2.5 px-3 bg-bg-card text-white border border-border-primary rounded-xl text-[13px] cursor-pointer font-primary"
-          >
-            {COUNTRY_OPTIONS.map((countryCode) => {
-              const countryName = getName(countryCode) ?? countryCode;
-              return (
-                <option key={countryCode} value={countryCode}>
-                  {`${getFlagEmoji(countryCode)} ${countryName}`}
-                </option>
-              );
-            })}
-          </select>
+          <div className="relative">
+            <div className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2">
+              <CountryFlag countryCode={selectedCountry} className="rounded-[2px]" />
+            </div>
+            <select
+              value={selectedCountry}
+              onChange={(e) => setSelectedCountry(e.target.value)}
+              className="w-full py-2.5 pl-9 pr-3 bg-bg-card text-white border border-border-primary rounded-xl text-[13px] cursor-pointer font-primary"
+            >
+              {COUNTRY_OPTIONS.map((countryCode) => {
+                const countryName = getName(countryCode) ?? countryCode;
+                return (
+                  <option key={countryCode} value={countryCode}>
+                    {countryName}
+                  </option>
+                );
+              })}
+            </select>
+          </div>
         </div>
       )}
 
@@ -170,9 +195,7 @@ export default function NewRankingPanel({ userCountry, refreshTrigger = 0 }: New
                   </div>
 
                   <div className="flex-shrink-0">
-                    <span className="text-[16px] leading-none" aria-hidden="true">
-                      {getFlagEmoji(entry.country)}
-                    </span>
+                    <CountryFlag countryCode={entry.country} className="rounded-[2px]" />
                   </div>
 
                   <div
