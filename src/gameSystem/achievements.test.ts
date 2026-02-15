@@ -1,4 +1,4 @@
-import { applyAchievements } from './achievements';
+import { ACHIEVEMENT_REWARD_COINS, applyAchievements } from './achievements';
 import { GameResult, PlayerProfile } from './types';
 import { defaultProfile } from './storage';
 
@@ -113,6 +113,29 @@ describe('Achievements System', () => {
     const updated = applyAchievements(profile, result);
 
     expect(updated.achievements['survive-10'].unlockedAt).toBe(1000);
+  });
+
+  it('should grant 100 coins per newly unlocked achievement', () => {
+    const profile: PlayerProfile = { ...defaultProfile(), totalRuns: 1, coins: 0 };
+    const result: GameResult = { scoreSeconds: 30, hitsTaken: 2, firstHitSeconds: 3 };
+
+    const updated = applyAchievements(profile, result);
+
+    expect(updated.coins).toBe(ACHIEVEMENT_REWARD_COINS * 3);
+    expect(updated.achievements['first-run']).toBeDefined();
+    expect(updated.achievements['survive-10']).toBeDefined();
+    expect(updated.achievements['survive-30']).toBeDefined();
+  });
+
+  it('should not unlock coin achievements from achievement reward coins alone', () => {
+    const profile: PlayerProfile = { ...defaultProfile(), totalRuns: 1, coins: 0 };
+    const result: GameResult = { scoreSeconds: 5, hitsTaken: 1, firstHitSeconds: 1 };
+
+    const updated = applyAchievements(profile, result);
+
+    expect(updated.achievements['first-run']).toBeDefined();
+    expect(updated.achievements['coins-100']).toBeUndefined();
+    expect(updated.coins).toBe(ACHIEVEMENT_REWARD_COINS);
   });
 
   it('should unlock multiple achievements in one run', () => {

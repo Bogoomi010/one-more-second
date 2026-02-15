@@ -47,6 +47,7 @@ interface LayoutProps {
   profile?: PlayerProfile;
   userCountry?: string;
   rankingRefreshTrigger?: number;
+  onAchievementsClick?: () => void;
   onMarketClick?: () => void;
   onSettingsClick?: () => void;
   onDifficultyClick?: () => void;
@@ -68,9 +69,9 @@ export default function Layout({
   profile,
   userCountry,
   rankingRefreshTrigger,
+  onAchievementsClick,
   onMarketClick,
   onSettingsClick,
-  onDifficultyClick,
   onProfileMenuClick,
   onToggleMute,
   isMuted = false,
@@ -162,7 +163,21 @@ export default function Layout({
 
         <div className="flex items-center gap-3 sm:gap-6">
           <div className="hidden md:flex gap-8 items-center">
-            <span className="text-accent-green font-primary text-[14px] font-bold">{t('layout.navGame')}</span>
+            {onAchievementsClick ? (
+              <button
+                type="button"
+                className="text-accent-green font-primary text-[14px] font-bold cursor-pointer bg-transparent border-none p-0 hover:text-accent-blue transition-colors duration-200"
+                onClick={onAchievementsClick}
+                title={t('systemMenu.achievements')}
+                aria-label={t('systemMenu.achievements')}
+              >
+                {t('systemMenu.achievements')}
+              </button>
+            ) : (
+              <span className="text-accent-green font-primary text-[14px] font-bold">
+                {t('systemMenu.achievements')}
+              </span>
+            )}
             <button
               type="button"
               className="text-text-muted font-primary text-[14px] font-bold cursor-pointer bg-transparent border-none p-0 hover:text-text-primary transition-colors duration-200"
@@ -248,18 +263,6 @@ export default function Layout({
               aria-label={t('layout.systemMenu')}
             >
               <i className="fi-ss-settings text-[23px] leading-none" aria-hidden="true" />
-            </button>
-          )}
-
-          {onDifficultyClick && (
-            <button
-              type="button"
-              className="h-8 px-2 rounded-lg border border-border-secondary bg-bg-card text-text-primary text-[11px] font-primary font-semibold hover:bg-bg-card-alt transition-colors duration-200"
-              onClick={onDifficultyClick}
-              title="난이도 설정"
-              aria-label="난이도 설정"
-            >
-              난이도
             </button>
           )}
 

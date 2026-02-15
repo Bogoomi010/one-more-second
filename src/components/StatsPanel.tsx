@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { PlayerProfile } from '../gameSystem/types';
-import { ACHIEVEMENTS } from '../gameSystem/achievements';
+import { ACHIEVEMENTS, ACHIEVEMENT_REWARD_COINS } from '../gameSystem/achievements';
 
 interface NewStatsPanelProps {
   profile: PlayerProfile;
@@ -243,6 +243,9 @@ export default function NewStatsPanel({ profile }: NewStatsPanelProps) {
                     </div>
                     <div className="text-ui-tab text-text-disabled font-primary">
                       {desc}
+                    </div>
+                    <div className="text-[11px] text-accent-green font-primary mt-1">
+                      +{t('systemMenu.coinsAmount', { count: ACHIEVEMENT_REWARD_COINS })}
                     </div>
                   </div>
                 </div>

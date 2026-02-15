@@ -17,6 +17,7 @@ interface NewGamePanelProps {
   onGameOver: (result: GameResult) => void;
   isModalOpen?: boolean;
   activeModifiers?: GameplayModifierId[];
+  onDifficultyClick?: () => void;
 }
 
 function resolveJoystickSize(viewportWidth: number): number {
@@ -59,6 +60,7 @@ export default function NewGamePanel({
   onGameOver,
   isModalOpen = false,
   activeModifiers = [],
+  onDifficultyClick,
 }: NewGamePanelProps) {
   const { t } = useTranslation();
   const startPromptText = 'PRESS';
@@ -69,6 +71,7 @@ export default function NewGamePanel({
   const [gameStarted, setGameStarted] = useState(false);
   const [countdown, setCountdown] = useState<number | null>(null);
   const [isTouchInput, setIsTouchInput] = useState(false);
+  const [isDifficultyHovered, setIsDifficultyHovered] = useState(false);
   const [viewportWidth, setViewportWidth] = useState(
     () => (typeof window !== 'undefined' ? window.innerWidth : 1280)
   );
@@ -259,10 +262,10 @@ export default function NewGamePanel({
               </div>
 
               <div
-                className="w-[180px] h-[54px] sm:w-[200px] sm:h-[60px] rounded-2xl bg-gradient-primary flex justify-center items-center px-6 py-4 cursor-pointer transition-transform duration-200 hover:scale-105"
+                className="w-[180px] h-[54px] sm:w-[200px] sm:h-[60px] rounded-2xl border border-[#b5fff840] bg-gradient-primary shadow-[0_0_10px_rgba(74,222,128,0.28)] hover:shadow-[0_0_14px_rgba(74,222,128,0.36)] flex justify-center items-center px-6 py-4 cursor-pointer transition-[transform,box-shadow] duration-200 hover:scale-105"
                 onClick={handleStartRequest}
               >
-                <div className="text-bg-primary font-secondary text-[36px] sm:text-[50px] leading-none font-black tracking-[2px]">
+                <div className="text-bg-primary font-secondary text-[36px] sm:text-[50px] leading-none font-black tracking-[2px] drop-shadow-[0_0_4px_rgba(255,255,255,0.35)]">
                   {isTouchInput ? t('game.start', { defaultValue: 'START' }) : startActionText}
                 </div>
               </div>
@@ -270,6 +273,38 @@ export default function NewGamePanel({
               <div className="text-text-primary font-secondary text-[12px] sm:text-ui-body font-bold tracking-[2px] text-center">
                 {t('game.toStart')}
               </div>
+
+              {onDifficultyClick && (
+                <button
+                  type="button"
+                  onClick={onDifficultyClick}
+                  onMouseEnter={() => setIsDifficultyHovered(true)}
+                  onMouseLeave={() => setIsDifficultyHovered(false)}
+                  className="relative w-[250px] h-[78px] sm:w-[280px] sm:h-[84px] border-[4px] border-[#46ffe0] bg-[linear-gradient(180deg,#10304a_0%,#071929_100%)] transition-[box-shadow,transform] duration-200 hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#46ffe0] focus-visible:ring-offset-2 focus-visible:ring-offset-bg-secondary"
+                  style={{
+                    boxShadow: isDifficultyHovered
+                      ? '0 0 16px rgba(43,229,185,0.42)'
+                      : '0 0 10px rgba(43,229,185,0.24)',
+                  }}
+                  aria-label={t('difficultyModal.title')}
+                >
+                  <span className="absolute inset-[7px] border border-[#4ef9df] pointer-events-none" />
+                  <span className="absolute left-[10px] top-[10px] w-[12px] h-[12px] border-l-2 border-t-2 border-[#5bffe7] pointer-events-none" />
+                  <span className="absolute right-[10px] top-[10px] w-[12px] h-[12px] border-r-2 border-t-2 border-[#5bffe7] pointer-events-none" />
+                  <span className="absolute left-[10px] bottom-[10px] w-[12px] h-[12px] border-l-2 border-b-2 border-[#5bffe7] pointer-events-none" />
+                  <span className="absolute right-[10px] bottom-[10px] w-[12px] h-[12px] border-r-2 border-b-2 border-[#5bffe7] pointer-events-none" />
+                  <span
+                    className="absolute inset-0 flex items-center justify-center text-[#5bffe7] font-primary text-[28px] sm:text-[34px] tracking-[3px]"
+                    style={{
+                      filter: isDifficultyHovered
+                        ? 'drop-shadow(0 0 6px rgba(91,255,231,0.34))'
+                        : 'drop-shadow(0 0 4px rgba(91,255,231,0.22))',
+                    }}
+                  >
+                    {t('difficultyModal.title', { defaultValue: '난이도 변경' })}
+                  </span>
+                </button>
+              )}
 
               {isTouchInput ? (
                 <div className="mt-5 flex flex-col gap-2 items-center">

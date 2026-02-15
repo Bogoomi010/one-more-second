@@ -24,6 +24,7 @@ jest.mock('react-i18next', () => {
     'stats.tabStats': 'Stats',
     'stats.title': 'Stats & Achievements',
     'systemMenu.profile': 'Profile',
+    'systemMenu.achievements': 'Achievements',
     'systemMenu.closeAria': 'Close',
   };
 
@@ -55,9 +56,9 @@ jest.mock('./GameBottomBar', () => function MockGameBottomBar() {
   return <div data-testid="game-bottom-bar-mock" />;
 });
 
-function renderLayout(profileIncluded = true) {
+function renderLayout(profileIncluded = true, overrides: Partial<React.ComponentProps<typeof Layout>> = {}) {
   return render(
-    <Layout profile={profileIncluded ? defaultProfile() : undefined}>
+    <Layout profile={profileIncluded ? defaultProfile() : undefined} {...overrides}>
       <div>GAME_CONTENT</div>
     </Layout>
   );
@@ -94,5 +95,13 @@ describe('Layout mobile panel controls', () => {
 
     fireEvent.click(statsButton);
     expect(screen.queryByRole('dialog', { name: 'Stats & Achievements' })).not.toBeInTheDocument();
+  });
+
+  it('opens achievements modal from desktop header achievements button', () => {
+    const onAchievementsClick = jest.fn();
+    renderLayout(true, { onAchievementsClick });
+
+    fireEvent.click(screen.getByRole('button', { name: 'Achievements' }));
+    expect(onAchievementsClick).toHaveBeenCalledTimes(1);
   });
 });

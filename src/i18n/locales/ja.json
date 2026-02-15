@@ -64,7 +64,7 @@
     "start": "スタート",
     "toStart": "TO START",
     "move": "MOVE",
-    "moveKeys": "WASD / 矢印キー",
+    "moveKeys": "WASD / ARROWS",
     "touchMove": "ジョイスティック操作",
     "slowmo": "SLOWMO",
     "slowmoKey": "SHIFT",
