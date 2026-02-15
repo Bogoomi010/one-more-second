@@ -2,6 +2,7 @@
   "name": "one-more-second",
   "version": "0.3.0",
   "private": true,
+  "packageManager": "yarn@1.22.22",
   "dependencies": {
     "@flaticon/flaticon-uicons": "^3.3.1",
     "@pixi/assets": "^7.4.3",

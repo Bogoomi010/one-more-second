@@ -76,5 +76,6 @@ yarn test --coverage
 yarn build
 
 # 빌드 결과 미리보기
-yarn dlx serve -s build
+yarn global add serve
+serve -s build
 ```
