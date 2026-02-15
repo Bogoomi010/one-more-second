@@ -1,5 +1,5 @@
 import React from 'react';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import Game from './index';
 import { defaultProfile } from '../../gameSystem/storage';
 
@@ -27,6 +27,8 @@ jest.mock('./components/GameCanvas', () => {
 });
 
 describe('Game Page Integration', () => {
+  const GAME_START_COUNTDOWN_TICKS = 3;
+  const GAME_START_COUNTDOWN_STEP_MS = 1000;
   const mockSetProfile = jest.fn();
   const mockSetUserCountry = jest.fn();
   const mockOnRankingUpdate = jest.fn();
@@ -43,12 +45,26 @@ describe('Game Page Integration', () => {
   };
 
   beforeEach(() => {
+    jest.useFakeTimers();
     jest.clearAllMocks();
   });
+
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
+  const completeStartCountdown = () => {
+    for (let i = 0; i < GAME_START_COUNTDOWN_TICKS; i += 1) {
+      act(() => {
+        jest.advanceTimersByTime(GAME_START_COUNTDOWN_STEP_MS);
+      });
+    }
+  };
 
   const startGame = () => {
     const enterButton = screen.getByText(/ENTER|game\.enter/i);
     fireEvent.click(enterButton);
+    completeStartCountdown();
   };
 
   const getLocalDateKey = () => {

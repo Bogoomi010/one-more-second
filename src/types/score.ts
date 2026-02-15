@@ -1,7 +1,9 @@
 export interface ScoreRecord {
   nickname: string;
   country: string;
-  score: number;
+  score: number; // ranking score (final score)
+  finalScore: number;
+  normalScore: number;
 }
 
 export interface ScoreSubmitResponse {

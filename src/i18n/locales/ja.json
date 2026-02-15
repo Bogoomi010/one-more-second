@@ -220,6 +220,70 @@
     "collector-5": {
       "title": "コレクター II",
       "desc": "デフォルト以外のスキンを5つ以上所持する"
+    },
+    "survive-180": {
+      "title": "3分サバイバー",
+      "desc": "1プレイで180秒以上生存する"
+    },
+    "survive-300": {
+      "title": "5分サバイバー",
+      "desc": "1プレイで300秒以上生存する"
+    },
+    "no-hit-45": {
+      "title": "ノーヒット45",
+      "desc": "初被弾まで45秒以上無傷で生存する"
+    },
+    "runner-50": {
+      "title": "エンデュランスランナー",
+      "desc": "総プレイ回数50回達成"
+    },
+    "time-3600": {
+      "title": "累計1時間",
+      "desc": "累計生存時間3600秒以上達成"
+    },
+    "coins-1000": {
+      "title": "コインエンパイア",
+      "desc": "コインを10000枚以上集める"
+    },
+    "collector-8": {
+      "title": "コレクター III",
+      "desc": "デフォルト以外のスキンを8つ以上所持する"
+    },
+    "gimmick-any": {
+      "title": "ギミックデビュー",
+      "desc": "ギミックを1つ以上有効化して1プレイを完了する"
+    },
+    "gimmick-duo": {
+      "title": "ダブルトラブル",
+      "desc": "ギミックを2つ以上有効化して1プレイを完了する"
+    },
+    "gimmick-trio": {
+      "title": "トリプルスレット",
+      "desc": "ギミックを3つ以上有効化して1プレイを完了する"
+    },
+    "gimmick-full-house": {
+      "title": "フルハウス",
+      "desc": "5つすべてのギミックを有効化して1プレイを完了する"
+    },
+    "gimmick-crossline-20": {
+      "title": "碁盤乱れ撃ちマスター",
+      "desc": "碁盤乱れ撃ちを有効化して20秒以上生存する"
+    },
+    "gimmick-shrink-field-20": {
+      "title": "圧縮アリーナマスター",
+      "desc": "圧縮アリーナを有効化して20秒以上生存する"
+    },
+    "gimmick-haste-20": {
+      "title": "スピード飽和マスター",
+      "desc": "スピード飽和を有効化して20秒以上生存する"
+    },
+    "gimmick-one-life-20": {
+      "title": "ワンライフワンダー",
+      "desc": "人生は一発！を有効化して20秒以上生存する"
+    },
+    "gimmick-critical-shot-20": {
+      "title": "会心回避マスター",
+      "desc": "会心の一発を有効化して20秒以上生存する"
     }
   },
   "skins": {
@@ -235,6 +299,11 @@
     "player-snowman": "スノーマン",
     "player-fire": "ファイア",
     "player-demon": "デーモン",
+    "player-bear": "クマ",
+    "player-whitebear": "シロクマ",
+    "player-cat": "猫",
+    "player-ufo-green": "宇宙人の友だち",
+    "player-spaceship2": "かわいい宇宙船",
     "bullet-default": "デフォルト",
     "bullet-gimic": "ギミック",
     "bullet-neon-blue": "ネオンブルー",

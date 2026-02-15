@@ -8,7 +8,12 @@ export type PlayerSkinId =
   | 'player-skeleton'
   | 'player-snowman'
   | 'player-fire'
-  | 'player-demon';
+  | 'player-demon'
+  | 'player-bear'
+  | 'player-whitebear'
+  | 'player-cat'
+  | 'player-ufo-green'
+  | 'player-spaceship2';
 
 export type BulletSkinId =
   | 'bullet-default'
@@ -16,6 +21,13 @@ export type BulletSkinId =
   | 'bullet-neon-blue'
   | 'bullet-jelly'
   | 'bullet-demon';
+
+export type GameplayModifierId =
+  | 'crossline-40-80'
+  | 'shrink-field-80'
+  | 'haste-bullets-110'
+  | 'one-life'
+  | 'critical-shot';
 
 export interface PlayerProfile {
   version: 1;
@@ -42,6 +54,14 @@ export interface GameResult {
   scoreSeconds: number;
   hitsTaken: number;
   firstHitSeconds?: number | null;
+  baseScore?: number;
+  adjustmentScore?: number;
+  finalScore?: number;
+  usedGimmicks?: Array<{
+    id: GameplayModifierId;
+    name: string;
+    weight: number;
+  }>;
 }
 
 export interface PlayerSkinDefinition {

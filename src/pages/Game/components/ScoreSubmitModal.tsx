@@ -27,7 +27,7 @@ interface ScoreSubmitModalProps {
 
 const ScoreSubmitModal: React.FC<ScoreSubmitModalProps> = ({
   score,
-  timePlayed: _timePlayed = 0,
+  timePlayed = 0,
   onClose,
   isOpen,
   systemLines = [],
@@ -82,13 +82,18 @@ const ScoreSubmitModal: React.FC<ScoreSubmitModalProps> = ({
       nickname: profileIdentity.nickname,
       country: profileIdentity.country,
       score,
+      finalScore: score,
+      normalScore: timePlayed,
     };
 
     const response = await submitScore(scoreData);
     setIsSubmitting(false);
 
     if (response.success) {
-      addRankingEntry(scoreData.nickname, scoreData.country, scoreData.score);
+      addRankingEntry(scoreData.nickname, scoreData.country, scoreData.score, {
+        finalScore: scoreData.finalScore,
+        normalScore: scoreData.normalScore,
+      });
       if (onCountrySelect) {
         onCountrySelect(scoreData.country);
       }
@@ -101,7 +106,7 @@ const ScoreSubmitModal: React.FC<ScoreSubmitModalProps> = ({
     } else {
       setError(response.message || t('scoreSubmit.submitFailed'));
     }
-  }, [onClose, onCountrySelect, onRankingUpdate, profileIdentity, score, t, user]);
+  }, [onClose, onCountrySelect, onRankingUpdate, profileIdentity, score, t, timePlayed, user]);
 
   useEffect(() => {
     if (!isOpen) return;

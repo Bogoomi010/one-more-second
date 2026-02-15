@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { PlayerProfile } from '../gameSystem/types';
 import { syncLanguagePreferenceToCloud } from '../services/userDataService';
+import { DEFAULT_ONLINE_USERS_FALLBACK, subscribeOnlineUsersCount } from '../services/onlinePresenceService';
 import RankingPanel from './RankingPanel';
 import StatsPanel from './StatsPanel';
 import GameBottomBar from './GameBottomBar';
@@ -48,6 +49,7 @@ interface LayoutProps {
   rankingRefreshTrigger?: number;
   onMarketClick?: () => void;
   onSettingsClick?: () => void;
+  onDifficultyClick?: () => void;
   onProfileMenuClick?: () => void;
   onToggleMute?: () => void;
   isMuted?: boolean;
@@ -68,6 +70,7 @@ export default function Layout({
   rankingRefreshTrigger,
   onMarketClick,
   onSettingsClick,
+  onDifficultyClick,
   onProfileMenuClick,
   onToggleMute,
   isMuted = false,
@@ -82,6 +85,7 @@ export default function Layout({
   const [isLanguageMenuOpen, setIsLanguageMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [mobilePanel, setMobilePanel] = useState<MobilePanelType | null>(null);
+  const [onlineUsers, setOnlineUsers] = useState<number>(DEFAULT_ONLINE_USERS_FALLBACK);
   const languageMenuRef = useRef<HTMLDivElement | null>(null);
   const userMenuRef = useRef<HTMLDivElement | null>(null);
 
@@ -117,6 +121,10 @@ export default function Layout({
       document.removeEventListener('keydown', handleEscapeKey);
     };
   }, [mobilePanel]);
+
+  useEffect(() => {
+    return subscribeOnlineUsersCount(setOnlineUsers);
+  }, []);
 
   const handleLanguageButtonClick = () => {
     setIsLanguageMenuOpen(prev => !prev);
@@ -243,6 +251,18 @@ export default function Layout({
             </button>
           )}
 
+          {onDifficultyClick && (
+            <button
+              type="button"
+              className="h-8 px-2 rounded-lg border border-border-secondary bg-bg-card text-text-primary text-[11px] font-primary font-semibold hover:bg-bg-card-alt transition-colors duration-200"
+              onClick={onDifficultyClick}
+              title="난이도 설정"
+              aria-label="난이도 설정"
+            >
+              난이도
+            </button>
+          )}
+
           <div className="relative" ref={userMenuRef}>
             <button
               type="button"
@@ -331,7 +351,7 @@ export default function Layout({
                 <div className="w-full h-full min-w-0 min-h-0 flex flex-col gap-4 overflow-hidden">
                   <div className="w-full flex-1 min-w-0 min-h-0 overflow-hidden">{children}</div>
                   <div className="hidden md:block">
-                    <GameBottomBar onSettingsClick={onSettingsClick} />
+                    <GameBottomBar onlineUsers={onlineUsers} onSettingsClick={onSettingsClick} />
                   </div>
                 </div>
               }

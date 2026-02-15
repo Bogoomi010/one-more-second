@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { sound } from '@pixi/sound';
 import Layout from './components/Layout';
+import DifficultyModal from './components/DifficultyModal';
 import ProfileSetupModal from './components/ProfileSetupModal';
 import Toast from './components/Toast';
 import ConfirmModal from './components/ConfirmModal';
@@ -11,6 +12,7 @@ import ShopModal from './pages/Game/components/ShopModal';
 import { useAuth } from './context/AuthContext';
 import i18n from './i18n';
 import { getFirebaseAuthErrorMessage } from './utils/firebaseAuthError';
+import { GameplayModifierId } from './gameSystem/types';
 import {
   getUserIdentityProfile,
   getUserLanguagePreference,
@@ -31,6 +33,10 @@ function App() {
   const [systemMenuOpen, setSystemMenuOpen] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [shopOpen, setShopOpen] = useState(false);
+  const [difficultyModalOpen, setDifficultyModalOpen] = useState(false);
+  const [activeModifiers, setActiveModifiers] = useState<GameplayModifierId[]>(
+    () => loadSettings().gameplay.enabledModifiers
+  );
   const [isAudioMuted, setIsAudioMuted] = useState(() => {
     const settings = loadSettings();
     return !settings.audio.bgmEnabled && !settings.audio.sfxEnabled;
@@ -144,6 +150,7 @@ function App() {
       setSystemMenuOpen(false);
       setProfileMenuOpen(false);
       setShopOpen(false);
+      setDifficultyModalOpen(false);
       setUserCountry('KR');
       setRankingRefreshTrigger((prev) => prev + 1);
       showToast('로그아웃 되었습니다.', 'success');
@@ -174,6 +181,7 @@ function App() {
           setProfileMenuOpen(false);
           setSystemMenuOpen(true);
         }}
+        onDifficultyClick={() => setDifficultyModalOpen(true)}
         onProfileMenuClick={() => {
           setSystemMenuOpen(false);
           setProfileMenuOpen(true);
@@ -192,13 +200,31 @@ function App() {
           setProfile={setProfile}
           setUserCountry={setUserCountry}
           onRankingUpdate={() => setRankingRefreshTrigger((prev) => prev + 1)}
-          isSystemMenuOpen={systemMenuOpen || profileMenuOpen || shopOpen}
+          isSystemMenuOpen={systemMenuOpen || profileMenuOpen || shopOpen || difficultyModalOpen}
+          activeModifiers={activeModifiers}
           profileIdentity={userIdentity}
           isProfileSetupOpen={profileSetupOpen}
           identityLoading={identityLoading}
           onRequestProfileSetup={() => setProfileSetupOpen(true)}
         />
       </Layout>
+
+      <DifficultyModal
+        isOpen={difficultyModalOpen}
+        value={activeModifiers}
+        onClose={() => setDifficultyModalOpen(false)}
+        onApply={(next) => {
+          setActiveModifiers(next);
+          const settings = loadSettings();
+          saveSettings({
+            ...settings,
+            gameplay: {
+              ...settings.gameplay,
+              enabledModifiers: next,
+            },
+          });
+        }}
+      />
 
       <SystemMenuModal
         isOpen={systemMenuOpen}
@@ -210,6 +236,7 @@ function App() {
         initialTab="settings"
         onSettingsChange={(next) => {
           setIsAudioMuted(!next.audio.bgmEnabled && !next.audio.sfxEnabled);
+          setActiveModifiers(next.gameplay.enabledModifiers);
         }}
       />
 
@@ -223,6 +250,7 @@ function App() {
         initialTab="profile"
         onSettingsChange={(next) => {
           setIsAudioMuted(!next.audio.bgmEnabled && !next.audio.sfxEnabled);
+          setActiveModifiers(next.gameplay.enabledModifiers);
         }}
       />
 
