@@ -2,6 +2,7 @@ import { GameResult, GameplayModifierId, PlayerProfile } from './types';
 import { unlockAchievement } from './storage';
 
 export type AchievementDefinition = { id: string; title: string; desc: string };
+export const ACHIEVEMENT_REWARD_COINS = 100;
 
 export const ACHIEVEMENTS: AchievementDefinition[] = [
   { id: 'first-run', title: 'First Run', desc: 'Play the game once' },
@@ -81,65 +82,76 @@ function getUsedGimmickIds(result: GameResult): Set<GameplayModifierId> {
   return new Set((result.usedGimmicks ?? []).map((gimmick) => gimmick.id));
 }
 
+function unlockAchievementWithReward(profile: PlayerProfile, id: string): PlayerProfile {
+  if (profile.achievements[id]) return profile;
+
+  const unlockedProfile = unlockAchievement(profile, id);
+  return {
+    ...unlockedProfile,
+    coins: unlockedProfile.coins + ACHIEVEMENT_REWARD_COINS,
+  };
+}
+
 export function applyAchievements(profile: PlayerProfile, result: GameResult): PlayerProfile {
   let p = profile;
 
   const runSeconds = Math.max(0, Math.floor(result.scoreSeconds));
   const bestRunSeconds = Math.max(result.scoreSeconds, p.bestScore);
+  const coinsBeforeAchievementRewards = p.coins;
   const noHitSeconds = getNoHitSeconds(result);
   const totalOwnedSkinCount = getOwnedSkinCount(p);
   const usedGimmickIds = getUsedGimmickIds(result);
   const usedGimmickCount = usedGimmickIds.size;
 
-  if (p.totalRuns >= 1) p = unlockAchievement(p, 'first-run');
+  if (p.totalRuns >= 1) p = unlockAchievementWithReward(p, 'first-run');
 
-  if (bestRunSeconds >= 10) p = unlockAchievement(p, 'survive-10');
-  if (bestRunSeconds >= 30) p = unlockAchievement(p, 'survive-30');
-  if (bestRunSeconds >= 60) p = unlockAchievement(p, 'survive-60');
-  if (bestRunSeconds >= 90) p = unlockAchievement(p, 'survive-90');
-  if (bestRunSeconds >= 120) p = unlockAchievement(p, 'survive-120');
-  if (bestRunSeconds >= 180) p = unlockAchievement(p, 'survive-180');
-  if (bestRunSeconds >= 300) p = unlockAchievement(p, 'survive-300');
+  if (bestRunSeconds >= 10) p = unlockAchievementWithReward(p, 'survive-10');
+  if (bestRunSeconds >= 30) p = unlockAchievementWithReward(p, 'survive-30');
+  if (bestRunSeconds >= 60) p = unlockAchievementWithReward(p, 'survive-60');
+  if (bestRunSeconds >= 90) p = unlockAchievementWithReward(p, 'survive-90');
+  if (bestRunSeconds >= 120) p = unlockAchievementWithReward(p, 'survive-120');
+  if (bestRunSeconds >= 180) p = unlockAchievementWithReward(p, 'survive-180');
+  if (bestRunSeconds >= 300) p = unlockAchievementWithReward(p, 'survive-300');
 
-  if (noHitSeconds >= 20) p = unlockAchievement(p, 'no-hit-20');
-  if (noHitSeconds >= 30) p = unlockAchievement(p, 'no-hit-30');
-  if (noHitSeconds >= 45) p = unlockAchievement(p, 'no-hit-45');
+  if (noHitSeconds >= 20) p = unlockAchievementWithReward(p, 'no-hit-20');
+  if (noHitSeconds >= 30) p = unlockAchievementWithReward(p, 'no-hit-30');
+  if (noHitSeconds >= 45) p = unlockAchievementWithReward(p, 'no-hit-45');
 
-  if (p.totalRuns >= 5) p = unlockAchievement(p, 'runner-5');
-  if (p.totalRuns >= 20) p = unlockAchievement(p, 'runner-20');
-  if (p.totalRuns >= 50) p = unlockAchievement(p, 'runner-50');
+  if (p.totalRuns >= 5) p = unlockAchievementWithReward(p, 'runner-5');
+  if (p.totalRuns >= 20) p = unlockAchievementWithReward(p, 'runner-20');
+  if (p.totalRuns >= 50) p = unlockAchievementWithReward(p, 'runner-50');
 
-  if (p.totalSecondsSurvived >= 300) p = unlockAchievement(p, 'time-300');
-  if (p.totalSecondsSurvived >= 1800) p = unlockAchievement(p, 'time-1800');
-  if (p.totalSecondsSurvived >= 3600) p = unlockAchievement(p, 'time-3600');
+  if (p.totalSecondsSurvived >= 300) p = unlockAchievementWithReward(p, 'time-300');
+  if (p.totalSecondsSurvived >= 1800) p = unlockAchievementWithReward(p, 'time-1800');
+  if (p.totalSecondsSurvived >= 3600) p = unlockAchievementWithReward(p, 'time-3600');
 
-  if (p.coins >= 100) p = unlockAchievement(p, 'coins-100');
-  if (p.coins >= 500) p = unlockAchievement(p, 'coins-500');
-  if (p.coins >= 10000) p = unlockAchievement(p, 'coins-1000');
+  if (coinsBeforeAchievementRewards >= 100) p = unlockAchievementWithReward(p, 'coins-100');
+  if (coinsBeforeAchievementRewards >= 500) p = unlockAchievementWithReward(p, 'coins-500');
+  if (coinsBeforeAchievementRewards >= 10000) p = unlockAchievementWithReward(p, 'coins-1000');
 
-  if (totalOwnedSkinCount >= 2) p = unlockAchievement(p, 'collector-2');
-  if (totalOwnedSkinCount >= 5) p = unlockAchievement(p, 'collector-5');
-  if (totalOwnedSkinCount >= 8) p = unlockAchievement(p, 'collector-8');
+  if (totalOwnedSkinCount >= 2) p = unlockAchievementWithReward(p, 'collector-2');
+  if (totalOwnedSkinCount >= 5) p = unlockAchievementWithReward(p, 'collector-5');
+  if (totalOwnedSkinCount >= 8) p = unlockAchievementWithReward(p, 'collector-8');
 
-  if (usedGimmickCount >= 1) p = unlockAchievement(p, 'gimmick-any');
-  if (usedGimmickCount >= 2 && runSeconds >= 10) p = unlockAchievement(p, 'gimmick-duo');
-  if (usedGimmickCount >= 3 && runSeconds >= 10) p = unlockAchievement(p, 'gimmick-trio');
-  if (usedGimmickCount >= 5 && runSeconds >= 10) p = unlockAchievement(p, 'gimmick-full-house');
+  if (usedGimmickCount >= 1) p = unlockAchievementWithReward(p, 'gimmick-any');
+  if (usedGimmickCount >= 2 && runSeconds >= 10) p = unlockAchievementWithReward(p, 'gimmick-duo');
+  if (usedGimmickCount >= 3 && runSeconds >= 10) p = unlockAchievementWithReward(p, 'gimmick-trio');
+  if (usedGimmickCount >= 5 && runSeconds >= 10) p = unlockAchievementWithReward(p, 'gimmick-full-house');
 
   if (runSeconds >= 20 && usedGimmickIds.has('crossline-40-80')) {
-    p = unlockAchievement(p, 'gimmick-crossline-20');
+    p = unlockAchievementWithReward(p, 'gimmick-crossline-20');
   }
   if (runSeconds >= 20 && usedGimmickIds.has('shrink-field-80')) {
-    p = unlockAchievement(p, 'gimmick-shrink-field-20');
+    p = unlockAchievementWithReward(p, 'gimmick-shrink-field-20');
   }
   if (runSeconds >= 20 && usedGimmickIds.has('haste-bullets-110')) {
-    p = unlockAchievement(p, 'gimmick-haste-20');
+    p = unlockAchievementWithReward(p, 'gimmick-haste-20');
   }
   if (runSeconds >= 20 && usedGimmickIds.has('one-life')) {
-    p = unlockAchievement(p, 'gimmick-one-life-20');
+    p = unlockAchievementWithReward(p, 'gimmick-one-life-20');
   }
   if (runSeconds >= 20 && usedGimmickIds.has('critical-shot')) {
-    p = unlockAchievement(p, 'gimmick-critical-shot-20');
+    p = unlockAchievementWithReward(p, 'gimmick-critical-shot-20');
   }
 
   return p;

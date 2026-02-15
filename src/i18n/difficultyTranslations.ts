@@ -1,15 +1,15 @@
 const difficultyTranslations = {
   ko: {
     difficultyModal: {
-      title: '난이도 / 기믹 설정',
+      title: '난이도 변경',
       subtitle: '기믹 조합에 따라 난이도와 점수 보정이 달라집니다. 오늘은 어떤 고난을 고를까요?',
       dialogAria: '난이도 및 기믹 설정',
       closeAria: '닫기',
       scoreFormula: '예상 점수 공식: finalScore = baseScore + adjustmentScore',
       scorePreview:
         '{{baseScore}}초 기준 -> {{finalScore}}점 (기본 {{baseScore}} + 보정 {{adjustmentScore}})',
-      toggleOn: '활성화',
-      toggleOff: '비활성화',
+      toggleOn: 'ON',
+      toggleOff: 'OFF',
       apply: '적용',
       cancel: '취소',
     },
@@ -39,7 +39,7 @@ const difficultyTranslations = {
   },
   en: {
     difficultyModal: {
-      title: 'Difficulty / Gimmicks',
+      title: 'Difficulty',
       subtitle:
         'Your gimmick mix changes both danger and score bonus. Pick your flavor of chaos.',
       dialogAria: 'Difficulty and gimmick settings',
@@ -47,8 +47,8 @@ const difficultyTranslations = {
       scoreFormula: 'Score formula preview: finalScore = baseScore + adjustmentScore',
       scorePreview:
         'At {{baseScore}}s -> {{finalScore}} pts (base {{baseScore}} + bonus {{adjustmentScore}})',
-      toggleOn: 'Enabled',
-      toggleOff: 'Disabled',
+      toggleOn: 'ON',
+      toggleOff: 'OFF',
       apply: 'Apply',
       cancel: 'Cancel',
     },
@@ -78,15 +78,15 @@ const difficultyTranslations = {
   },
   ja: {
     difficultyModal: {
-      title: '難易度 / ギミック設定',
+      title: '難易度変更',
       subtitle: 'ギミックの組み合わせで難易度とスコア補正が変わります。今日はどの修羅場にしますか？',
       dialogAria: '難易度とギミックの設定',
       closeAria: '閉じる',
       scoreFormula: '予想スコア式: finalScore = baseScore + adjustmentScore',
       scorePreview:
         '{{baseScore}}秒基準 -> {{finalScore}}点 (基本 {{baseScore}} + 補正 {{adjustmentScore}})',
-      toggleOn: '有効',
-      toggleOff: '無効',
+      toggleOn: 'ON',
+      toggleOff: 'OFF',
       apply: '適用',
       cancel: 'キャンセル',
     },
@@ -116,15 +116,15 @@ const difficultyTranslations = {
   },
   'zh-CN': {
     difficultyModal: {
-      title: '难度 / 机关设置',
+      title: '调整难度',
       subtitle: '机关组合会同时改变难度和分数加成。今天想挑战哪种地狱模式？',
       dialogAria: '难度与机关设置',
       closeAria: '关闭',
       scoreFormula: '预估分数公式: finalScore = baseScore + adjustmentScore',
       scorePreview:
         '以 {{baseScore}} 秒为基准 -> {{finalScore}} 分 (基础 {{baseScore}} + 加成 {{adjustmentScore}})',
-      toggleOn: '已开启',
-      toggleOff: '已关闭',
+      toggleOn: 'ON',
+      toggleOff: 'OFF',
       apply: '应用',
       cancel: '取消',
     },

@@ -2,7 +2,6 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import Toast from '../../../components/Toast';
 import {
-  ACHIEVEMENTS,
   audioManager,
   ensureDailyChallenge,
   getBulletSkin,
@@ -18,7 +17,7 @@ import { PlayerProfile } from '../../../gameSystem/types';
 import { GameSettings } from '../../../gameSystem/settings';
 import { syncLocalProfileToCloud } from '../../../services/userDataService';
 
-export type SystemMenuTabId = 'profile' | 'achievements' | 'settings';
+export type SystemMenuTabId = 'profile' | 'settings';
 
 interface Props {
   isOpen: boolean;
@@ -48,7 +47,7 @@ export default function SystemMenuModal({
   const [toastVariant, setToastVariant] = useState<'info' | 'success' | 'error'>('info');
 
   const availableTabs = useMemo<SystemMenuTabId[]>(() => {
-    const defaultTabs: SystemMenuTabId[] = ['profile', 'achievements', 'settings'];
+    const defaultTabs: SystemMenuTabId[] = ['profile', 'settings'];
     const baseTabs: SystemMenuTabId[] = visibleTabs && visibleTabs.length > 0 ? visibleTabs : defaultTabs;
     const uniqueTabs = Array.from(new Set<SystemMenuTabId>(baseTabs));
     const filteredTabs = isLoggedIn ? uniqueTabs : uniqueTabs.filter((tabId) => tabId !== 'profile');
@@ -163,7 +162,7 @@ export default function SystemMenuModal({
 
   return (
     <div className="fixed inset-0 z-[10001] bg-black/75 backdrop-blur-lg flex items-center justify-center p-4">
-      <div className="w-fit max-w-[min(920px,calc(100vw-24px))] max-h-[calc(100vh-24px)] rounded-[24px] border border-border-primary bg-bg-primary shadow-[0_24px_70px_rgba(0,0,0,0.55)] px-6 py-6 sm:px-8 sm:py-8 flex flex-col overflow-hidden">
+      <div className="w-[min(1120px,calc(100vw-24px))] max-h-[calc(100vh-24px)] rounded-[24px] border border-border-primary bg-bg-primary shadow-[0_24px_70px_rgba(0,0,0,0.55)] px-6 py-6 sm:px-8 sm:py-8 flex flex-col overflow-hidden">
         <div className="flex items-center justify-between mb-5">
           <div>
             <h2 className="m-0 text-[28px] font-bold font-primary text-accent-green tracking-[1px]">{t('systemMenu.title')}</h2>
@@ -233,31 +232,6 @@ export default function SystemMenuModal({
                   {t('systemMenu.close')}
                 </button>
               </div>
-            </div>
-          )}
-
-          {tab === 'achievements' && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {ACHIEVEMENTS.map((a) => {
-                const unlocked = Boolean(profile.achievements[a.id]);
-                const title = t(`achievements.${a.id}.title`, { defaultValue: a.title });
-                const desc = t(`achievements.${a.id}.desc`, { defaultValue: a.desc });
-                return (
-                  <div
-                    key={a.id}
-                    className={`rounded-2xl border p-4 ${
-                      unlocked
-                        ? 'border-accent-green/50 bg-accent-green-alpha'
-                        : 'border-border-secondary bg-bg-card'
-                    }`}
-                  >
-                    <div className="text-[14px] font-semibold font-primary text-text-primary">
-                      {title} {unlocked ? ` ${t('systemMenu.completed')}` : ''}
-                    </div>
-                    <div className="mt-1 text-[12px] text-text-secondary font-primary">{desc}</div>
-                  </div>
-                );
-              })}
             </div>
           )}
 

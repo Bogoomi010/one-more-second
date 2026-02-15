@@ -20,6 +20,7 @@ interface GameProps {
   onRankingUpdate: () => void;
   isSystemMenuOpen?: boolean;
   activeModifiers?: GameplayModifierId[];
+  onDifficultyClick?: () => void;
   profileIdentity: UserIdentityProfile | null;
   isProfileSetupOpen: boolean;
   identityLoading: boolean;
@@ -33,6 +34,7 @@ export default function Game({
   onRankingUpdate,
   isSystemMenuOpen = false,
   activeModifiers = [],
+  onDifficultyClick,
   profileIdentity,
   isProfileSetupOpen,
   identityLoading,
@@ -69,7 +71,9 @@ export default function Game({
     const { profile: afterDaily, rewarded: dailyReward } = applyDailyChallengeResult(next, result.scoreSeconds);
     next = afterDaily;
 
+    const coinsBeforeAchievementRewards = next.coins;
     next = applyAchievements(next, result);
+    const achievementReward = Math.max(0, next.coins - coinsBeforeAchievementRewards);
 
     saveProfile(next);
     setProfile(next);
@@ -78,6 +82,7 @@ export default function Game({
     const lines: string[] = [];
     lines.push(`+${runReward} coins`);
     if (dailyReward > 0) lines.push(`+${dailyReward} coins (daily)`);
+    if (achievementReward > 0) lines.push(`+${achievementReward} coins (achievements)`);
     setLastRunMessage(lines);
 
     setShowScoreModal(true);
@@ -100,6 +105,7 @@ export default function Game({
         onGameOver={handleGameOver}
         isModalOpen={showScoreModal || isSystemMenuOpen}
         activeModifiers={activeModifiers}
+        onDifficultyClick={onDifficultyClick}
       />
 
       <ScoreSubmitModal

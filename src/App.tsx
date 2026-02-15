@@ -9,6 +9,7 @@ import GamePage from './pages/Game';
 import { audioManager, ensureDailyChallenge, loadProfile, loadSettings, saveSettings } from './gameSystem';
 import SystemMenuModal from './pages/Game/components/SystemMenuModal';
 import ShopModal from './pages/Game/components/ShopModal';
+import AchievementsModal from './pages/Game/components/AchievementsModal';
 import { useAuth } from './context/AuthContext';
 import i18n from './i18n';
 import { getFirebaseAuthErrorMessage } from './utils/firebaseAuthError';
@@ -33,6 +34,7 @@ function App() {
   const [systemMenuOpen, setSystemMenuOpen] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [shopOpen, setShopOpen] = useState(false);
+  const [achievementsModalOpen, setAchievementsModalOpen] = useState(false);
   const [difficultyModalOpen, setDifficultyModalOpen] = useState(false);
   const [activeModifiers, setActiveModifiers] = useState<GameplayModifierId[]>(
     () => loadSettings().gameplay.enabledModifiers
@@ -150,6 +152,7 @@ function App() {
       setSystemMenuOpen(false);
       setProfileMenuOpen(false);
       setShopOpen(false);
+      setAchievementsModalOpen(false);
       setDifficultyModalOpen(false);
       setUserCountry('KR');
       setRankingRefreshTrigger((prev) => prev + 1);
@@ -176,13 +179,20 @@ function App() {
         profile={profile}
         userCountry={userCountry}
         rankingRefreshTrigger={rankingRefreshTrigger}
+        onAchievementsClick={() => {
+          setSystemMenuOpen(false);
+          setProfileMenuOpen(false);
+          setAchievementsModalOpen(true);
+        }}
         onMarketClick={() => setShopOpen(true)}
         onSettingsClick={() => {
+          setAchievementsModalOpen(false);
           setProfileMenuOpen(false);
           setSystemMenuOpen(true);
         }}
         onDifficultyClick={() => setDifficultyModalOpen(true)}
         onProfileMenuClick={() => {
+          setAchievementsModalOpen(false);
           setSystemMenuOpen(false);
           setProfileMenuOpen(true);
         }}
@@ -200,8 +210,15 @@ function App() {
           setProfile={setProfile}
           setUserCountry={setUserCountry}
           onRankingUpdate={() => setRankingRefreshTrigger((prev) => prev + 1)}
-          isSystemMenuOpen={systemMenuOpen || profileMenuOpen || shopOpen || difficultyModalOpen}
+          isSystemMenuOpen={
+            systemMenuOpen ||
+            profileMenuOpen ||
+            shopOpen ||
+            achievementsModalOpen ||
+            difficultyModalOpen
+          }
           activeModifiers={activeModifiers}
+          onDifficultyClick={() => setDifficultyModalOpen(true)}
           profileIdentity={userIdentity}
           isProfileSetupOpen={profileSetupOpen}
           identityLoading={identityLoading}
@@ -232,12 +249,18 @@ function App() {
         profile={profile}
         setProfile={setProfile}
         isLoggedIn={Boolean(user)}
-        visibleTabs={['achievements', 'settings']}
+        visibleTabs={['settings']}
         initialTab="settings"
         onSettingsChange={(next) => {
           setIsAudioMuted(!next.audio.bgmEnabled && !next.audio.sfxEnabled);
           setActiveModifiers(next.gameplay.enabledModifiers);
         }}
+      />
+
+      <AchievementsModal
+        isOpen={achievementsModalOpen}
+        onClose={() => setAchievementsModalOpen(false)}
+        profile={profile}
       />
 
       <SystemMenuModal
