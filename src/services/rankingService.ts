@@ -44,13 +44,20 @@ function mapDocsToRankingEntries(
       typeof data.updatedAt?.toMillis === 'function' ? data.updatedAt.toMillis() : null;
     const timestampFromCreatedAt =
       typeof data.createdAt?.toMillis === 'function' ? data.createdAt.toMillis() : null;
+    const finalScore = Number(data.finalScore ?? data.score ?? 0);
+    const normalScore =
+      data.normalScore === undefined || data.normalScore === null
+        ? undefined
+        : Number(data.normalScore);
 
     return {
       id: snapshot.id,
       uid,
       nickname: String(data.nickname ?? ''),
       country: String(data.country ?? 'KR'),
-      score: Number(data.score ?? 0),
+      score: finalScore,
+      finalScore,
+      normalScore,
       timestamp:
         timestampFromUpdatedAt ??
         timestampFromCreatedAt ??

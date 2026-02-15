@@ -1,3 +1,6 @@
+import { GameplayModifierId } from './types';
+import { normalizeGameplayModifierIds } from './modifiers';
+
 const SETTINGS_STORAGE_KEY = 'oms.settings.v1';
 export const SETTINGS_UPDATED_EVENT = 'oms.settings.updated';
 
@@ -16,6 +19,9 @@ export interface GameSettings {
     bgmEnabled: boolean;
     sfxEnabled: boolean;
   };
+  gameplay: {
+    enabledModifiers: GameplayModifierId[];
+  };
 }
 
 export function defaultSettings(): GameSettings {
@@ -33,6 +39,9 @@ export function defaultSettings(): GameSettings {
       sfxVolume: 80,
       bgmEnabled: true,
       sfxEnabled: true,
+    },
+    gameplay: {
+      enabledModifiers: [],
     },
   };
 }
@@ -66,6 +75,10 @@ export function loadSettings(): GameSettings {
       audio: {
         ...defaults.audio,
         ...(parsed.audio ?? {}),
+      },
+      gameplay: {
+        ...defaults.gameplay,
+        ...(parsed.gameplay ?? {}),
       },
     };
 
@@ -103,6 +116,13 @@ export function loadSettings(): GameSettings {
         ...merged.audio,
         bgmVolume: normalizeNumber(merged.audio.bgmVolume, defaults.audio.bgmVolume, 0, 100),
         sfxVolume: normalizeNumber(merged.audio.sfxVolume, defaults.audio.sfxVolume, 0, 100),
+      },
+      gameplay: {
+        ...merged.gameplay,
+        enabledModifiers: normalizeGameplayModifierIds(
+          merged.gameplay.enabledModifiers,
+          defaults.gameplay.enabledModifiers
+        ),
       },
     };
   } catch {

@@ -7,3 +7,4 @@ export * from './dailyChallenge';
 export * from './ranking';
 export * from './settings';
 export * from './audio';
+export * from './modifiers';

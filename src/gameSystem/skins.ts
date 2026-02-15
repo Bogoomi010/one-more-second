@@ -13,6 +13,11 @@ import playerSkeletonImage from '../assets/icon-player-skeleton.png';
 import playerSnowmanImage from '../assets/icon-player-snowman.png';
 import playerFireImage from '../assets/icon-player-fire.png';
 import playerDemonImage from '../assets/icon-player-demon.png';
+import playerBearImage from '../assets/icon-player-bear.png';
+import playerWhiteBearImage from '../assets/icon-player-whitebear.png';
+import playerCatImage from '../assets/icon-player-cat.png';
+import playerUfoGreenImage from '../assets/icon-player-ufo-green.png';
+import playerSpaceship2Image from '../assets/icon-player-spaceship2.png';
 import bulletDefaultImage from '../assets/icon-bullet-default.png';
 import bulletGimmicImage from '../assets/icon-bullet-gimic.png';
 import bulletNeonImage from '../assets/icon-bullet-neon-blue.png';
@@ -103,6 +108,36 @@ export const PLAYER_SKINS: PlayerSkinDefinition[] = [
     name: 'Demon',
     priceCoins: 420,
     image: playerDemonImage,
+  },
+  {
+    id: 'player-bear',
+    name: '곰',
+    priceCoins: 12000,
+    image: playerBearImage,
+  },
+  {
+    id: 'player-whitebear',
+    name: '북극곰',
+    priceCoins: 13000,
+    image: playerWhiteBearImage,
+  },
+  {
+    id: 'player-cat',
+    name: '\uace0\uc591\uc774',
+    priceCoins: 11000,
+    image: playerCatImage,
+  },
+  {
+    id: 'player-ufo-green',
+    name: '\uc678\uacc4\uc778 \uce5c\uad6c',
+    priceCoins: 13000,
+    image: playerUfoGreenImage,
+  },
+  {
+    id: 'player-spaceship2',
+    name: '\uadc0\uc5ec\uc6b4 \uc6b0\uc8fc\uc120',
+    priceCoins: 11000,
+    image: playerSpaceship2Image,
   },
 ];
 

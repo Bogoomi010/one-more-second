@@ -60,9 +60,9 @@
     "spawnInterval": "生成间隔",
     "press": "按下",
     "enter": "回车",
-    "toStart": "开始",
+    "toStart": "TO START",
     "move": "移动",
-    "moveKeys": "WASD / 方向键",
+    "moveKeys": "WASD / ARROWS",
     "slowmo": "慢动作",
     "slowmoKey": "SHIFT",
     "lifeIconAlt": "生命图标",
@@ -215,6 +215,70 @@
     "collector-5": {
       "title": "收藏家 II",
       "desc": "拥有至少 5 个皮肤（不含默认）"
+    },
+    "survive-180": {
+      "title": "3分钟生存者",
+      "desc": "单局生存 180 秒以上"
+    },
+    "survive-300": {
+      "title": "5分钟生存者",
+      "desc": "单局生存 300 秒以上"
+    },
+    "no-hit-45": {
+      "title": "45秒无伤",
+      "desc": "首次受击前无伤生存 45 秒以上"
+    },
+    "runner-50": {
+      "title": "耐力跑者",
+      "desc": "总计完成 50 局"
+    },
+    "time-3600": {
+      "title": "累计1小时",
+      "desc": "累计生存时间达到 3600 秒以上"
+    },
+    "coins-1000": {
+      "title": "硬币帝国",
+      "desc": "硬币达到 10000 枚以上"
+    },
+    "collector-8": {
+      "title": "收藏家 III",
+      "desc": "拥有至少 8 个皮肤（不含默认）"
+    },
+    "gimmick-any": {
+      "title": "机关初秀",
+      "desc": "启用至少 1 个机关并完成一局"
+    },
+    "gimmick-duo": {
+      "title": "双重麻烦",
+      "desc": "启用至少 2 个机关并完成一局"
+    },
+    "gimmick-trio": {
+      "title": "三重威胁",
+      "desc": "启用至少 3 个机关并完成一局"
+    },
+    "gimmick-full-house": {
+      "title": "满堂彩",
+      "desc": "启用全部 5 个机关并完成一局"
+    },
+    "gimmick-crossline-20": {
+      "title": "棋盘乱射专家",
+      "desc": "启用棋盘乱射并生存 20 秒以上"
+    },
+    "gimmick-shrink-field-20": {
+      "title": "压缩竞技场专家",
+      "desc": "启用压缩竞技场并生存 20 秒以上"
+    },
+    "gimmick-haste-20": {
+      "title": "速度饱和专家",
+      "desc": "启用速度饱和并生存 20 秒以上"
+    },
+    "gimmick-one-life-20": {
+      "title": "一命奇迹",
+      "desc": "启用人生一发！并生存 20 秒以上"
+    },
+    "gimmick-critical-shot-20": {
+      "title": "会心闪避者",
+      "desc": "启用会心一弹并生存 20 秒以上"
     }
   },
   "skins": {
@@ -230,6 +294,11 @@
     "player-snowman": "雪人",
     "player-fire": "火焰",
     "player-demon": "恶魔",
+    "player-bear": "\u718a",
+    "player-whitebear": "\u5317\u6781\u718a",
+    "player-cat": "猫咪",
+    "player-ufo-green": "外星人朋友",
+    "player-spaceship2": "可爱宇宙飞船",
     "bullet-default": "默认",
     "bullet-gimic": "机关",
     "bullet-neon-blue": "霓虹蓝",

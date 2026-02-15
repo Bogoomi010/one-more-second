@@ -6,12 +6,13 @@ import ko from './locales/ko.json';
 import en from './locales/en.json';
 import ja from './locales/ja.json';
 import zhCN from './locales/zh-CN.json';
+import difficultyTranslations from './difficultyTranslations';
 
 const resources = {
-  ko: { translation: ko },
-  en: { translation: en },
-  ja: { translation: ja },
-  'zh-CN': { translation: zhCN },
+  ko: { translation: { ...ko, ...difficultyTranslations.ko } },
+  en: { translation: { ...en, ...difficultyTranslations.en } },
+  ja: { translation: { ...ja, ...difficultyTranslations.ja } },
+  'zh-CN': { translation: { ...zhCN, ...difficultyTranslations['zh-CN'] } },
 };
 
 i18n

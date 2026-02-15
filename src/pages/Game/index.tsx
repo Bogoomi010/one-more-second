@@ -10,7 +10,7 @@ import {
   getPlayerSkin,
   saveProfile,
 } from '../../gameSystem';
-import { GameResult, PlayerProfile } from '../../gameSystem/types';
+import { GameResult, GameplayModifierId, PlayerProfile } from '../../gameSystem/types';
 import { syncLocalProfileToCloud, UserIdentityProfile } from '../../services/userDataService';
 
 interface GameProps {
@@ -19,6 +19,8 @@ interface GameProps {
   setUserCountry: (country: string) => void;
   onRankingUpdate: () => void;
   isSystemMenuOpen?: boolean;
+  activeModifiers?: GameplayModifierId[];
+  onDifficultyClick?: () => void;
   profileIdentity: UserIdentityProfile | null;
   isProfileSetupOpen: boolean;
   identityLoading: boolean;
@@ -31,12 +33,15 @@ export default function Game({
   setUserCountry,
   onRankingUpdate,
   isSystemMenuOpen = false,
+  activeModifiers = [],
+  onDifficultyClick,
   profileIdentity,
   isProfileSetupOpen,
   identityLoading,
   onRequestProfileSetup,
 }: GameProps) {
   const [score, setScore] = useState(0);
+  const [normalScore, setNormalScore] = useState(0);
   const [isNewHighScore, setIsNewHighScore] = useState(false);
   const [showScoreModal, setShowScoreModal] = useState(false);
   const [lastRunMessage, setLastRunMessage] = useState<string[]>([]);
@@ -51,7 +56,10 @@ export default function Game({
   );
 
   const handleGameOver = (result: GameResult) => {
-    setScore(result.scoreSeconds);
+    const finalRunScore = result.finalScore ?? result.scoreSeconds;
+    const baseRunScore = result.baseScore ?? result.scoreSeconds;
+    setScore(finalRunScore);
+    setNormalScore(baseRunScore);
     setIsNewHighScore(result.scoreSeconds > profile.bestScore);
 
     // 프로필 업데이트 (코인/통계/업적/데일리)
@@ -63,7 +71,9 @@ export default function Game({
     const { profile: afterDaily, rewarded: dailyReward } = applyDailyChallengeResult(next, result.scoreSeconds);
     next = afterDaily;
 
+    const coinsBeforeAchievementRewards = next.coins;
     next = applyAchievements(next, result);
+    const achievementReward = Math.max(0, next.coins - coinsBeforeAchievementRewards);
 
     saveProfile(next);
     setProfile(next);
@@ -72,6 +82,7 @@ export default function Game({
     const lines: string[] = [];
     lines.push(`+${runReward} coins`);
     if (dailyReward > 0) lines.push(`+${dailyReward} coins (daily)`);
+    if (achievementReward > 0) lines.push(`+${achievementReward} coins (achievements)`);
     setLastRunMessage(lines);
 
     setShowScoreModal(true);
@@ -79,6 +90,7 @@ export default function Game({
 
   const handleRestartGame = () => {
     setScore(0);
+    setNormalScore(0);
     setIsNewHighScore(false);
     setShowScoreModal(false);
     setLastRunMessage([]);
@@ -92,11 +104,13 @@ export default function Game({
         bulletImage={bulletSkin.image}
         onGameOver={handleGameOver}
         isModalOpen={showScoreModal || isSystemMenuOpen}
+        activeModifiers={activeModifiers}
+        onDifficultyClick={onDifficultyClick}
       />
 
       <ScoreSubmitModal
         score={score}
-        timePlayed={score}
+        timePlayed={normalScore}
         onClose={handleRestartGame}
         isOpen={showScoreModal}
         systemLines={lastRunMessage}

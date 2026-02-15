@@ -220,6 +220,70 @@
     "collector-5": {
       "title": "수집가 II",
       "desc": "기본 스킨 제외 5개 이상 보유"
+    },
+    "survive-180": {
+      "title": "3분 생존",
+      "desc": "한 판에서 180초 이상 생존"
+    },
+    "survive-300": {
+      "title": "5분 생존",
+      "desc": "한 판에서 300초 이상 생존"
+    },
+    "no-hit-45": {
+      "title": "무피격 45초",
+      "desc": "첫 피격 전 45초 이상 버티기"
+    },
+    "runner-50": {
+      "title": "지구력 러너",
+      "desc": "총 50회 플레이"
+    },
+    "time-3600": {
+      "title": "누적 1시간",
+      "desc": "누적 생존 시간 3600초 달성"
+    },
+    "coins-1000": {
+      "title": "코인 제국",
+      "desc": "코인 10000개 이상 보유"
+    },
+    "collector-8": {
+      "title": "수집가 III",
+      "desc": "기본 스킨 제외 8개 이상 보유"
+    },
+    "gimmick-any": {
+      "title": "기믹 데뷔",
+      "desc": "기믹 1개 이상 활성화한 상태로 한 판 완료"
+    },
+    "gimmick-duo": {
+      "title": "더블 트러블",
+      "desc": "기믹 2개 이상 활성화한 상태로 한 판 완료"
+    },
+    "gimmick-trio": {
+      "title": "트리플 스렛",
+      "desc": "기믹 3개 이상 활성화한 상태로 한 판 완료"
+    },
+    "gimmick-full-house": {
+      "title": "풀하우스",
+      "desc": "5개 모든 기믹을 활성화한 상태로 한 판 완료"
+    },
+    "gimmick-crossline-20": {
+      "title": "바둑판 전문가",
+      "desc": "바둑판 난사 활성화 상태로 20초 이상 생존"
+    },
+    "gimmick-shrink-field-20": {
+      "title": "압축 아레나 달인",
+      "desc": "압축 아레나 활성화 상태로 20초 이상 생존"
+    },
+    "gimmick-haste-20": {
+      "title": "속도 해독자",
+      "desc": "스피드 포화 활성화 상태로 20초 이상 생존"
+    },
+    "gimmick-one-life-20": {
+      "title": "원라이프 전설",
+      "desc": "인생은 한 방! 활성화 상태로 20초 이상 생존"
+    },
+    "gimmick-critical-shot-20": {
+      "title": "회심 회피자",
+      "desc": "회심의 한 발 활성화 상태로 20초 이상 생존"
     }
   },
   "skins": {
@@ -235,6 +299,11 @@
     "player-snowman": "눈사람",
     "player-fire": "화염",
     "player-demon": "악마",
+    "player-bear": "\uacf0",
+    "player-whitebear": "\ubd81\uadf9\uacf0",
+    "player-cat": "고양이",
+    "player-ufo-green": "외계인 친구",
+    "player-spaceship2": "귀여운 우주선",
     "bullet-default": "기본",
     "bullet-gimic": "기믹",
     "bullet-neon-blue": "네온 블루",

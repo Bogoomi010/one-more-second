@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { PlayerProfile } from '../gameSystem/types';
 import { syncLanguagePreferenceToCloud } from '../services/userDataService';
+import { DEFAULT_ONLINE_USERS_FALLBACK, subscribeOnlineUsersCount } from '../services/onlinePresenceService';
 import RankingPanel from './RankingPanel';
 import StatsPanel from './StatsPanel';
 import GameBottomBar from './GameBottomBar';
@@ -46,8 +47,10 @@ interface LayoutProps {
   profile?: PlayerProfile;
   userCountry?: string;
   rankingRefreshTrigger?: number;
+  onAchievementsClick?: () => void;
   onMarketClick?: () => void;
   onSettingsClick?: () => void;
+  onDifficultyClick?: () => void;
   onProfileMenuClick?: () => void;
   onToggleMute?: () => void;
   isMuted?: boolean;
@@ -66,6 +69,7 @@ export default function Layout({
   profile,
   userCountry,
   rankingRefreshTrigger,
+  onAchievementsClick,
   onMarketClick,
   onSettingsClick,
   onProfileMenuClick,
@@ -82,6 +86,7 @@ export default function Layout({
   const [isLanguageMenuOpen, setIsLanguageMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [mobilePanel, setMobilePanel] = useState<MobilePanelType | null>(null);
+  const [onlineUsers, setOnlineUsers] = useState<number>(DEFAULT_ONLINE_USERS_FALLBACK);
   const languageMenuRef = useRef<HTMLDivElement | null>(null);
   const userMenuRef = useRef<HTMLDivElement | null>(null);
 
@@ -117,6 +122,10 @@ export default function Layout({
       document.removeEventListener('keydown', handleEscapeKey);
     };
   }, [mobilePanel]);
+
+  useEffect(() => {
+    return subscribeOnlineUsersCount(setOnlineUsers);
+  }, []);
 
   const handleLanguageButtonClick = () => {
     setIsLanguageMenuOpen(prev => !prev);
@@ -154,7 +163,21 @@ export default function Layout({
 
         <div className="flex items-center gap-3 sm:gap-6">
           <div className="hidden md:flex gap-8 items-center">
-            <span className="text-accent-green font-primary text-[14px] font-bold">{t('layout.navGame')}</span>
+            {onAchievementsClick ? (
+              <button
+                type="button"
+                className="text-accent-green font-primary text-[14px] font-bold cursor-pointer bg-transparent border-none p-0 hover:text-accent-blue transition-colors duration-200"
+                onClick={onAchievementsClick}
+                title={t('systemMenu.achievements')}
+                aria-label={t('systemMenu.achievements')}
+              >
+                {t('systemMenu.achievements')}
+              </button>
+            ) : (
+              <span className="text-accent-green font-primary text-[14px] font-bold">
+                {t('systemMenu.achievements')}
+              </span>
+            )}
             <button
               type="button"
               className="text-text-muted font-primary text-[14px] font-bold cursor-pointer bg-transparent border-none p-0 hover:text-text-primary transition-colors duration-200"
@@ -331,7 +354,7 @@ export default function Layout({
                 <div className="w-full h-full min-w-0 min-h-0 flex flex-col gap-4 overflow-hidden">
                   <div className="w-full flex-1 min-w-0 min-h-0 overflow-hidden">{children}</div>
                   <div className="hidden md:block">
-                    <GameBottomBar onSettingsClick={onSettingsClick} />
+                    <GameBottomBar onlineUsers={onlineUsers} onSettingsClick={onSettingsClick} />
                   </div>
                 </div>
               }

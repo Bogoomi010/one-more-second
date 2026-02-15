@@ -87,7 +87,9 @@ export async function appendScoreSubmissionForUser(
     uid: user.uid,
     nickname: scoreData.nickname,
     country: scoreData.country,
-    score: scoreData.score,
+    score: scoreData.finalScore,
+    finalScore: scoreData.finalScore,
+    normalScore: scoreData.normalScore,
     dateKey: todayDateKey(createdAtDate),
     createdAt: serverTimestamp(),
     clientTimestamp: createdAtDate.getTime(),
@@ -111,7 +113,7 @@ async function upsertLeaderboardEntry(
   path: [string, string, string],
   uid: string,
   nickname: string,
-  score: number,
+  scoreData: Pick<ScoreRecord, 'score' | 'finalScore' | 'normalScore'>,
   country: string,
   dateKey?: string
 ): Promise<void> {
@@ -122,7 +124,7 @@ async function upsertLeaderboardEntry(
   await runTransaction(db, async (transaction) => {
     const existing = await transaction.get(entryRef);
     const existingScore = Number(existing.data()?.score ?? 0);
-    const bestScore = Math.max(existingScore, score);
+    const bestScore = Math.max(existingScore, scoreData.score);
 
     transaction.set(
       entryRef,
@@ -131,7 +133,10 @@ async function upsertLeaderboardEntry(
         nickname,
         country,
         score: bestScore,
-        lastSubmittedScore: score,
+        finalScore: bestScore,
+        lastSubmittedScore: scoreData.score,
+        lastSubmittedFinalScore: scoreData.finalScore,
+        lastSubmittedNormalScore: scoreData.normalScore,
         dateKey: dateKey ?? null,
         updatedAt: serverTimestamp(),
       },
@@ -143,18 +148,30 @@ async function upsertLeaderboardEntry(
 async function upsertAllLeaderboardEntries(
   uid: string,
   nickname: string,
-  score: number,
+  scoreData: Pick<ScoreRecord, 'score' | 'finalScore' | 'normalScore'>,
   country: string,
   dateKey: string
 ): Promise<void> {
   await Promise.all([
-    upsertLeaderboardEntry(['leaderboardsGlobal', 'all', 'entries'], uid, nickname, score, country),
-    upsertLeaderboardEntry(['leaderboardsCountry', country, 'entries'], uid, nickname, score, country),
+    upsertLeaderboardEntry(
+      ['leaderboardsGlobal', 'all', 'entries'],
+      uid,
+      nickname,
+      scoreData,
+      country
+    ),
+    upsertLeaderboardEntry(
+      ['leaderboardsCountry', country, 'entries'],
+      uid,
+      nickname,
+      scoreData,
+      country
+    ),
     upsertLeaderboardEntry(
       ['leaderboardsDaily', dateKey, 'entries'],
       uid,
       nickname,
-      score,
+      scoreData,
       country,
       dateKey
     ),
@@ -184,14 +201,20 @@ export async function submitScoreToCloudIfSignedIn(
     const normalizedScoreData: ScoreRecord = {
       nickname: identity.nickname,
       country: identity.country,
-      score: scoreData.score,
+      score: scoreData.finalScore,
+      finalScore: scoreData.finalScore,
+      normalScore: scoreData.normalScore,
     };
     const today = todayDateKey();
 
     await upsertAllLeaderboardEntries(
       user.uid,
       normalizedScoreData.nickname,
-      normalizedScoreData.score,
+      {
+        score: normalizedScoreData.score,
+        finalScore: normalizedScoreData.finalScore,
+        normalScore: normalizedScoreData.normalScore,
+      },
       normalizedScoreData.country,
       today
     );

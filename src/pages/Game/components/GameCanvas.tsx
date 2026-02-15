@@ -1,9 +1,16 @@
 import React, { useEffect, useRef } from 'react';
 import { Application, Graphics, Rectangle, Sprite, Texture } from 'pixi.js';
 import { sound } from '@pixi/sound';
-import { GameResult } from '../../../gameSystem/types';
+import { GameResult, GameplayModifierId } from '../../../gameSystem/types';
 import { loadSettings, SETTINGS_UPDATED_EVENT } from '../../../gameSystem/settings';
 import { audioManager } from '../../../gameSystem/audio';
+import {
+  MODIFIER_BULLET_SKIN,
+  calculateScoreBreakdown,
+  getGameplayModifierDefinitions,
+  normalizeGameplayModifierIds,
+  resolveModifierEffects,
+} from '../../../gameSystem/modifiers';
 import bgmFile from '../../../Sound/Sound_main.mp3';
 
 const PLAYER_SPEED = 240;
@@ -11,6 +18,10 @@ const PLAYER_SIZE = 28;
 const BULLET_SIZE = 12;
 const BULLET_RADIUS = BULLET_SIZE / 2;
 const BULLET_SPEED = 180;
+const CROSSLINE_FIRE_INTERVAL_MS = 3000;
+const CRITICAL_SHOT_FIRE_INTERVAL_MS = 4500;
+const CROSSLINE_MAX_LANES = 2;
+const CROSSLINE_LANE_RATIOS = [0.2, 0.35, 0.5, 0.65, 0.8] as const;
 const INITIAL_SPAWN_INTERVAL = 500;
 const INTERVAL_DECREASE = 50;
 const MIN_SPAWN_INTERVAL = 100;
@@ -36,6 +47,7 @@ interface GameCanvasProps {
   bulletImage: string;
   isModalOpen?: boolean;
   joystickVectorRef?: React.MutableRefObject<{ x: number; y: number }>;
+  activeModifiers?: GameplayModifierId[];
 }
 
 type Bullet = {
@@ -44,6 +56,23 @@ type Bullet = {
   y: number;
   vx: number;
   vy: number;
+};
+
+type Playfield = {
+  left: number;
+  top: number;
+  right: number;
+  bottom: number;
+  width: number;
+  height: number;
+};
+
+type SpawnRequest = {
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  useGimmickSkin: boolean;
 };
 
 type GameState = {
@@ -58,11 +87,14 @@ type GameState = {
   spawnInterval: number;
   spawnTimer: number;
   difficultyTimer: number;
+  crosslineTimer: number;
+  criticalShotTimer: number;
   spawnFromTop: boolean;
   hitFlashRemainingMs: number;
   firstHitSeconds: number | null;
   viewportWidth: number;
   viewportHeight: number;
+  playfield: Playfield;
 };
 
 function resolveBgmVolume(): number {
@@ -87,6 +119,25 @@ function isPromise<T>(value: T | Promise<T>): value is Promise<T> {
   return Boolean(value && typeof (value as Promise<T>).then === 'function');
 }
 
+function createPlayfield(width: number, height: number, scale: number): Playfield {
+  const clampedScale = Math.max(0.5, Math.min(1, scale));
+  const playfieldWidth = width * clampedScale;
+  const playfieldHeight = height * clampedScale;
+  const left = (width - playfieldWidth) / 2;
+  const top = (height - playfieldHeight) / 2;
+  const right = left + playfieldWidth;
+  const bottom = top + playfieldHeight;
+
+  return {
+    left,
+    top,
+    right,
+    bottom,
+    width: playfieldWidth,
+    height: playfieldHeight,
+  };
+}
+
 function GameCanvasComponent({
   onGameOver,
   onLivesChange,
@@ -96,6 +147,7 @@ function GameCanvasComponent({
   bulletImage,
   isModalOpen = false,
   joystickVectorRef,
+  activeModifiers = [],
 }: GameCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const onGameOverRef = useRef(onGameOver);
@@ -120,6 +172,9 @@ function GameCanvasComponent({
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
+    const enabledModifierIds = normalizeGameplayModifierIds(activeModifiers);
+    const enabledModifiers = getGameplayModifierDefinitions(enabledModifierIds);
+    const modifierEffects = resolveModifierEffects(enabledModifierIds);
 
     const app = new Application<HTMLCanvasElement>({
       antialias: true,
@@ -139,11 +194,15 @@ function GameCanvasComponent({
     const backgroundLayer = new Graphics();
     stage.addChild(backgroundLayer);
 
+    const playfieldLayer = new Graphics();
+    stage.addChild(playfieldLayer);
+
     const hitFlashLayer = new Graphics();
     stage.addChild(hitFlashLayer);
 
     const playerTexture = Texture.from(playerImage);
     const bulletTexture = Texture.from(bulletImage);
+    const gimmickBulletTexture = Texture.from(MODIFIER_BULLET_SKIN);
 
     const playerSprite = new Sprite(playerTexture);
     playerSprite.anchor.set(0.5);
@@ -151,23 +210,35 @@ function GameCanvasComponent({
     playerSprite.height = PLAYER_SIZE;
     stage.addChild(playerSprite);
 
+    const initialPlayfield = createPlayfield(
+      app.screen.width,
+      app.screen.height,
+      modifierEffects.playfieldScale
+    );
+
     const state: GameState = {
-      player: { x: app.screen.width / 2, y: app.screen.height / 2 },
+      player: {
+        x: (initialPlayfield.left + initialPlayfield.right) / 2,
+        y: (initialPlayfield.top + initialPlayfield.bottom) / 2,
+      },
       bullets: [],
       keys: {},
       gameOver: false,
       elapsedMs: 0,
       lastScoreSec: 0,
-      lives: 3,
+      lives: modifierEffects.startingLives,
       hits: 0,
       spawnInterval: INITIAL_SPAWN_INTERVAL,
       spawnTimer: 0,
       difficultyTimer: 0,
+      crosslineTimer: 0,
+      criticalShotTimer: 0,
       spawnFromTop: true,
       hitFlashRemainingMs: 0,
       firstHitSeconds: null,
       viewportWidth: app.screen.width,
       viewportHeight: app.screen.height,
+      playfield: initialPlayfield,
     };
 
     const touchControls = {
@@ -184,7 +255,7 @@ function GameCanvasComponent({
       touchControls.responseAlphaRelease = next.responseAlphaRelease;
     };
 
-    onLivesChangeRef.current(3);
+    onLivesChangeRef.current(modifierEffects.startingLives);
     onScoreChangeRef.current(0);
     onSpawnIntervalChangeRef.current(INITIAL_SPAWN_INTERVAL);
     syncTouchControls();
@@ -214,7 +285,7 @@ function GameCanvasComponent({
     };
 
     const ensureBgmPlayback = () => {
-      if (destroyed) return;
+      if (destroyed || state.gameOver) return;
       const settings = loadSettings();
       if (!settings.audio.bgmEnabled) return;
       if (!sound.exists(PIXI_BGM_ALIAS)) return;
@@ -238,6 +309,7 @@ function GameCanvasComponent({
     };
 
     const unlockAndPlayAudio = () => {
+      if (state.gameOver) return;
       void audioManager.init();
       resumeAllAudioContexts();
       ensureBgmPlayback();
@@ -247,6 +319,7 @@ function GameCanvasComponent({
       if (sound.exists(PIXI_BGM_ALIAS)) {
         sound.stop(PIXI_BGM_ALIAS);
       }
+      audioManager.stopBGM();
     };
 
     const drawBackground = (width: number, height: number) => {
@@ -254,6 +327,19 @@ function GameCanvasComponent({
       backgroundLayer.beginFill(0x18181b);
       backgroundLayer.drawRect(0, 0, width, height);
       backgroundLayer.endFill();
+
+      playfieldLayer.clear();
+      const hasShrunkPlayfield =
+        Math.abs(state.playfield.width - width) > 0.5 || Math.abs(state.playfield.height - height) > 0.5;
+      if (hasShrunkPlayfield) {
+        playfieldLayer.lineStyle(2, 0x3f3f46, 1);
+        playfieldLayer.drawRect(
+          state.playfield.left,
+          state.playfield.top,
+          state.playfield.width,
+          state.playfield.height
+        );
+      }
 
       hitFlashLayer.clear();
       hitFlashLayer.beginFill(0xff0000);
@@ -265,10 +351,10 @@ function GameCanvasComponent({
     };
 
     const clampPlayer = () => {
-      const maxX = state.viewportWidth - PLAYER_SIZE / 2;
-      const maxY = state.viewportHeight - PLAYER_SIZE / 2;
-      const minX = PLAYER_SIZE / 2;
-      const minY = PLAYER_SIZE / 2;
+      const maxX = state.playfield.right - PLAYER_SIZE / 2;
+      const maxY = state.playfield.bottom - PLAYER_SIZE / 2;
+      const minX = state.playfield.left + PLAYER_SIZE / 2;
+      const minY = state.playfield.top + PLAYER_SIZE / 2;
       state.player.x = Math.max(minX, Math.min(maxX, state.player.x));
       state.player.y = Math.max(minY, Math.min(maxY, state.player.y));
     };
@@ -282,37 +368,136 @@ function GameCanvasComponent({
 
       state.viewportWidth = width;
       state.viewportHeight = height;
+      state.playfield = createPlayfield(width, height, modifierEffects.playfieldScale);
       drawBackground(width, height);
       clampPlayer();
     };
 
-    const spawnBullet = () => {
-      const margin = BULLET_RADIUS * 2;
-      const x = Math.random() * (state.viewportWidth - margin * 2) + margin;
-      const y = state.spawnFromTop ? margin : state.viewportHeight - margin;
-
-      const dx = state.player.x - x;
-      const dy = state.player.y - y;
-      const distance = Math.hypot(dx, dy) || 1;
-      const vx = (dx / distance) * BULLET_SPEED;
-      const vy = (dy / distance) * BULLET_SPEED;
-
-      const bulletSprite = new Sprite(bulletTexture);
+    const appendBullet = (request: SpawnRequest) => {
+      const bulletSprite = new Sprite(request.useGimmickSkin ? gimmickBulletTexture : bulletTexture);
       bulletSprite.anchor.set(0.5);
       bulletSprite.width = BULLET_SIZE;
       bulletSprite.height = BULLET_SIZE;
-      bulletSprite.x = x;
-      bulletSprite.y = y;
+      bulletSprite.x = request.x;
+      bulletSprite.y = request.y;
       stage.addChild(bulletSprite);
 
       state.bullets.push({
         sprite: bulletSprite,
+        x: request.x,
+        y: request.y,
+        vx: request.vx,
+        vy: request.vy,
+      });
+    };
+
+    const buildTrackingBulletRequest = (): SpawnRequest => {
+      const margin = BULLET_RADIUS * 2;
+      const x = Math.random() * (state.playfield.width - margin * 2) + (state.playfield.left + margin);
+      const y = state.spawnFromTop
+        ? state.playfield.top + margin
+        : state.playfield.bottom - margin;
+
+      const dx = state.player.x - x;
+      const dy = state.player.y - y;
+      const distance = Math.hypot(dx, dy) || 1;
+      const bulletSpeed = BULLET_SPEED * modifierEffects.trackingSpeedMultiplier;
+      const request: SpawnRequest = {
         x,
         y,
-        vx,
-        vy,
-      });
+        vx: (dx / distance) * bulletSpeed,
+        vy: (dy / distance) * bulletSpeed,
+        useGimmickSkin: false,
+      };
       state.spawnFromTop = !state.spawnFromTop;
+
+      return request;
+    };
+
+    const buildCriticalShotRequest = (): SpawnRequest => {
+      const margin = BULLET_RADIUS * 2;
+      const side = Math.floor(Math.random() * 4);
+      let x = state.playfield.left;
+      let y = state.playfield.top;
+
+      if (side === 0) {
+        x = Math.random() * (state.playfield.width - margin * 2) + (state.playfield.left + margin);
+        y = state.playfield.top - BULLET_RADIUS;
+      } else if (side === 1) {
+        x = Math.random() * (state.playfield.width - margin * 2) + (state.playfield.left + margin);
+        y = state.playfield.bottom + BULLET_RADIUS;
+      } else if (side === 2) {
+        x = state.playfield.left - BULLET_RADIUS;
+        y = Math.random() * (state.playfield.height - margin * 2) + (state.playfield.top + margin);
+      } else {
+        x = state.playfield.right + BULLET_RADIUS;
+        y = Math.random() * (state.playfield.height - margin * 2) + (state.playfield.top + margin);
+      }
+
+      const dx = state.player.x - x;
+      const dy = state.player.y - y;
+      const distance = Math.hypot(dx, dy) || 1;
+      const bulletSpeed = BULLET_SPEED * modifierEffects.criticalShotSpeedMultiplier;
+
+      return {
+        x,
+        y,
+        vx: (dx / distance) * bulletSpeed,
+        vy: (dy / distance) * bulletSpeed,
+        useGimmickSkin: true,
+      };
+    };
+
+    const buildCrosslineRequests = (): SpawnRequest[] => {
+      if (!modifierEffects.crosslineSpawn) return [];
+
+      const mapLeft = state.playfield.left;
+      const mapTop = state.playfield.top;
+      const mapRight = state.playfield.right;
+      const mapBottom = state.playfield.bottom;
+      const mapWidth = state.playfield.width;
+      const mapHeight = state.playfield.height;
+
+      const lanePool = [...CROSSLINE_LANE_RATIOS];
+      for (let i = lanePool.length - 1; i > 0; i -= 1) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [lanePool[i], lanePool[j]] = [lanePool[j], lanePool[i]];
+      }
+
+      const laneCount = Math.min(
+        CROSSLINE_MAX_LANES,
+        lanePool.length,
+        1 + Math.floor(Math.random() * CROSSLINE_MAX_LANES)
+      );
+      const selectedLanes = lanePool.slice(0, laneCount);
+
+      return selectedLanes.flatMap((ratio) => {
+        const laneX = mapLeft + mapWidth * ratio;
+        const laneY = mapTop + mapHeight * ratio;
+
+        return [
+          // top -> down
+          { x: laneX, y: mapTop - BULLET_RADIUS, vx: 0, vy: BULLET_SPEED, useGimmickSkin: true },
+          // bottom -> up
+          { x: laneX, y: mapBottom + BULLET_RADIUS, vx: 0, vy: -BULLET_SPEED, useGimmickSkin: true },
+          // left -> right
+          { x: mapLeft - BULLET_RADIUS, y: laneY, vx: BULLET_SPEED, vy: 0, useGimmickSkin: true },
+          // right -> left
+          { x: mapRight + BULLET_RADIUS, y: laneY, vx: -BULLET_SPEED, vy: 0, useGimmickSkin: true },
+        ];
+      });
+    };
+
+    const spawnTrackingBullet = () => {
+      appendBullet(buildTrackingBulletRequest());
+    };
+
+    const spawnCrosslineBullets = () => {
+      buildCrosslineRequests().forEach(appendBullet);
+    };
+
+    const spawnCriticalShot = () => {
+      appendBullet(buildCriticalShotRequest());
     };
 
     const removeBulletAt = (index: number) => {
@@ -337,13 +522,20 @@ function GameCanvasComponent({
 
       if (state.lives <= 0) {
         state.gameOver = true;
-        const finalScore = Math.floor(state.elapsedMs / 1000);
+        const elapsedSeconds = Math.floor(state.elapsedMs / 1000);
+        const scoreBreakdown = calculateScoreBreakdown(elapsedSeconds, enabledModifierIds);
         stopBgm();
         audioManager.playGameOverSound();
         onGameOverRef.current({
-          scoreSeconds: finalScore,
+          scoreSeconds: elapsedSeconds,
           hitsTaken: state.hits,
           firstHitSeconds: state.firstHitSeconds,
+          ...scoreBreakdown,
+          usedGimmicks: enabledModifiers.map((modifier) => ({
+            id: modifier.id,
+            name: modifier.name,
+            weight: modifier.weight,
+          })),
         });
       }
     };
@@ -398,10 +590,10 @@ function GameCanvasComponent({
         }
 
         const outOfBounds =
-          bullet.x < -BULLET_SIZE ||
-          bullet.x > state.viewportWidth + BULLET_SIZE ||
-          bullet.y < -BULLET_SIZE ||
-          bullet.y > state.viewportHeight + BULLET_SIZE;
+          bullet.x < state.playfield.left - BULLET_SIZE ||
+          bullet.x > state.playfield.right + BULLET_SIZE ||
+          bullet.y < state.playfield.top - BULLET_SIZE ||
+          bullet.y > state.playfield.bottom + BULLET_SIZE;
 
         if (outOfBounds) {
           removeBulletAt(i);
@@ -424,7 +616,23 @@ function GameCanvasComponent({
       state.spawnTimer += deltaMs;
       while (state.spawnTimer >= state.spawnInterval) {
         state.spawnTimer -= state.spawnInterval;
-        spawnBullet();
+        spawnTrackingBullet();
+      }
+
+      if (modifierEffects.crosslineSpawn) {
+        state.crosslineTimer += deltaMs;
+        while (state.crosslineTimer >= CROSSLINE_FIRE_INTERVAL_MS) {
+          state.crosslineTimer -= CROSSLINE_FIRE_INTERVAL_MS;
+          spawnCrosslineBullets();
+        }
+      }
+
+      if (modifierEffects.criticalShotSpawn) {
+        state.criticalShotTimer += deltaMs;
+        while (state.criticalShotTimer >= CRITICAL_SHOT_FIRE_INTERVAL_MS) {
+          state.criticalShotTimer -= CRITICAL_SHOT_FIRE_INTERVAL_MS;
+          spawnCriticalShot();
+        }
       }
     };
 
@@ -480,6 +688,9 @@ function GameCanvasComponent({
     };
 
     drawBackground(state.viewportWidth, state.viewportHeight);
+    // GamePanel countdown ends before this component mounts, so mount-time attempt aligns BGM with game start.
+    resumeAllAudioContexts();
+    ensureBgmPlayback();
     app.ticker.add(ticker);
     view.addEventListener('pointerdown', handlePointerDown);
     window.addEventListener('pointerdown', unlockAndPlayAudio);
@@ -509,7 +720,7 @@ function GameCanvasComponent({
       stopBgm();
       app.destroy(true, true);
     };
-  }, [bulletImage, playerImage]);
+  }, [activeModifiers, bulletImage, playerImage]);
 
   const handleCanvasDoubleClick = (event: React.MouseEvent<HTMLDivElement>) => {
     event.preventDefault();

@@ -1,4 +1,4 @@
-import { applyAchievements } from './achievements';
+import { ACHIEVEMENT_REWARD_COINS, applyAchievements } from './achievements';
 import { GameResult, PlayerProfile } from './types';
 import { defaultProfile } from './storage';
 
@@ -115,6 +115,29 @@ describe('Achievements System', () => {
     expect(updated.achievements['survive-10'].unlockedAt).toBe(1000);
   });
 
+  it('should grant 100 coins per newly unlocked achievement', () => {
+    const profile: PlayerProfile = { ...defaultProfile(), totalRuns: 1, coins: 0 };
+    const result: GameResult = { scoreSeconds: 30, hitsTaken: 2, firstHitSeconds: 3 };
+
+    const updated = applyAchievements(profile, result);
+
+    expect(updated.coins).toBe(ACHIEVEMENT_REWARD_COINS * 3);
+    expect(updated.achievements['first-run']).toBeDefined();
+    expect(updated.achievements['survive-10']).toBeDefined();
+    expect(updated.achievements['survive-30']).toBeDefined();
+  });
+
+  it('should not unlock coin achievements from achievement reward coins alone', () => {
+    const profile: PlayerProfile = { ...defaultProfile(), totalRuns: 1, coins: 0 };
+    const result: GameResult = { scoreSeconds: 5, hitsTaken: 1, firstHitSeconds: 1 };
+
+    const updated = applyAchievements(profile, result);
+
+    expect(updated.achievements['first-run']).toBeDefined();
+    expect(updated.achievements['coins-100']).toBeUndefined();
+    expect(updated.coins).toBe(ACHIEVEMENT_REWARD_COINS);
+  });
+
   it('should unlock multiple achievements in one run', () => {
     const profile: PlayerProfile = { ...defaultProfile(), totalRuns: 5 };
     const result: GameResult = { scoreSeconds: 120, hitsTaken: 3, firstHitSeconds: 30 };
@@ -130,5 +153,62 @@ describe('Achievements System', () => {
     expect(updated.achievements['no-hit-20']).toBeDefined();
     expect(updated.achievements['no-hit-30']).toBeDefined();
     expect(updated.achievements['runner-5']).toBeDefined();
+  });
+
+  it('should unlock advanced progression achievements', () => {
+    const profile: PlayerProfile = {
+      ...defaultProfile(),
+      totalRuns: 50,
+      totalSecondsSurvived: 3600,
+      coins: 10000,
+      ownedPlayerSkins: [
+        'player-default',
+        'player-rabbit-girl',
+        'player-rabbit',
+        'player-warrior',
+        'player-skeleton',
+        'player-fire',
+      ],
+      ownedBulletSkins: ['bullet-default', 'bullet-gimic', 'bullet-neon-blue'],
+    };
+    const result: GameResult = { scoreSeconds: 300, hitsTaken: 3, firstHitSeconds: 45 };
+
+    const updated = applyAchievements(profile, result);
+
+    expect(updated.achievements['survive-180']).toBeDefined();
+    expect(updated.achievements['survive-300']).toBeDefined();
+    expect(updated.achievements['no-hit-45']).toBeDefined();
+    expect(updated.achievements['runner-50']).toBeDefined();
+    expect(updated.achievements['time-3600']).toBeDefined();
+    expect(updated.achievements['coins-1000']).toBeDefined();
+    expect(updated.achievements['collector-8']).toBeDefined();
+  });
+
+  it('should unlock gimmick achievements', () => {
+    const profile = defaultProfile();
+    const result: GameResult = {
+      scoreSeconds: 25,
+      hitsTaken: 2,
+      firstHitSeconds: 12,
+      usedGimmicks: [
+        { id: 'crossline-40-80', name: 'Crossline', weight: 0.12 },
+        { id: 'shrink-field-80', name: 'Shrink Field', weight: 0.1 },
+        { id: 'haste-bullets-110', name: 'Haste Bullets', weight: 0.08 },
+        { id: 'one-life', name: 'One Life', weight: 0.2 },
+        { id: 'critical-shot', name: 'Critical Shot', weight: 0.1 },
+      ],
+    };
+
+    const updated = applyAchievements(profile, result);
+
+    expect(updated.achievements['gimmick-any']).toBeDefined();
+    expect(updated.achievements['gimmick-duo']).toBeDefined();
+    expect(updated.achievements['gimmick-trio']).toBeDefined();
+    expect(updated.achievements['gimmick-full-house']).toBeDefined();
+    expect(updated.achievements['gimmick-crossline-20']).toBeDefined();
+    expect(updated.achievements['gimmick-shrink-field-20']).toBeDefined();
+    expect(updated.achievements['gimmick-haste-20']).toBeDefined();
+    expect(updated.achievements['gimmick-one-life-20']).toBeDefined();
+    expect(updated.achievements['gimmick-critical-shot-20']).toBeDefined();
   });
 });

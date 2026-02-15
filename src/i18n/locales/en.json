@@ -220,6 +220,70 @@
     "collector-5": {
       "title": "Collector II",
       "desc": "Own at least 5 skins (excluding default)"
+    },
+    "survive-180": {
+      "title": "3 Minute Survivor",
+      "desc": "Survive for 180+ seconds in one run"
+    },
+    "survive-300": {
+      "title": "5 Minute Survivor",
+      "desc": "Survive for 300+ seconds in one run"
+    },
+    "no-hit-45": {
+      "title": "No-Hit 45",
+      "desc": "Stay unharmed for 45+ seconds before first hit"
+    },
+    "runner-50": {
+      "title": "Endurance Runner",
+      "desc": "Complete 50 total runs"
+    },
+    "time-3600": {
+      "title": "1 Hour Total",
+      "desc": "Accumulate 3600+ total seconds survived"
+    },
+    "coins-1000": {
+      "title": "Coin Empire",
+      "desc": "Reach 10000+ coins"
+    },
+    "collector-8": {
+      "title": "Collector III",
+      "desc": "Own at least 8 skins (excluding default)"
+    },
+    "gimmick-any": {
+      "title": "Gimmick Debut",
+      "desc": "Finish a run with at least 1 gimmick enabled"
+    },
+    "gimmick-duo": {
+      "title": "Double Trouble",
+      "desc": "Finish a run with 2+ gimmicks enabled"
+    },
+    "gimmick-trio": {
+      "title": "Triple Threat",
+      "desc": "Finish a run with 3+ gimmicks enabled"
+    },
+    "gimmick-full-house": {
+      "title": "Full House",
+      "desc": "Finish a run with all 5 gimmicks enabled"
+    },
+    "gimmick-crossline-20": {
+      "title": "Crossline Specialist",
+      "desc": "Survive 20+ seconds with Checkerboard Barrage enabled"
+    },
+    "gimmick-shrink-field-20": {
+      "title": "Tight Space Expert",
+      "desc": "Survive 20+ seconds with Compressed Arena enabled"
+    },
+    "gimmick-haste-20": {
+      "title": "Speed Reader",
+      "desc": "Survive 20+ seconds with Speed Saturation enabled"
+    },
+    "gimmick-one-life-20": {
+      "title": "One-Life Wonder",
+      "desc": "Survive 20+ seconds with One Shot Life enabled"
+    },
+    "gimmick-critical-shot-20": {
+      "title": "Critical Dodger",
+      "desc": "Survive 20+ seconds with Clutch Round enabled"
     }
   },
   "skins": {
@@ -235,6 +299,11 @@
     "player-snowman": "Snowman",
     "player-fire": "Fire",
     "player-demon": "Demon",
+    "player-bear": "Bear",
+    "player-whitebear": "Polar Bear",
+    "player-cat": "Cat",
+    "player-ufo-green": "Alien Buddy",
+    "player-spaceship2": "Cute Spaceship",
     "bullet-default": "Default",
     "bullet-gimic": "Gimic",
     "bullet-neon-blue": "Neon Blue",

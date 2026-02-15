@@ -1,5 +1,6 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
+import { getDatabase } from 'firebase/database';
 import { getFirestore } from 'firebase/firestore';
 
 const firebaseConfig = {
@@ -9,6 +10,7 @@ const firebaseConfig = {
   storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET,
   messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
   appId: process.env.REACT_APP_FIREBASE_APP_ID,
+  databaseURL: process.env.REACT_APP_FIREBASE_DATABASE_URL,
 };
 
 const hasRequiredConfig = Boolean(
@@ -19,7 +21,9 @@ const hasRequiredConfig = Boolean(
 );
 
 const app = hasRequiredConfig ? initializeApp(firebaseConfig) : null;
+const hasRealtimeDbConfig = Boolean(hasRequiredConfig && firebaseConfig.databaseURL);
 
 export const firebaseEnabled = hasRequiredConfig;
 export const firebaseAuth = app ? getAuth(app) : null;
 export const firebaseDb = app ? getFirestore(app) : null;
+export const firebaseRealtimeDb = hasRealtimeDbConfig && app ? getDatabase(app) : null;

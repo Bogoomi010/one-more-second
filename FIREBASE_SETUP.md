@@ -97,7 +97,7 @@ REACT_APP_FIREBASE_APP_ID=...
 Firebase CLI 사용 시:
 
 ```bash
-npm i -g firebase-tools
+yarn global add firebase-tools
 firebase login
 firebase init firestore
 firebase deploy --only firestore:rules
