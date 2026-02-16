@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { getName } from 'country-list';
 import { useTranslation } from 'react-i18next';
 import { submitScore } from '../../../utils/api';
@@ -9,6 +9,7 @@ import { UserIdentityProfile } from '../../../services/userDataService';
 import { getFirebaseAuthErrorMessage } from '../../../utils/firebaseAuthError';
 import retryIcon from '../../../assets/icon-retry.png';
 import { getFlagEmoji } from '../../../utils/flags';
+import { useModalAccessibility } from '../../../components/useModalAccessibility';
 
 interface ScoreSubmitModalProps {
   score: number;
@@ -46,6 +47,17 @@ const ScoreSubmitModal: React.FC<ScoreSubmitModalProps> = ({
   const [submitAfterProfileSetup, setSubmitAfterProfileSetup] = useState(false);
   const [requestedProfileSetup, setRequestedProfileSetup] = useState(false);
   const [autoSubmitAttempted, setAutoSubmitAttempted] = useState(false);
+  const dialogRef = useRef<HTMLDivElement | null>(null);
+  const titleId = useId();
+  const detailsId = useId();
+  const errorId = useId();
+
+  useModalAccessibility({
+    isOpen,
+    dialogRef,
+    onClose,
+    autoFocusSelector: '[data-modal-autofocus="score-submit-restart"]',
+  });
 
   useEffect(() => {
     if (isOpen) {
@@ -178,10 +190,24 @@ const ScoreSubmitModal: React.FC<ScoreSubmitModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[9999] bg-black/75 backdrop-blur-lg flex items-center justify-center">
-      <div className="w-[min(520px,calc(100vw-24px))] max-h-[calc(100vh-16px)] rounded-[24px] border border-border-primary shadow-[0_20px_60px_rgba(0,0,0,0.5)] bg-bg-primary px-5 sm:px-8 md:px-10 py-8 sm:py-10 md:py-12 flex flex-col overflow-y-auto overflow-x-visible">
+    <div
+      className="fixed inset-0 z-[9999] bg-black/75 backdrop-blur-lg flex items-center justify-center"
+      onClick={onClose}
+    >
+      <div
+        ref={dialogRef}
+        className="w-[min(520px,calc(100vw-24px))] max-h-[calc(100vh-16px)] rounded-[24px] border border-border-primary shadow-[0_20px_60px_rgba(0,0,0,0.5)] bg-bg-primary px-5 sm:px-8 md:px-10 py-8 sm:py-10 md:py-12 flex flex-col overflow-y-auto overflow-x-visible"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        aria-describedby={`${detailsId} ${error ? errorId : ''}`}
+        onClick={(event) => event.stopPropagation()}
+      >
         <div className="w-full mb-8">
-          <h2 className="font-primary text-[48px] font-bold text-green-500 tracking-[3px] mb-4 text-center drop-shadow-[0_0_12px_rgba(34,197,94,0.6)]">
+          <h2
+            id={titleId}
+            className="font-primary text-[48px] font-bold text-green-500 tracking-[3px] mb-4 text-center drop-shadow-[0_0_12px_rgba(34,197,94,0.6)]"
+          >
             GAME OVER
           </h2>
 
@@ -201,7 +227,7 @@ const ScoreSubmitModal: React.FC<ScoreSubmitModalProps> = ({
             </div>
           </div>
 
-          <div className="mb-[30px]">
+          <div id={detailsId} className="mb-[30px]">
             <p className="font-primary text-xs text-text-disabled tracking-[2px] font-medium text-center mb-0 leading-none">
               FINAL SCORE
             </p>
@@ -252,7 +278,7 @@ const ScoreSubmitModal: React.FC<ScoreSubmitModalProps> = ({
 
         <div className={!user ? 'w-full' : 'mt-auto w-full'}>
           {error && (
-            <div className="text-center mb-4">
+            <div id={errorId} className="text-center mb-4" role="status" aria-live="polite">
               <p className="font-primary text-sm text-accent-green tracking-[0.5px]">{error}</p>
             </div>
           )}
@@ -273,6 +299,7 @@ const ScoreSubmitModal: React.FC<ScoreSubmitModalProps> = ({
                 type="button"
                 onClick={onClose}
                 disabled={isSubmitting}
+                data-modal-autofocus="score-submit-restart"
                 className={`w-full h-[52px] rounded-xl border-none font-primary text-[15px] font-semibold transition-all duration-200 bg-accent-green text-bg-primary flex items-center justify-center gap-2 ${
                   isSubmitting
                     ? 'opacity-70 cursor-not-allowed'

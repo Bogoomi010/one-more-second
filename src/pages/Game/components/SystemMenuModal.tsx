@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import Toast from '../../../components/Toast';
 import {
@@ -16,6 +16,7 @@ import {
 import { PlayerProfile } from '../../../gameSystem/types';
 import { GameSettings } from '../../../gameSystem/settings';
 import { syncLocalProfileToCloud } from '../../../services/userDataService';
+import { useModalAccessibility } from '../../../components/useModalAccessibility';
 
 export type SystemMenuTabId = 'profile' | 'settings';
 
@@ -45,6 +46,16 @@ export default function SystemMenuModal({
   const [settings, setSettings] = useState<GameSettings>(() => loadSettings());
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [toastVariant, setToastVariant] = useState<'info' | 'success' | 'error'>('info');
+  const dialogRef = useRef<HTMLDivElement | null>(null);
+  const titleId = useId();
+  const subtitleId = useId();
+
+  useModalAccessibility({
+    isOpen,
+    dialogRef,
+    onClose,
+    autoFocusSelector: '[data-modal-autofocus="system-menu-close"]',
+  });
 
   const availableTabs = useMemo<SystemMenuTabId[]>(() => {
     const defaultTabs: SystemMenuTabId[] = ['profile', 'settings'];
@@ -161,16 +172,35 @@ export default function SystemMenuModal({
   );
 
   return (
-    <div className="fixed inset-0 z-[10001] bg-black/75 backdrop-blur-lg flex items-center justify-center p-4">
-      <div className="w-[min(1120px,calc(100vw-24px))] max-h-[calc(100vh-24px)] rounded-[24px] border border-border-primary bg-bg-primary shadow-[0_24px_70px_rgba(0,0,0,0.55)] px-6 py-6 sm:px-8 sm:py-8 flex flex-col overflow-hidden">
+    <div
+      className="fixed inset-0 z-[10001] bg-black/75 backdrop-blur-lg flex items-center justify-center p-4"
+      onClick={onClose}
+    >
+      <div
+        ref={dialogRef}
+        className="w-[min(1120px,calc(100vw-24px))] max-h-[calc(100vh-24px)] rounded-[24px] border border-border-primary bg-bg-primary shadow-[0_24px_70px_rgba(0,0,0,0.55)] px-6 py-6 sm:px-8 sm:py-8 flex flex-col overflow-hidden"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        aria-describedby={subtitleId}
+        onClick={(event) => event.stopPropagation()}
+      >
         <div className="flex items-center justify-between mb-5">
           <div>
-            <h2 className="m-0 text-[28px] font-bold font-primary text-accent-green tracking-[1px]">{t('systemMenu.title')}</h2>
-            <p className="m-0 mt-1 text-[12px] text-text-secondary font-primary">{t('systemMenu.subtitle')}</p>
+            <h2
+              id={titleId}
+              className="m-0 text-[28px] font-bold font-primary text-accent-green tracking-[1px]"
+            >
+              {t('systemMenu.title')}
+            </h2>
+            <p id={subtitleId} className="m-0 mt-1 text-[12px] text-text-secondary font-primary">
+              {t('systemMenu.subtitle')}
+            </p>
           </div>
           <button
             type="button"
             onClick={onClose}
+            data-modal-autofocus="system-menu-close"
             className="w-10 h-10 rounded-xl border border-border-secondary bg-bg-card text-text-primary hover:bg-bg-card-alt"
             aria-label={t('systemMenu.closeAria')}
           >
