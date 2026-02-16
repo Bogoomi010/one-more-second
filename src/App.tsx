@@ -24,7 +24,7 @@ import {
 type ToastVariant = 'info' | 'success' | 'error';
 
 function App() {
-  const { user, signInWithGoogle, signOut } = useAuth();
+  const { firebaseEnabled, user, signInWithGoogle, signOut } = useAuth();
   const [profile, setProfile] = useState(() => ensureDailyChallenge(loadProfile()));
   const [userCountry, setUserCountry] = useState<string>('KR');
   const [userIdentity, setUserIdentity] = useState<UserIdentityProfile | null>(null);
@@ -128,6 +128,11 @@ function App() {
   }, [pendingProfileSetupCheck, user]);
 
   const handleLoginClick = async () => {
+    if (!firebaseEnabled) {
+      showToast('Firebase 인증이 설정되지 않았습니다. FIREBASE 환경변수를 확인하세요.', 'error');
+      return;
+    }
+
     try {
       await signInWithGoogle();
       setPendingProfileSetupCheck(true);

@@ -72,7 +72,7 @@ export default function Game({
     next = afterDaily;
 
     const coinsBeforeAchievementRewards = next.coins;
-    next = applyAchievements(next, result);
+    next = applyAchievements(next, result, coinsBeforeAchievementRewards);
     const achievementReward = Math.max(0, next.coins - coinsBeforeAchievementRewards);
 
     saveProfile(next);

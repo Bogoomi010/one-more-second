@@ -1,4 +1,5 @@
 import { ACHIEVEMENT_REWARD_COINS, applyAchievements } from './achievements';
+import { applyRunToProfile } from './economy';
 import { GameResult, PlayerProfile } from './types';
 import { defaultProfile } from './storage';
 
@@ -125,6 +126,24 @@ describe('Achievements System', () => {
     expect(updated.achievements['first-run']).toBeDefined();
     expect(updated.achievements['survive-10']).toBeDefined();
     expect(updated.achievements['survive-30']).toBeDefined();
+  });
+
+  it('should evaluate coin achievements against final coin value and avoid chain-trigger unlocks', () => {
+    const profile: PlayerProfile = {
+      ...defaultProfile(),
+      coins: 900,
+      totalRuns: 1,
+      achievements: { 'first-run': { unlockedAt: Date.now() } },
+    };
+    const result: GameResult = { scoreSeconds: 50, hitsTaken: 1 };
+
+    const afterRun = applyRunToProfile(profile, result).profile;
+    const updated = applyAchievements(afterRun, result, afterRun.coins);
+
+    expect(updated.achievements['coins-100']).toBeDefined();
+    expect(updated.achievements['coins-500']).toBeDefined();
+    expect(updated.achievements['coins-1000']).toBeUndefined();
+    expect(updated.coins - afterRun.coins).toBe(ACHIEVEMENT_REWARD_COINS * 2);
   });
 
   it('should not unlock coin achievements from achievement reward coins alone', () => {

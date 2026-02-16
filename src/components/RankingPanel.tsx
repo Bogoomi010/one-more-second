@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { getName } from 'country-list';
 import 'flag-icons/css/flag-icons.min.css';
 import { RankingEntry } from '../gameSystem/ranking';
@@ -16,11 +16,18 @@ interface NewRankingPanelProps {
   refreshTrigger?: number;
 }
 
-const COUNTRY_OPTIONS = ['KR', 'US', 'JP', 'CN', 'GB', 'DE', 'FR'] as const;
+const COUNTRY_OPTIONS: string[] = ['KR', 'US', 'JP', 'CN', 'GB', 'DE', 'FR'];
+const FALLBACK_COUNTRY = 'KR';
 
 interface CountryFlagProps {
   countryCode: string;
   className?: string;
+}
+
+function normalizeCountryCode(countryCode?: string): string {
+  const normalized = (countryCode ?? '').toUpperCase().replace(/[^A-Z]/g, '');
+  if (!/^[A-Z]{2}$/.test(normalized)) return '';
+  return normalized;
 }
 
 function CountryFlag({ countryCode, className = '' }: CountryFlagProps) {
@@ -36,7 +43,25 @@ function CountryFlag({ countryCode, className = '' }: CountryFlagProps) {
 export default function NewRankingPanel({ userCountry, refreshTrigger = 0 }: NewRankingPanelProps) {
   const [rankingType, setRankingType] = useState<RankingType>('global');
   const [rankings, setRankings] = useState<RankingEntry[]>([]);
-  const [selectedCountry, setSelectedCountry] = useState<string>(userCountry ?? 'KR');
+  const [selectedCountry, setSelectedCountry] = useState<string>(
+    normalizeCountryCode(userCountry) || FALLBACK_COUNTRY
+  );
+  const countryOptions = useMemo(() => {
+    const normalizedUserCountry = normalizeCountryCode(userCountry);
+    const options = [...COUNTRY_OPTIONS];
+    if (normalizedUserCountry && !options.includes(normalizedUserCountry)) {
+      options.push(normalizedUserCountry);
+    }
+    if (!options.includes(FALLBACK_COUNTRY)) {
+      options.push(FALLBACK_COUNTRY);
+    }
+    return options;
+  }, [userCountry]);
+
+  useEffect(() => {
+    const next = normalizeCountryCode(userCountry) || FALLBACK_COUNTRY;
+    setSelectedCountry(next);
+  }, [userCountry]);
 
   const loadRankings = React.useCallback(async (): Promise<RankingEntry[]> => {
     switch (rankingType) {
@@ -140,7 +165,7 @@ export default function NewRankingPanel({ userCountry, refreshTrigger = 0 }: New
               onChange={(e) => setSelectedCountry(e.target.value)}
               className="w-full py-2.5 pl-9 pr-3 bg-bg-card text-white border border-border-primary rounded-xl text-[13px] cursor-pointer font-primary"
             >
-              {COUNTRY_OPTIONS.map((countryCode) => {
+              {countryOptions.map((countryCode) => {
                 const countryName = getName(countryCode) ?? countryCode;
                 return (
                   <option key={countryCode} value={countryCode}>

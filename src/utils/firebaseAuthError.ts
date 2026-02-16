@@ -21,6 +21,10 @@ export function getFirebaseAuthErrorMessage(error: unknown): string {
     return `Unauthorized domain: ${getCurrentHost()}. Add it in Firebase Console > Authentication > Settings > Authorized domains.`;
   }
 
+  if (code === 'auth/not-configured') {
+    return 'Firebase Authentication is not configured. Set REACT_APP_FIREBASE_* environment variables and try again.';
+  }
+
   if (code === 'auth/configuration-not-found') {
     return 'Firebase Authentication is not configured. Enable Google sign-in and check Authorized domains in Firebase Console.';
   }
@@ -35,4 +39,3 @@ export function getFirebaseAuthErrorMessage(error: unknown): string {
 
   return 'Sign-in failed. Check Firebase Authentication settings and try again.';
 }
-

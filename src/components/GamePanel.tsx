@@ -43,7 +43,7 @@ function primeAudioContexts() {
   }
 
   void audioManager.init();
-  audioManager.resume();
+  audioManager.markUserInteraction();
   const pixiAudioContext = sound.context?.audioContext;
   if (pixiAudioContext && pixiAudioContext.state === 'suspended') {
     void pixiAudioContext.resume().catch(() => {

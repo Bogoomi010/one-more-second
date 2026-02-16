@@ -156,6 +156,8 @@ function GameCanvasComponent({
   const onSpawnIntervalChangeRef = useRef(onSpawnIntervalChange);
   const isModalOpenRef = useRef(isModalOpen);
   const joystickVectorSourceRef = useRef(joystickVectorRef);
+  const fpsLimitRef = useRef<number>(0);
+  const frameAccumulatorRef = useRef(0);
 
   useEffect(() => {
     onGameOverRef.current = onGameOver;
@@ -255,10 +257,21 @@ function GameCanvasComponent({
       touchControls.responseAlphaRelease = next.responseAlphaRelease;
     };
 
+    const syncFpsLimit = () => {
+      const settings = loadSettings();
+      fpsLimitRef.current = settings.graphics.fpsLimit;
+      frameAccumulatorRef.current = 0;
+    };
+
+    const syncCanvasSettings = () => {
+      syncTouchControls();
+      syncFpsLimit();
+    };
+
     onLivesChangeRef.current(modifierEffects.startingLives);
     onScoreChangeRef.current(0);
     onSpawnIntervalChangeRef.current(INITIAL_SPAWN_INTERVAL);
-    syncTouchControls();
+    syncCanvasSettings();
 
     void audioManager.init();
     let destroyed = false;
@@ -274,6 +287,8 @@ function GameCanvasComponent({
     }
 
     const resumeAllAudioContexts = () => {
+      if (!audioManager.canPlayAudioNow()) return;
+
       audioManager.resume();
       const pixiAudioContext = sound.context?.audioContext;
       if (pixiAudioContext && pixiAudioContext.state === 'suspended') {
@@ -310,6 +325,7 @@ function GameCanvasComponent({
 
     const unlockAndPlayAudio = () => {
       if (state.gameOver) return;
+      audioManager.markUserInteraction();
       void audioManager.init();
       resumeAllAudioContexts();
       ensureBgmPlayback();
@@ -682,15 +698,26 @@ function GameCanvasComponent({
 
     const ticker = () => {
       syncViewport();
-      const deltaTime = Math.min(app.ticker.deltaMS / 1000, 0.05);
-      update(deltaTime);
+      const clampedDeltaMs = Math.min(app.ticker.deltaMS, 50);
+      if (fpsLimitRef.current > 0) {
+        frameAccumulatorRef.current += clampedDeltaMs;
+        const targetFrameMs = 1000 / fpsLimitRef.current;
+        if (frameAccumulatorRef.current < targetFrameMs) return;
+        frameAccumulatorRef.current -= targetFrameMs;
+        update(targetFrameMs / 1000);
+      } else {
+        frameAccumulatorRef.current = 0;
+        update(clampedDeltaMs / 1000);
+      }
       render();
     };
 
     drawBackground(state.viewportWidth, state.viewportHeight);
-    // GamePanel countdown ends before this component mounts, so mount-time attempt aligns BGM with game start.
-    resumeAllAudioContexts();
-    ensureBgmPlayback();
+    // Try auto-resume only if user interaction was already confirmed for audio playback.
+    if (audioManager.canPlayAudioNow()) {
+      resumeAllAudioContexts();
+      ensureBgmPlayback();
+    }
     app.ticker.add(ticker);
     view.addEventListener('pointerdown', handlePointerDown);
     window.addEventListener('pointerdown', unlockAndPlayAudio);
@@ -700,7 +727,7 @@ function GameCanvasComponent({
     view.addEventListener('keydown', handleKeyDown);
     view.addEventListener('keyup', handleKeyUp);
     view.addEventListener('blur', handleBlur);
-    window.addEventListener(SETTINGS_UPDATED_EVENT, syncTouchControls as EventListener);
+    window.addEventListener(SETTINGS_UPDATED_EVENT, syncCanvasSettings as EventListener);
 
     focusCanvas();
 
@@ -715,7 +742,7 @@ function GameCanvasComponent({
       view.removeEventListener('keydown', handleKeyDown);
       view.removeEventListener('keyup', handleKeyUp);
       view.removeEventListener('blur', handleBlur);
-      window.removeEventListener(SETTINGS_UPDATED_EVENT, syncTouchControls as EventListener);
+      window.removeEventListener(SETTINGS_UPDATED_EVENT, syncCanvasSettings as EventListener);
       state.bullets.forEach((bullet) => bullet.sprite.destroy());
       stopBgm();
       app.destroy(true, true);

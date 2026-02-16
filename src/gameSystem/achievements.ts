@@ -92,12 +92,16 @@ function unlockAchievementWithReward(profile: PlayerProfile, id: string): Player
   };
 }
 
-export function applyAchievements(profile: PlayerProfile, result: GameResult): PlayerProfile {
+export function applyAchievements(
+  profile: PlayerProfile,
+  result: GameResult,
+  coinsForAchievementCheck = profile.coins
+): PlayerProfile {
   let p = profile;
 
   const runSeconds = Math.max(0, Math.floor(result.scoreSeconds));
   const bestRunSeconds = Math.max(result.scoreSeconds, p.bestScore);
-  const coinsBeforeAchievementRewards = p.coins;
+  const coinsForChecks = Math.max(0, Math.floor(coinsForAchievementCheck));
   const noHitSeconds = getNoHitSeconds(result);
   const totalOwnedSkinCount = getOwnedSkinCount(p);
   const usedGimmickIds = getUsedGimmickIds(result);
@@ -125,9 +129,9 @@ export function applyAchievements(profile: PlayerProfile, result: GameResult): P
   if (p.totalSecondsSurvived >= 1800) p = unlockAchievementWithReward(p, 'time-1800');
   if (p.totalSecondsSurvived >= 3600) p = unlockAchievementWithReward(p, 'time-3600');
 
-  if (coinsBeforeAchievementRewards >= 100) p = unlockAchievementWithReward(p, 'coins-100');
-  if (coinsBeforeAchievementRewards >= 500) p = unlockAchievementWithReward(p, 'coins-500');
-  if (coinsBeforeAchievementRewards >= 10000) p = unlockAchievementWithReward(p, 'coins-1000');
+  if (coinsForChecks >= 100) p = unlockAchievementWithReward(p, 'coins-100');
+  if (coinsForChecks >= 500) p = unlockAchievementWithReward(p, 'coins-500');
+  if (coinsForChecks >= 10000) p = unlockAchievementWithReward(p, 'coins-1000');
 
   if (totalOwnedSkinCount >= 2) p = unlockAchievementWithReward(p, 'collector-2');
   if (totalOwnedSkinCount >= 5) p = unlockAchievementWithReward(p, 'collector-5');
