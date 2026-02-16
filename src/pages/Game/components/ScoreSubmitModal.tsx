@@ -10,6 +10,7 @@ import { getFirebaseAuthErrorMessage } from '../../../utils/firebaseAuthError';
 import retryIcon from '../../../assets/icon-retry.png';
 import { getFlagEmoji } from '../../../utils/flags';
 import { useModalAccessibility } from '../../../components/useModalAccessibility';
+import { sanitizeScoreRecord } from '../../../utils/validation';
 
 interface ScoreSubmitModalProps {
   score: number;
@@ -90,13 +91,20 @@ const ScoreSubmitModal: React.FC<ScoreSubmitModalProps> = ({
     setIsSubmitting(true);
     setError(null);
 
-    const scoreData: ScoreRecord = {
-      nickname: profileIdentity.nickname,
-      country: profileIdentity.country,
-      score,
-      finalScore: score,
-      normalScore: timePlayed,
-    };
+    let scoreData: ScoreRecord;
+    try {
+      scoreData = sanitizeScoreRecord({
+        nickname: profileIdentity.nickname,
+        country: profileIdentity.country,
+        score,
+        finalScore: score,
+        normalScore: timePlayed,
+      });
+    } catch (error) {
+      setIsSubmitting(false);
+      setError(error instanceof Error ? error.message : t('scoreSubmit.submitFailed'));
+      return;
+    }
 
     const response = await submitScore(scoreData);
     setIsSubmitting(false);

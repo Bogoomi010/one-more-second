@@ -12,6 +12,7 @@ import {
 } from '../../gameSystem';
 import { GameResult, GameplayModifierId, PlayerProfile } from '../../gameSystem/types';
 import { syncLocalProfileToCloud, UserIdentityProfile } from '../../services/userDataService';
+import { normalizeIntegerScore, SCORE_LIMITS } from '../../utils/validation';
 
 interface GameProps {
   profile: PlayerProfile;
@@ -58,11 +59,17 @@ export default function Game({
   );
 
   const handleGameOver = (result: GameResult) => {
-    const finalRunScore = result.finalScore ?? result.scoreSeconds;
-    const baseRunScore = result.baseScore ?? result.scoreSeconds;
+    const finalRunScore = normalizeIntegerScore(result.finalScore ?? result.scoreSeconds, {
+      min: 0,
+      max: SCORE_LIMITS.maxScore,
+    });
+    const baseRunScore = normalizeIntegerScore(result.baseScore ?? result.scoreSeconds, {
+      min: 0,
+      max: SCORE_LIMITS.maxNormalScore,
+    });
     setScore(finalRunScore);
     setNormalScore(baseRunScore);
-    setIsNewHighScore(result.scoreSeconds > profile.bestScore);
+    setIsNewHighScore(finalRunScore > profile.bestScore);
 
     // 프로필 업데이트 (코인/통계/업적/데일리)
     const beforeAchievementIds = new Set(Object.keys(profile.achievements));

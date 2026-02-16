@@ -9,43 +9,226 @@ service cloud.firestore {
       return isSignedIn() && request.auth.uid == uid;
     }
 
+    function isLimitedInt(value, maxValue) {
+      return value is int && value >= 0 && value <= maxValue;
+    }
+
+    function isCountryCode(value) {
+      return value is string && value.size() == 2 && value.matches('^[A-Z]{2}$');
+    }
+
+    function isNickname(value) {
+      return value is string && value.size() >= 1 && value.size() <= 20 && value.matches('^[A-Za-z0-9 _-]{1,20}$');
+    }
+
+    function isDateKey(value) {
+      return value is string && value.matches('^\\d{4}-\\d{2}-\\d{2}$');
+    }
+
+    function isLanguageCode(value) {
+      return value == 'en' || value == 'ko' || value == 'ja' || value == 'zh-CN';
+    }
+
+    function isValidUserProfile() {
+      return
+        request.resource.data.keys().hasOnly([
+          'version',
+          'coins',
+          'totalRuns',
+          'totalSecondsSurvived',
+          'bestScore',
+          'totalBulletsSpawned',
+          'totalBulletsDodged',
+          'totalBulletsHit',
+          'totalDeaths',
+          'selectedPlayerSkinId',
+          'selectedBulletSkinId',
+          'ownedPlayerSkins',
+          'ownedBulletSkins',
+          'selectedSkinId',
+          'ownedSkins',
+          'preferences',
+          'updatedAt',
+          'nickname',
+          'country',
+        ]) &&
+        (!('version' in request.resource.data) || (
+          request.resource.data.version is int &&
+          request.resource.data.version == 1
+        )) &&
+        (!('coins' in request.resource.data) || isLimitedInt(request.resource.data.coins, 1000000000)) &&
+        (!('totalRuns' in request.resource.data) || isLimitedInt(request.resource.data.totalRuns, 100000000)) &&
+        (!('totalSecondsSurvived' in request.resource.data) || isLimitedInt(request.resource.data.totalSecondsSurvived, 100000000)) &&
+        (!('bestScore' in request.resource.data) || isLimitedInt(request.resource.data.bestScore, 500000)) &&
+        (!('totalBulletsSpawned' in request.resource.data) || isLimitedInt(request.resource.data.totalBulletsSpawned, 100000000)) &&
+        (!('totalBulletsDodged' in request.resource.data) || isLimitedInt(request.resource.data.totalBulletsDodged, 100000000)) &&
+        (!('totalBulletsHit' in request.resource.data) || isLimitedInt(request.resource.data.totalBulletsHit, 100000000)) &&
+        (!('totalDeaths' in request.resource.data) || isLimitedInt(request.resource.data.totalDeaths, 100000000)) &&
+        (!('selectedPlayerSkinId' in request.resource.data) || request.resource.data.selectedPlayerSkinId is string) &&
+        (!('selectedBulletSkinId' in request.resource.data) || request.resource.data.selectedBulletSkinId is string) &&
+        (!('ownedPlayerSkins' in request.resource.data) || request.resource.data.ownedPlayerSkins is list) &&
+        (!('ownedBulletSkins' in request.resource.data) || request.resource.data.ownedBulletSkins is list) &&
+        (!('selectedSkinId' in request.resource.data) || request.resource.data.selectedSkinId is string) &&
+        (!('ownedSkins' in request.resource.data) || request.resource.data.ownedSkins is list) &&
+        (!('preferences' in request.resource.data) || (
+          request.resource.data.preferences is map &&
+          request.resource.data.preferences.keys().hasOnly(['language']) &&
+          (!('language' in request.resource.data.preferences) || isLanguageCode(request.resource.data.preferences.language))
+        )) &&
+        (!('nickname' in request.resource.data) || isNickname(request.resource.data.nickname)) &&
+        (!('country' in request.resource.data) || isCountryCode(request.resource.data.country)) &&
+        (!('updatedAt' in request.resource.data) || request.resource.data.updatedAt is timestamp);
+    }
+
+    function isValidUserDailyProfile() {
+      return
+        request.resource.data.keys().hasOnly([
+          'targetSeconds',
+          'rewardCoins',
+          'completed',
+          'updatedAt',
+        ]) &&
+        (!('targetSeconds' in request.resource.data) || isLimitedInt(request.resource.data.targetSeconds, 99999)) &&
+        (!('rewardCoins' in request.resource.data) || isLimitedInt(request.resource.data.rewardCoins, 99999)) &&
+        (!('completed' in request.resource.data) || request.resource.data.completed is bool) &&
+        (!('updatedAt' in request.resource.data) || request.resource.data.updatedAt is timestamp);
+    }
+
+    function isValidAchievement() {
+      return request.resource.data.keys().hasOnly(['unlockedAt']) &&
+        request.resource.data.unlockedAt is timestamp;
+    }
+
+    function isValidScoreSubmission() {
+      return
+        request.resource.data.keys().hasOnly([
+          'uid',
+          'nickname',
+          'country',
+          'score',
+          'finalScore',
+          'normalScore',
+          'dateKey',
+          'createdAt',
+          'clientTimestamp',
+          'clientVersion',
+          'source',
+        ]) &&
+        request.resource.data.uid == request.auth.uid &&
+        isNickname(request.resource.data.nickname) &&
+        isCountryCode(request.resource.data.country) &&
+        isLimitedInt(request.resource.data.score, 500000) &&
+        isLimitedInt(request.resource.data.finalScore, 500000) &&
+        (!('normalScore' in request.resource.data) || isLimitedInt(request.resource.data.normalScore, 500000)) &&
+        (!('dateKey' in request.resource.data) || isDateKey(request.resource.data.dateKey)) &&
+        (!('createdAt' in request.resource.data) || request.resource.data.createdAt is timestamp) &&
+        (!('clientTimestamp' in request.resource.data) || (
+          request.resource.data.clientTimestamp is int &&
+          request.resource.data.clientTimestamp >= 0
+        )) &&
+        (!('clientVersion' in request.resource.data) || (
+          request.resource.data.clientVersion is string &&
+          request.resource.data.clientVersion.size() <= 32
+        )) &&
+        (!('source' in request.resource.data) || (
+          request.resource.data.source is string &&
+          request.resource.data.source.size() <= 24
+        ));
+    }
+
+    function isValidLeaderboardEntry() {
+      return
+        request.resource.data.keys().hasOnly([
+          'uid',
+          'nickname',
+          'country',
+          'score',
+          'finalScore',
+          'lastSubmittedScore',
+          'lastSubmittedFinalScore',
+          'lastSubmittedNormalScore',
+          'dateKey',
+          'updatedAt',
+        ]) &&
+        request.resource.data.uid == request.auth.uid &&
+        isNickname(request.resource.data.nickname) &&
+        isCountryCode(request.resource.data.country) &&
+        isLimitedInt(request.resource.data.score, 500000) &&
+        isLimitedInt(request.resource.data.finalScore, 500000) &&
+        (!('lastSubmittedScore' in request.resource.data) || isLimitedInt(request.resource.data.lastSubmittedScore, 500000)) &&
+        (!('lastSubmittedFinalScore' in request.resource.data) || isLimitedInt(request.resource.data.lastSubmittedFinalScore, 500000)) &&
+        (!('lastSubmittedNormalScore' in request.resource.data) || isLimitedInt(request.resource.data.lastSubmittedNormalScore, 500000)) &&
+        (!('dateKey' in request.resource.data) || request.resource.data.dateKey == null || isDateKey(request.resource.data.dateKey)) &&
+        (!('updatedAt' in request.resource.data) || request.resource.data.updatedAt is timestamp);
+    }
+
+    function isValidPublicProfile() {
+      return
+        request.resource.data.keys().hasOnly([
+          'uid',
+          'nickname',
+          'normalizedNickname',
+          'country',
+          'updatedAt',
+        ]) &&
+        request.resource.data.uid == request.auth.uid &&
+        isNickname(request.resource.data.nickname) &&
+        isNickname(request.resource.data.normalizedNickname) &&
+        isCountryCode(request.resource.data.country) &&
+        (!('updatedAt' in request.resource.data) || request.resource.data.updatedAt is timestamp);
+    }
+
     match /users/{uid} {
-      allow read, write: if isOwner(uid);
+      allow read: if isOwner(uid);
+      allow create, update: if isOwner(uid) && isValidUserProfile();
+      allow delete: if false;
+    }
+
+    match /users/{uid}/achievements/{achievementId} {
+      allow read: if isOwner(uid);
+      allow create, update: if isOwner(uid) && isValidAchievement();
+      allow delete: if false;
+    }
+
+    match /users/{uid}/daily/{dateKey} {
+      allow read: if isOwner(uid);
+      allow create, update: if isOwner(uid) && isDateKey(dateKey) && isValidUserDailyProfile();
+      allow delete: if false;
     }
 
     match /userPublicProfiles/{uid} {
       allow read: if true;
-      allow create, update, delete: if isOwner(uid);
-    }
-
-    match /users/{uid}/achievements/{achievementId} {
-      allow read, write: if isOwner(uid);
-    }
-
-    match /users/{uid}/daily/{dateKey} {
-      allow read, write: if isOwner(uid);
+      allow create, update: if isOwner(uid) && isValidPublicProfile();
+      allow delete: if false;
     }
 
     match /scoreSubmissions/{docId} {
       allow read: if true;
-      allow create: if isSignedIn() && request.resource.data.uid == request.auth.uid;
+      allow create: if isSignedIn() && isValidScoreSubmission();
       allow update: if false;
-      allow delete: if isSignedIn() && resource.data.uid == request.auth.uid;
+      allow delete: if false;
     }
 
     match /leaderboardsGlobal/{boardId}/entries/{uid} {
       allow read: if true;
-      allow create, update, delete: if isOwner(uid);
+      allow create, update: if isSignedIn() && isOwner(uid) && boardId == 'all' && isValidLeaderboardEntry();
+      allow delete: if false;
     }
 
     match /leaderboardsCountry/{country}/entries/{uid} {
       allow read: if true;
-      allow create, update, delete: if isOwner(uid);
+      allow create, update: if isSignedIn() && isOwner(uid) && isCountryCode(country) && request.resource.data.country == country && isValidLeaderboardEntry();
+      allow delete: if false;
     }
 
     match /leaderboardsDaily/{dateKey}/entries/{uid} {
       allow read: if true;
-      allow create, update, delete: if isOwner(uid);
+      allow create, update: if isSignedIn() &&
+        isOwner(uid) &&
+        isDateKey(dateKey) &&
+        request.resource.data.dateKey == dateKey &&
+        isValidLeaderboardEntry();
+      allow delete: if false;
     }
 
     // Leaderboard 컬렉션은 서버(Cloud Functions/Admin SDK)에서만 write 하도록 제한.

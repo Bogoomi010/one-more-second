@@ -1,21 +1,17 @@
 import React, { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import Toast from '../../../components/Toast';
 import {
   audioManager,
   ensureDailyChallenge,
   getBulletSkin,
   getPlayerSkin,
-  loadProfile,
   loadSettings,
   resetProfile,
   resetSettings,
-  saveProfile,
   saveSettings,
 } from '../../../gameSystem';
 import { PlayerProfile } from '../../../gameSystem/types';
 import { GameSettings } from '../../../gameSystem/settings';
-import { syncLocalProfileToCloud } from '../../../services/userDataService';
 import { useModalAccessibility } from '../../../components/useModalAccessibility';
 
 export type SystemMenuTabId = 'profile' | 'settings';
@@ -44,8 +40,6 @@ export default function SystemMenuModal({
   const { t } = useTranslation();
   const [tab, setTab] = useState<SystemMenuTabId>('settings');
   const [settings, setSettings] = useState<GameSettings>(() => loadSettings());
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
-  const [toastVariant, setToastVariant] = useState<'info' | 'success' | 'error'>('info');
   const dialogRef = useRef<HTMLDivElement | null>(null);
   const titleId = useId();
   const subtitleId = useId();
@@ -66,12 +60,6 @@ export default function SystemMenuModal({
   }, [isLoggedIn, visibleTabs]);
 
   const daily = useMemo(() => ensureDailyChallenge(profile).dailyChallenge, [profile]);
-
-  useEffect(() => {
-    if (!toastMessage) return;
-    const timer = window.setTimeout(() => setToastMessage(null), 1800);
-    return () => window.clearTimeout(timer);
-  }, [toastMessage]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -116,44 +104,6 @@ export default function SystemMenuModal({
     setSettings(next);
     audioManager.updateVolumes();
     onSettingsChange?.(next);
-  }
-
-  function exportProfile() {
-    const data = JSON.stringify(profile, null, 2);
-    const blob = new Blob([data], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `oms-profile-${Date.now()}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-  }
-
-  function importProfile(event: React.ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      try {
-        const imported = JSON.parse(e.target?.result as string) as PlayerProfile & { version?: number };
-        if (imported && imported.version === 1) {
-          saveProfile(imported);
-          const normalized = loadProfile();
-          setProfile(normalized);
-          void syncLocalProfileToCloud(normalized);
-          setToastVariant('success');
-          setToastMessage(t('systemMenu.importSuccess'));
-        } else {
-          setToastVariant('error');
-          setToastMessage(t('systemMenu.importInvalid'));
-        }
-      } catch {
-        setToastVariant('error');
-        setToastMessage(t('systemMenu.importReadError'));
-      }
-    };
-    reader.readAsText(file);
   }
 
   const tabButton = (id: SystemMenuTabId, label: string) => (
@@ -385,20 +335,7 @@ export default function SystemMenuModal({
 
               <div className="md:col-span-2 rounded-2xl border border-border-secondary bg-bg-card p-4">
                 <h3 className="m-0 mb-3 text-[14px] text-text-primary font-primary">{t('settings.profileManagement')}</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                  <button
-                    type="button"
-                    onClick={exportProfile}
-                    className="h-[42px] rounded-xl bg-bg-card-alt border border-border-secondary text-text-primary hover:bg-bg-card"
-                  >
-                    {t('settings.export')}
-                  </button>
-
-                  <label className="h-[42px] rounded-xl bg-bg-card-alt border border-border-secondary text-text-primary hover:bg-bg-card flex items-center justify-center cursor-pointer">
-                    {t('settings.import')}
-                    <input type="file" accept=".json" onChange={importProfile} className="hidden" />
-                  </label>
-
+                <div className="grid grid-cols-1 gap-2">
                   <button
                     type="button"
                     onClick={handleResetSettings}
@@ -412,8 +349,6 @@ export default function SystemMenuModal({
           )}
         </div>
       </div>
-
-      <Toast message={toastMessage} visible={Boolean(toastMessage)} variant={toastVariant} />
     </div>
   );
 }

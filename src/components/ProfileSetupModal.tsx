@@ -7,6 +7,7 @@ import {
   isNicknameAvailable,
   UserIdentityProfile,
 } from '../services/userDataService';
+import { normalizeCountryCode, normalizeNickname } from '../utils/validation';
 import { useModalAccessibility } from './useModalAccessibility';
 
 interface ProfileSetupModalProps {
@@ -22,8 +23,6 @@ interface CountryOption {
 }
 
 const majorCountryCodes = ['KR', 'US', 'JP', 'CN', 'GB', 'DE', 'FR', 'CA', 'AU', 'IN'];
-
-const NICKNAME_REGEX = /^[\p{L}\p{N} ]+$/u;
 
 export default function ProfileSetupModal({
   isOpen,
@@ -95,10 +94,12 @@ export default function ProfileSetupModal({
   }, []);
 
   const validateNickname = (value: string): string | null => {
-    const trimmed = value.trim();
-    if (!trimmed) return t('profileSetup.errorRequired');
-    if (!NICKNAME_REGEX.test(trimmed)) return t('profileSetup.errorInvalidNickname');
-    return null;
+    try {
+      normalizeNickname(value);
+      return null;
+    } catch (error) {
+      return error instanceof Error ? error.message : t('profileSetup.errorInvalidNickname');
+    }
   };
 
   const handleConfirm = async () => {
@@ -108,8 +109,13 @@ export default function ProfileSetupModal({
       return;
     }
 
-    if (!country) {
-      setError(t('profileSetup.errorRequired'));
+    let normalizedCountry: string;
+    let normalizedNickname: string;
+    try {
+      normalizedNickname = normalizeNickname(nickname);
+      normalizedCountry = normalizeCountryCode(country);
+    } catch (error) {
+      setError(error instanceof Error ? error.message : t('profileSetup.errorInvalidNickname'));
       return;
     }
 
@@ -117,7 +123,7 @@ export default function ProfileSetupModal({
     setError(null);
 
     try {
-      const isAvailable = await isNicknameAvailable(nickname.trim(), user?.uid);
+      const isAvailable = await isNicknameAvailable(normalizedNickname, user?.uid);
       if (!isAvailable) {
         setError(t('profileSetup.errorNicknameTaken'));
         setIsSubmitting(false);
@@ -125,8 +131,8 @@ export default function ProfileSetupModal({
       }
 
       await onConfirm({
-        nickname: nickname.trim(),
-        country,
+        nickname: normalizedNickname,
+        country: normalizedCountry,
       });
       onClose();
     } catch (e) {

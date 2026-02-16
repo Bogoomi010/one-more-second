@@ -1,4 +1,5 @@
 import { User } from 'firebase/auth';
+import { httpsCallable } from 'firebase/functions';
 import {
   Timestamp,
   addDoc,
@@ -15,9 +16,14 @@ import {
 } from 'firebase/firestore';
 import { PlayerProfile } from '../gameSystem/types';
 import { resolveLegacySkinState } from '../gameSystem/skins';
-import { firebaseDb, firebaseEnabled } from '../lib/firebase';
+import { firebaseDb, firebaseEnabled, firebaseFunctions } from '../lib/firebase';
 import { getCurrentUser } from './authService';
 import { ScoreRecord, ScoreSubmitResponse } from '../types/score';
+import {
+  normalizeCountryCode,
+  normalizeNickname,
+  sanitizeScoreRecord,
+} from '../utils/validation';
 
 export interface ScoreSubmitResult extends ScoreSubmitResponse {}
 
@@ -29,6 +35,8 @@ export interface UserIdentityProfile {
   nickname: string;
   country: string;
 }
+
+const SCORE_SUBMIT_FUNCTION_NAME = 'submitScore';
 
 type SupportedLanguage = 'ko' | 'en' | 'ja' | 'zh-CN';
 const LANGUAGE_STORAGE_KEY = 'oms.language';
@@ -55,14 +63,18 @@ function todayDateKey(d = new Date()): string {
   return `${yyyy}-${mm}-${dd}`;
 }
 
-function normalizedNickname(value: string): string {
-  return value.trim().toLowerCase();
+function sanitizeIdentityProfile(value: UserIdentityProfile): UserIdentityProfile {
+  return {
+    nickname: normalizeNickname(value.nickname),
+    country: normalizeCountryCode(value.country),
+  };
 }
 
 async function upsertPublicIdentityProfile(
   uid: string,
   identity: UserIdentityProfile
 ): Promise<void> {
+  const normalizedIdentity = sanitizeIdentityProfile(identity);
   const db = firebaseDb;
   if (!firebaseEnabled || !db) return;
 
@@ -70,30 +82,31 @@ async function upsertPublicIdentityProfile(
     doc(db, USER_PUBLIC_PROFILES_COLLECTION, uid),
     {
       uid,
-      nickname: identity.nickname,
-      normalizedNickname: normalizedNickname(identity.nickname),
-      country: identity.country,
+      nickname: normalizedIdentity.nickname,
+      normalizedNickname: normalizeNickname(normalizedIdentity.nickname),
+      country: normalizedIdentity.country,
       updatedAt: serverTimestamp(),
     },
     { merge: true }
   );
 }
 
-export async function appendScoreSubmissionForUser(
+async function appendScoreSubmissionForUser(
   user: User,
   scoreData: ScoreRecord
 ): Promise<void> {
   const db = firebaseDb;
   if (!firebaseEnabled || !db) return;
+  const safeScoreData = sanitizeScoreRecord(scoreData);
 
   const createdAtDate = new Date();
   await addDoc(collection(db, 'scoreSubmissions'), {
     uid: user.uid,
-    nickname: scoreData.nickname,
-    country: scoreData.country,
-    score: scoreData.finalScore,
-    finalScore: scoreData.finalScore,
-    normalScore: scoreData.normalScore,
+    nickname: safeScoreData.nickname,
+    country: safeScoreData.country,
+    score: safeScoreData.score,
+    finalScore: safeScoreData.finalScore,
+    normalScore: safeScoreData.normalScore,
     dateKey: todayDateKey(createdAtDate),
     createdAt: serverTimestamp(),
     clientTimestamp: createdAtDate.getTime(),
@@ -102,15 +115,74 @@ export async function appendScoreSubmissionForUser(
   });
 }
 
+async function submitScoreViaCallable(scoreData: ScoreRecord): Promise<ScoreSubmitResult | null> {
+  if (!firebaseFunctions) return null;
+
+  const call = httpsCallable(firebaseFunctions, SCORE_SUBMIT_FUNCTION_NAME);
+  const response = await call(scoreData);
+  const data = response.data as ScoreSubmitResult;
+  if (!data || typeof data.success !== 'boolean') {
+    throw new Error('Cloud Function response format is invalid.');
+  }
+
+  if (!data.success) {
+    throw new Error(data.message ?? 'Cloud Function score submit rejected.');
+  }
+
+  return data;
+}
+
+async function submitScoreViaLegacyWrites(
+  user: User,
+  scoreData: ScoreRecord
+): Promise<void> {
+  const safeScoreData = sanitizeScoreRecord(scoreData);
+  const identity: UserIdentityProfile = {
+    nickname: safeScoreData.nickname,
+    country: safeScoreData.country,
+  };
+
+  try {
+    await upsertPublicIdentityProfile(user.uid, identity);
+  } catch (profileError) {
+    console.warn('Public identity profile sync failed:', profileError);
+  }
+
+  await upsertAllLeaderboardEntries(
+    user.uid,
+    identity.nickname,
+    {
+      score: safeScoreData.score,
+      finalScore: safeScoreData.finalScore,
+      normalScore: safeScoreData.normalScore,
+    },
+    identity.country,
+    todayDateKey()
+  );
+
+  try {
+    await appendScoreSubmissionForUser(user, safeScoreData);
+  } catch (legacyError) {
+    console.warn('Legacy scoreSubmissions append failed:', legacyError);
+  }
+}
+
 async function resolveRankingIdentity(
   user: User,
   fallback: ScoreRecord
 ): Promise<{ nickname: string; country: string }> {
   const profileIdentity = await getUserIdentityProfile(user.uid);
-  return {
-    nickname: profileIdentity?.nickname ?? fallback.nickname,
-    country: profileIdentity?.country ?? fallback.country,
-  };
+  const safeFallback = sanitizeIdentityProfile({
+    nickname: fallback.nickname,
+    country: fallback.country,
+  });
+
+  if (!profileIdentity) return safeFallback;
+  try {
+    return sanitizeIdentityProfile(profileIdentity);
+  } catch {
+    return safeFallback;
+  }
 }
 
 async function upsertLeaderboardEntry(
@@ -195,39 +267,24 @@ export async function submitScoreToCloudIfSignedIn(
   }
 
   try {
-    const identity = await resolveRankingIdentity(user, scoreData);
-    try {
-      await upsertPublicIdentityProfile(user.uid, identity);
-    } catch (profileError) {
-      console.warn('Public identity profile sync failed:', profileError);
-    }
-
-    const normalizedScoreData: ScoreRecord = {
+    const safeScoreData = sanitizeScoreRecord(scoreData);
+    const identity = await resolveRankingIdentity(user, safeScoreData);
+    const sanitizedPayload: ScoreRecord = {
+      ...safeScoreData,
       nickname: identity.nickname,
       country: identity.country,
-      score: scoreData.finalScore,
-      finalScore: scoreData.finalScore,
-      normalScore: scoreData.normalScore,
     };
-    const today = todayDateKey();
-
-    await upsertAllLeaderboardEntries(
-      user.uid,
-      normalizedScoreData.nickname,
-      {
-        score: normalizedScoreData.score,
-        finalScore: normalizedScoreData.finalScore,
-        normalScore: normalizedScoreData.normalScore,
-      },
-      normalizedScoreData.country,
-      today
-    );
 
     try {
-      await appendScoreSubmissionForUser(user, normalizedScoreData);
-    } catch (legacyError) {
-      console.warn('Legacy scoreSubmissions append failed:', legacyError);
+      const functionResult = await submitScoreViaCallable(sanitizedPayload);
+      if (functionResult?.success) {
+        return functionResult;
+      }
+    } catch (callableError) {
+      console.warn('Cloud Function score submit failed, fallback to direct writes.', callableError);
     }
+
+    await submitScoreViaLegacyWrites(user, sanitizedPayload);
 
     return {
       success: true,
@@ -336,19 +393,28 @@ export async function getUserIdentityProfile(
   if (!firebaseEnabled || !db) return null;
 
   try {
-    const snapshot = await getDoc(doc(db, 'users', uid));
-    if (!snapshot.exists()) return null;
+    const publicProfileSnap = await getDoc(doc(db, USER_PUBLIC_PROFILES_COLLECTION, uid));
 
-    const data = snapshot.data() as {
+    const profileSource =
+      publicProfileSnap.exists()
+        ? publicProfileSnap
+        : await getDoc(doc(db, 'users', uid));
+
+    if (!profileSource.exists()) return null;
+
+    const data = profileSource.data() as {
       nickname?: string;
       country?: string;
     };
 
-    const nickname = data.nickname?.trim();
-    const country = data.country?.trim();
-    if (!nickname || !country) return null;
-
-    return { nickname, country };
+    try {
+      return sanitizeIdentityProfile({
+        nickname: data.nickname ?? '',
+        country: data.country ?? '',
+      });
+    } catch {
+      return null;
+    }
   } catch (error) {
     console.error('Fetch identity profile failed:', error);
     return null;
@@ -359,20 +425,21 @@ export async function upsertUserIdentityProfile(
   uid: string,
   identity: UserIdentityProfile
 ): Promise<void> {
+  const normalizedIdentity = sanitizeIdentityProfile(identity);
   const db = firebaseDb;
   if (!firebaseEnabled || !db) return;
 
   await setDoc(
     doc(db, 'users', uid),
     {
-      nickname: identity.nickname,
-      country: identity.country,
+      nickname: normalizedIdentity.nickname,
+      country: normalizedIdentity.country,
       updatedAt: serverTimestamp(),
     },
     { merge: true }
   );
 
-  await upsertPublicIdentityProfile(uid, identity);
+  await upsertPublicIdentityProfile(uid, normalizedIdentity);
 }
 
 export async function isNicknameAvailable(
@@ -382,11 +449,14 @@ export async function isNicknameAvailable(
   const db = firebaseDb;
   if (!firebaseEnabled || !db) return true;
 
-  const trimmed = nickname.trim();
-  if (!trimmed) return false;
+  let normalized: string;
+  try {
+    normalized = normalizeNickname(nickname);
+  } catch {
+    return false;
+  }
 
   try {
-    const normalized = normalizedNickname(trimmed);
     const q = query(
       collection(db, USER_PUBLIC_PROFILES_COLLECTION),
       where('normalizedNickname', '==', normalized),
