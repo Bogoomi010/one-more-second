@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import NewGamePanel from '../../components/GamePanel';
+import NewGamePanel from './components/GamePanel';
 import ScoreSubmitModal from './components/ScoreSubmitModal';
 import {
   applyAchievements,

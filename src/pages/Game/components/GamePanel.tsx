@@ -1,11 +1,11 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { sound } from '@pixi/sound';
 import { useTranslation } from 'react-i18next';
-import GameCanvas from '../pages/Game/components/GameCanvas';
-import MobileJoystick from '../pages/Game/components/MobileJoystick';
-import { audioManager } from '../gameSystem/audio';
-import { GameResult, GameplayModifierId, PlayerProfile } from '../gameSystem/types';
-import lifeIcon from '../assets/icon_life.png';
+import GameCanvas from './GameCanvas';
+import MobileJoystick from './MobileJoystick';
+import { audioManager } from '../../../gameSystem/audio';
+import { GameResult, GameplayModifierId, PlayerProfile } from '../../../gameSystem/types';
+import lifeIcon from '../../../assets/icon_life.png';
 
 interface NewGamePanelProps {
   profile: PlayerProfile;
