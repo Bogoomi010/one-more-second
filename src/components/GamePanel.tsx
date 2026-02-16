@@ -18,14 +18,17 @@ interface NewGamePanelProps {
   isModalOpen?: boolean;
   activeModifiers?: GameplayModifierId[];
   onDifficultyClick?: () => void;
+  isCompactGameLayout?: boolean;
 }
 
-function resolveJoystickSize(viewportWidth: number): number {
-  if (viewportWidth <= 360) return 132;
-  if (viewportWidth <= 420) return 146;
-  if (viewportWidth <= 520) return 160;
-  if (viewportWidth <= 680) return 174;
-  return 186;
+function resolveJoystickSize(viewportWidth: number, isTouchInput: boolean): number {
+  let baseSize = 186;
+  if (viewportWidth <= 360) baseSize = 132;
+  else if (viewportWidth <= 420) baseSize = 146;
+  else if (viewportWidth <= 520) baseSize = 160;
+  else if (viewportWidth <= 680) baseSize = 174;
+
+  return isTouchInput ? Math.round(baseSize * 1.2) : baseSize;
 }
 
 const COUNTDOWN_SECONDS = 3;
@@ -53,6 +56,13 @@ function primeAudioContexts() {
   sound.resumeAll();
 }
 
+const formatTime = (seconds: number): string => {
+  if (seconds < 60) return `${seconds}s`;
+  const mins = Math.floor(seconds / 60);
+  const secs = seconds % 60;
+  return `${mins}m ${secs}s`;
+};
+
 export default function NewGamePanel({
   profile,
   playerImage,
@@ -61,6 +71,7 @@ export default function NewGamePanel({
   isModalOpen = false,
   activeModifiers = [],
   onDifficultyClick,
+  isCompactGameLayout = false,
 }: NewGamePanelProps) {
   const { t } = useTranslation();
   const startPromptText = 'PRESS';
@@ -85,13 +96,6 @@ export default function NewGamePanel({
     primeAudioContexts();
     setCountdown(COUNTDOWN_SECONDS);
   }, [gameStarted, isCountingDown, isModalOpen]);
-
-  const formatTime = (seconds: number): string => {
-    if (seconds < 60) return `${seconds}s`;
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}m ${secs}s`;
-  };
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -134,7 +138,7 @@ export default function NewGamePanel({
     return () => window.removeEventListener('resize', detectTouchInput);
   }, []);
 
-  const joystickSize = resolveJoystickSize(viewportWidth);
+  const joystickSize = resolveJoystickSize(viewportWidth, isTouchInput);
   const joystickInset = viewportWidth <= 400 ? 8 : 12;
 
   const handleGameOver = (result: GameResult) => {
@@ -188,9 +192,32 @@ export default function NewGamePanel({
     event.preventDefault();
   };
 
+  const isGameRunning = gameStarted;
+
+  const containerClassName = isCompactGameLayout
+    ? 'w-full h-full min-w-0 min-h-0 bg-bg-secondary border border-border-primary rounded-none p-0 sm:p-1 flex flex-col gap-2 backdrop-blur-[10px] font-primary overflow-hidden box-border select-none'
+    : 'w-full h-full min-w-0 min-h-0 bg-bg-secondary border border-border-primary rounded-[20px] sm:rounded-[24px] p-3 sm:p-6 flex flex-col gap-3 sm:gap-4 backdrop-blur-[10px] font-primary overflow-hidden box-border select-none';
+  const topBarClassName = isCompactGameLayout
+    ? 'flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 sm:gap-0 px-2 py-2 w-full'
+    : 'flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-0 px-2 sm:px-5 py-2 sm:py-4 w-full';
+  const canvasAreaClassName = isCompactGameLayout
+    ? isGameRunning
+      ? 'w-full h-full min-h-0 p-0'
+      : 'w-full flex-1 min-h-0 px-2 py-2'
+    : isGameRunning
+      ? 'w-full h-full min-h-0 p-0'
+      : 'w-full flex-1 min-h-0 p-2 sm:p-[40px_20px]';
+  const inGameCanvasContainerClassName = isCompactGameLayout
+    ? isGameRunning
+      ? 'relative w-full h-full min-h-0'
+      : 'relative w-full h-full min-h-0 flex items-center justify-center'
+    : isGameRunning
+      ? 'relative w-full h-full min-h-0'
+      : 'relative w-full h-full min-h-0';
+
   return (
-    <div
-      className="w-full h-full min-w-0 min-h-0 bg-bg-secondary border border-border-primary rounded-[20px] sm:rounded-[24px] p-3 sm:p-6 flex flex-col gap-3 sm:gap-4 backdrop-blur-[10px] font-primary overflow-hidden box-border select-none"
+      <div
+      className={containerClassName}
       style={{
         touchAction: 'manipulation',
         WebkitTapHighlightColor: 'transparent',
@@ -202,7 +229,7 @@ export default function NewGamePanel({
       onTouchEndCapture={handlePanelTouchEndCapture}
       onContextMenu={handlePanelContextMenu}
     >
-      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-0 px-2 sm:px-5 py-2 sm:py-4 w-full">
+      <div className={topBarClassName}>
         <div className="w-full sm:w-auto rounded-2xl bg-bg-card border border-bg-card px-3 py-2 flex flex-col gap-1">
           <div className="text-text-primary font-secondary text-ui-body font-normal">
             {t('game.score')}: {score}s
@@ -243,10 +270,10 @@ export default function NewGamePanel({
         </div>
       </div>
 
-      <div className="w-full flex-1 min-h-0 p-2 sm:p-[40px_20px]">
+      <div className={canvasAreaClassName}>
         {!gameStarted ? (
           isCountingDown ? (
-            <div className="h-full min-h-[320px] sm:min-h-[422px] flex items-center justify-center px-2">
+            <div className="h-full min-h-0 flex items-center justify-center px-2">
               {countdownImage && (
                 <img
                   src={countdownImage}
@@ -256,7 +283,7 @@ export default function NewGamePanel({
               )}
             </div>
           ) : (
-            <div className="h-full min-h-[320px] sm:min-h-[422px] flex flex-col items-center justify-center gap-4 sm:gap-6 px-2">
+            <div className="h-full min-h-0 flex flex-col items-center justify-center gap-4 sm:gap-6 px-2">
               <div className="text-text-primary font-secondary text-[12px] sm:text-ui-body font-bold tracking-[2px] text-center">
                 {isTouchInput ? t('game.touchPrompt', { defaultValue: 'TAP' }) : startPromptText}
               </div>
@@ -280,7 +307,7 @@ export default function NewGamePanel({
                   onClick={onDifficultyClick}
                   onMouseEnter={() => setIsDifficultyHovered(true)}
                   onMouseLeave={() => setIsDifficultyHovered(false)}
-                  className="relative w-[250px] h-[78px] sm:w-[280px] sm:h-[84px] border-[4px] border-[#46ffe0] bg-[linear-gradient(180deg,#10304a_0%,#071929_100%)] transition-[box-shadow,transform] duration-200 hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#46ffe0] focus-visible:ring-offset-2 focus-visible:ring-offset-bg-secondary"
+                  className="relative w-full max-w-[300px] sm:w-[280px] min-h-[68px] sm:h-[84px] border-[4px] border-[#46ffe0] bg-[linear-gradient(180deg,#10304a_0%,#071929_100%)] transition-[box-shadow,transform] duration-200 hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#46ffe0] focus-visible:ring-offset-2 focus-visible:ring-offset-bg-secondary"
                   style={{
                     boxShadow: isDifficultyHovered
                       ? '0 0 16px rgba(43,229,185,0.42)'
@@ -288,13 +315,13 @@ export default function NewGamePanel({
                   }}
                   aria-label={t('difficultyModal.title')}
                 >
-                  <span className="absolute inset-[7px] border border-[#4ef9df] pointer-events-none" />
-                  <span className="absolute left-[10px] top-[10px] w-[12px] h-[12px] border-l-2 border-t-2 border-[#5bffe7] pointer-events-none" />
-                  <span className="absolute right-[10px] top-[10px] w-[12px] h-[12px] border-r-2 border-t-2 border-[#5bffe7] pointer-events-none" />
-                  <span className="absolute left-[10px] bottom-[10px] w-[12px] h-[12px] border-l-2 border-b-2 border-[#5bffe7] pointer-events-none" />
-                  <span className="absolute right-[10px] bottom-[10px] w-[12px] h-[12px] border-r-2 border-b-2 border-[#5bffe7] pointer-events-none" />
+                  <span className="absolute inset-[6px] sm:inset-[7px] border border-[#4ef9df] pointer-events-none" />
+                  <span className="absolute left-[8px] top-[8px] w-[12px] h-[12px] border-l-2 border-t-2 border-[#5bffe7] pointer-events-none sm:left-[10px] sm:top-[10px]" />
+                  <span className="absolute right-[8px] top-[8px] w-[12px] h-[12px] border-r-2 border-t-2 border-[#5bffe7] pointer-events-none sm:right-[10px] sm:top-[10px]" />
+                  <span className="absolute left-[8px] bottom-[8px] w-[12px] h-[12px] border-l-2 border-b-2 border-[#5bffe7] pointer-events-none sm:left-[10px] sm:bottom-[10px]" />
+                  <span className="absolute right-[8px] bottom-[8px] w-[12px] h-[12px] border-r-2 border-b-2 border-[#5bffe7] pointer-events-none sm:right-[10px] sm:bottom-[10px]" />
                   <span
-                    className="absolute inset-0 flex items-center justify-center text-[#5bffe7] font-primary text-[28px] sm:text-[34px] tracking-[3px]"
+                    className="absolute inset-0 flex items-center justify-center px-2 text-center text-[#5bffe7] font-primary text-[clamp(20px,7vw,34px)] sm:text-[34px] tracking-[1px] sm:tracking-[3px] leading-tight"
                     style={{
                       filter: isDifficultyHovered
                         ? 'drop-shadow(0 0 6px rgba(91,255,231,0.34))'
@@ -334,7 +361,7 @@ export default function NewGamePanel({
             </div>
           )
         ) : (
-          <div className="relative w-full h-full min-h-[320px] sm:min-h-[422px]">
+            <div className={inGameCanvasContainerClassName}>
             <GameCanvas
               onGameOver={handleGameOver}
               onLivesChange={handleLivesChange}

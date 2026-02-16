@@ -47,6 +47,7 @@ function App() {
   const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [toastVariant, setToastVariant] = useState<ToastVariant>('info');
+  const [compactPanelMode, setCompactPanelMode] = useState(false);
 
   const showToast = (message: string, variant: ToastVariant = 'info') => {
     setToastVariant(variant);
@@ -184,6 +185,8 @@ function App() {
         profile={profile}
         userCountry={userCountry}
         rankingRefreshTrigger={rankingRefreshTrigger}
+        compactPanelModeOverride={compactPanelMode}
+        onCompactPanelModeChange={setCompactPanelMode}
         onAchievementsClick={() => {
           setSystemMenuOpen(false);
           setProfileMenuOpen(false);
@@ -224,6 +227,7 @@ function App() {
           }
           activeModifiers={activeModifiers}
           onDifficultyClick={() => setDifficultyModalOpen(true)}
+          isCompactGameLayout={compactPanelMode}
           profileIdentity={userIdentity}
           isProfileSetupOpen={profileSetupOpen}
           identityLoading={identityLoading}

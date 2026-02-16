@@ -21,6 +21,7 @@ interface GameProps {
   isSystemMenuOpen?: boolean;
   activeModifiers?: GameplayModifierId[];
   onDifficultyClick?: () => void;
+  isCompactGameLayout?: boolean;
   profileIdentity: UserIdentityProfile | null;
   isProfileSetupOpen: boolean;
   identityLoading: boolean;
@@ -35,6 +36,7 @@ export default function Game({
   isSystemMenuOpen = false,
   activeModifiers = [],
   onDifficultyClick,
+  isCompactGameLayout = false,
   profileIdentity,
   isProfileSetupOpen,
   identityLoading,
@@ -106,6 +108,7 @@ export default function Game({
         isModalOpen={showScoreModal || isSystemMenuOpen}
         activeModifiers={activeModifiers}
         onDifficultyClick={onDifficultyClick}
+        isCompactGameLayout={isCompactGameLayout}
       />
 
       <ScoreSubmitModal

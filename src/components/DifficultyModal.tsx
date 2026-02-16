@@ -75,20 +75,20 @@ export default function DifficultyModal({
 
   return (
     <div
-      className="fixed inset-0 z-[10030] bg-black/75 backdrop-blur-lg flex items-center justify-center p-4"
+      className="fixed inset-0 z-[10030] bg-black/75 backdrop-blur-lg flex items-center justify-center p-2 sm:p-3 md:p-4"
       role="presentation"
       onClick={onClose}
     >
       <div
-        className="w-[min(640px,calc(100vw-24px))] rounded-[24px] border border-border-primary bg-bg-primary shadow-[0_24px_70px_rgba(0,0,0,0.55)] px-6 py-6 sm:px-8 sm:py-8 flex flex-col gap-5"
+        className="w-[min(92vw,640px)] max-h-[calc(100dvh-1.5rem)] rounded-[24px] border border-border-primary bg-bg-primary shadow-[0_24px_70px_rgba(0,0,0,0.55)] px-4 py-4 sm:px-6 sm:py-6 md:px-8 md:py-8 flex flex-col gap-4 overflow-hidden"
         role="dialog"
         aria-modal="true"
         aria-label={t('difficultyModal.dialogAria')}
         onClick={(event) => event.stopPropagation()}
       >
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div>
-            <h2 className="m-0 text-[24px] font-bold font-primary text-accent-green">
+            <h2 className="m-0 text-[clamp(22px,5.8vw,28px)] font-bold font-primary text-accent-green leading-tight">
               {t('difficultyModal.title')}
             </h2>
             <p className="m-0 mt-1 text-[12px] text-text-secondary font-primary">
@@ -118,7 +118,7 @@ export default function DifficultyModal({
           </div>
         </div>
 
-        <div className="flex flex-col gap-3">
+        <div className="flex-1 min-h-0 overflow-y-auto flex flex-col gap-3 pr-1">
           {GAMEPLAY_MODIFIERS.map((modifier) => {
             const enabled = hasModifier(draft, modifier.id);
             return (
@@ -127,10 +127,10 @@ export default function DifficultyModal({
                 className="rounded-2xl border border-border-secondary bg-bg-card p-4 flex flex-col gap-2"
               >
                 <div className="flex items-center justify-between gap-3">
-                  <div className="text-[14px] font-semibold text-text-primary font-primary">
+                  <div className="min-w-0 text-[14px] font-semibold text-text-primary font-primary break-words">
                     {getModifierName(modifier.id, modifier.name)}
                   </div>
-                  <div className="text-[12px] font-semibold text-accent-blue font-primary">
+                  <div className="text-[12px] font-semibold text-accent-blue font-primary shrink-0">
                     +{Math.round(modifier.weight * 100)}%
                   </div>
                 </div>
@@ -158,7 +158,7 @@ export default function DifficultyModal({
           })}
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
           <button
             type="button"
             onClick={handleApply}

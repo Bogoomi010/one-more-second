@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Application, Graphics, Rectangle, Sprite, Texture } from 'pixi.js';
 import { sound } from '@pixi/sound';
 import { GameResult, GameplayModifierId } from '../../../gameSystem/types';
@@ -27,6 +27,8 @@ const INTERVAL_DECREASE = 50;
 const MIN_SPAWN_INTERVAL = 100;
 const DIFFICULTY_INTERVAL = 3000;
 const PIXI_BGM_ALIAS = 'oms-main-bgm';
+const DESKTOP_CANVAS_ASPECT_RATIO = 1;
+const MOBILE_CANVAS_BREAKPOINT_PX = 768;
 const MOVEMENT_CODES = new Set([
   'ArrowLeft',
   'ArrowRight',
@@ -115,6 +117,23 @@ function resolveTouchControls() {
   };
 }
 
+function isMobileCanvasViewport(): boolean {
+  if (typeof window === 'undefined') return false;
+  const isNarrowScreen = window.innerWidth <= MOBILE_CANVAS_BREAKPOINT_PX;
+  const isCoarsePointer =
+    typeof window.matchMedia === 'function' && window.matchMedia('(pointer: coarse)').matches;
+  return isNarrowScreen || isCoarsePointer;
+}
+
+function resolveCanvasAspectRatio(): number {
+  if (!isMobileCanvasViewport()) return DESKTOP_CANVAS_ASPECT_RATIO;
+
+  const width = Math.max(1, window.innerWidth);
+  const height = Math.max(1, window.innerHeight);
+  const viewportRatio = width / height;
+  return Math.max(0.6, Math.min(2.2, viewportRatio));
+}
+
 function isPromise<T>(value: T | Promise<T>): value is Promise<T> {
   return Boolean(value && typeof (value as Promise<T>).then === 'function');
 }
@@ -158,6 +177,22 @@ function GameCanvasComponent({
   const joystickVectorSourceRef = useRef(joystickVectorRef);
   const fpsLimitRef = useRef<number>(0);
   const frameAccumulatorRef = useRef(0);
+  const [canvasAspectRatio, setCanvasAspectRatio] = useState(resolveCanvasAspectRatio);
+
+  useEffect(() => {
+    const updateAspectRatio = () => {
+      setCanvasAspectRatio(resolveCanvasAspectRatio());
+    };
+
+    updateAspectRatio();
+    window.addEventListener('resize', updateAspectRatio);
+    window.addEventListener('orientationchange', updateAspectRatio);
+
+    return () => {
+      window.removeEventListener('resize', updateAspectRatio);
+      window.removeEventListener('orientationchange', updateAspectRatio);
+    };
+  }, []);
 
   useEffect(() => {
     onGameOverRef.current = onGameOver;
@@ -761,8 +796,13 @@ function GameCanvasComponent({
   return (
     <div
       ref={containerRef}
-      className="w-full h-full min-h-[320px] sm:min-h-[422px] bg-zinc-900 border-2 border-zinc-800 rounded-xl overflow-hidden cursor-none select-none"
+      className="w-full min-h-0 bg-zinc-900 border-2 border-zinc-800 rounded-xl overflow-hidden cursor-none select-none"
       style={{
+        width: '100%',
+        height: 'auto',
+        aspectRatio: `${canvasAspectRatio}`,
+        maxHeight: '100%',
+        maxWidth: '100%',
         touchAction: 'manipulation',
         WebkitTapHighlightColor: 'transparent',
         userSelect: 'none',
