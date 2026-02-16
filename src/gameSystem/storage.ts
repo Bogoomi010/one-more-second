@@ -19,6 +19,12 @@ function uniqueArray<T extends string>(values: T[]): T[] {
   return Array.from(new Set(values));
 }
 
+function sanitizeNonNegativeInteger(value: unknown): number {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) return 0;
+  return Math.max(0, Math.floor(parsed));
+}
+
 function sanitizePlayerSkinIds(raw: unknown): PlayerSkinId[] {
   if (!Array.isArray(raw)) return [];
   return uniqueArray(raw.filter(isPlayerSkinId));
@@ -98,6 +104,10 @@ export function defaultProfile(): PlayerProfile {
     totalRuns: 0,
     totalSecondsSurvived: 0,
     bestScore: 0,
+    totalBulletsSpawned: 0,
+    totalBulletsDodged: 0,
+    totalBulletsHit: 0,
+    totalDeaths: 0,
     selectedPlayerSkinId: DEFAULT_PLAYER_SKIN_ID,
     selectedBulletSkinId: DEFAULT_BULLET_SKIN_ID,
     ownedPlayerSkins: [DEFAULT_PLAYER_SKIN_ID],
@@ -171,7 +181,13 @@ export function loadProfile(): PlayerProfile {
       achievements: parsed.achievements ?? {},
     };
 
-    return normalizeProfileSkins(merged);
+    return normalizeProfileSkins({
+      ...merged,
+      totalBulletsSpawned: sanitizeNonNegativeInteger(merged.totalBulletsSpawned),
+      totalBulletsDodged: sanitizeNonNegativeInteger(merged.totalBulletsDodged),
+      totalBulletsHit: sanitizeNonNegativeInteger(merged.totalBulletsHit),
+      totalDeaths: sanitizeNonNegativeInteger(merged.totalDeaths),
+    });
   } catch {
     return defaultProfile();
   }
@@ -204,4 +220,3 @@ export function unlockAchievement(profile: PlayerProfile, id: string): PlayerPro
     },
   };
 }
-

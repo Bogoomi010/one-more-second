@@ -21,6 +21,10 @@ import { ScoreRecord, ScoreSubmitResponse } from '../types/score';
 
 export interface ScoreSubmitResult extends ScoreSubmitResponse {}
 
+export interface ProfileSyncOptions {
+  unlockedAchievementIds?: string[];
+}
+
 export interface UserIdentityProfile {
   nickname: string;
   country: string;
@@ -243,7 +247,8 @@ export async function submitScoreToCloudIfSignedIn(
 export async function upsertUserProfile(
   uid: string,
   profile: PlayerProfile,
-  language?: string
+  language?: string,
+  options?: ProfileSyncOptions
 ): Promise<void> {
   const db = firebaseDb;
   if (!firebaseEnabled || !db) return;
@@ -263,6 +268,10 @@ export async function upsertUserProfile(
       totalRuns: profile.totalRuns,
       totalSecondsSurvived: profile.totalSecondsSurvived,
       bestScore: profile.bestScore,
+      totalBulletsSpawned: profile.totalBulletsSpawned,
+      totalBulletsDodged: profile.totalBulletsDodged,
+      totalBulletsHit: profile.totalBulletsHit,
+      totalDeaths: profile.totalDeaths,
       selectedPlayerSkinId: profile.selectedPlayerSkinId,
       selectedBulletSkinId: profile.selectedBulletSkinId,
       ownedPlayerSkins: profile.ownedPlayerSkins,
@@ -277,16 +286,24 @@ export async function upsertUserProfile(
     { merge: true }
   );
 
+  const achievementIds =
+    options?.unlockedAchievementIds === undefined
+      ? Object.keys(profile.achievements)
+      : Array.from(new Set(options.unlockedAchievementIds));
+
   await Promise.all(
-    Object.entries(profile.achievements).map(([achievementId, value]) =>
-      setDoc(
-        doc(db, 'users', uid, 'achievements', achievementId),
-        {
-          unlockedAt: Timestamp.fromMillis(value.unlockedAt),
-        },
-        { merge: true }
-      )
-    )
+    achievementIds
+      .filter((achievementId) => Boolean(profile.achievements[achievementId]))
+      .map((achievementId) => {
+        const value = profile.achievements[achievementId];
+        return setDoc(
+          doc(db, 'users', uid, 'achievements', achievementId),
+          {
+            unlockedAt: Timestamp.fromMillis(value?.unlockedAt ?? Date.now()),
+          },
+          { merge: true }
+        );
+      })
   );
 
   await setDoc(
@@ -299,11 +316,14 @@ export async function upsertUserProfile(
   );
 }
 
-export async function syncLocalProfileToCloud(profile: PlayerProfile): Promise<void> {
+export async function syncLocalProfileToCloud(
+  profile: PlayerProfile,
+  options?: ProfileSyncOptions
+): Promise<void> {
   const user = getCurrentUser();
   if (!user) return;
   try {
-    await upsertUserProfile(user.uid, profile, getStoredLanguage());
+    await upsertUserProfile(user.uid, profile, getStoredLanguage(), options);
   } catch (error) {
     console.error('Profile sync failed:', error);
   }

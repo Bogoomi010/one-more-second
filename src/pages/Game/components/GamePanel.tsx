@@ -341,11 +341,11 @@ export default function NewGamePanel({
               />
             {isTouchInput && gameStarted && (
               <div
-                className="absolute z-20 pointer-events-none"
-                style={{
-                  right: `calc(env(safe-area-inset-right, 0px) + ${joystickInset}px)`,
-                  bottom: `calc(env(safe-area-inset-bottom, 0px) + ${joystickInset}px)`,
-                }}
+                className={`absolute z-20 pointer-events-none ${
+                  joystickInset === 12
+                    ? 'right-[calc(env(safe-area-inset-right,_0px)+12px)] bottom-[calc(env(safe-area-inset-bottom,_0px)+12px)]'
+                    : 'right-[calc(env(safe-area-inset-right,_0px)+8px)] bottom-[calc(env(safe-area-inset-bottom,_0px)+8px)]'
+                }`}
               >
                 <div className="pointer-events-auto">
                   <MobileJoystick
