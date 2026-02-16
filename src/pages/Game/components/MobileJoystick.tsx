@@ -154,73 +154,66 @@ export default function MobileJoystick({
   return (
     <div
       ref={baseRef}
-      className="relative rounded-full bg-[#161E2E] shadow-[inset_0_1px_0_rgba(148,163,184,0.12)] select-none"
+      className={`relative rounded-full bg-[#161E2E] shadow-[inset_0_1px_0_rgba(148,163,184,0.12)] select-none touch-none w-[var(--joystick-size)] h-[var(--joystick-size)] opacity-[var(--joystick-opacity)] ${
+        isDragging ? 'transition-none' : 'transition-opacity duration-[160ms] ease-linear'
+      }`}
       style={{
-        width: size,
-        height: size,
-        touchAction: 'none',
-        opacity: isDragging ? activeOpacity : idleOpacity,
-        transition: isDragging ? 'none' : 'opacity 160ms ease',
-      }}
+        '--joystick-size': `${size}px`,
+        '--joystick-opacity': isDragging ? activeOpacity : idleOpacity,
+        '--joystick-ring-inset': `${ringInset}px`,
+        '--joystick-ring-size': `${ringSize}px`,
+        '--joystick-ring-opacity': isDragging ? 0.72 : 0.55,
+        '--joystick-arrow-inset': `${arrowInset}px`,
+        '--joystick-arrow-size': `${arrowSize}px`,
+        '--joystick-knob-size': `${knobSize}px`,
+        '--joystick-knob-left': `${knobBaseOffset + knobOffset.x}px`,
+        '--joystick-knob-top': `${knobBaseOffset + knobOffset.y}px`,
+        '--joystick-knob-shadow': isDragging
+          ? '0 0 0 2px rgba(37,99,235,0.28)'
+          : 'none',
+        '--joystick-dot-size': `${dotSize}px`,
+      } as React.CSSProperties}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
       onPointerCancel={handlePointerUp}
     >
       <div
-        className="absolute rounded-full bg-[#0D1422]"
-        style={{
-          left: ringInset,
-          top: ringInset,
-          width: ringSize,
-          height: ringSize,
-          opacity: isDragging ? 0.72 : 0.55,
-        }}
+        className="absolute rounded-full bg-[#0D1422] left-[var(--joystick-ring-inset)] top-[var(--joystick-ring-inset)] w-[var(--joystick-ring-size)] h-[var(--joystick-ring-size)] opacity-[var(--joystick-ring-opacity)]"
       />
 
       <span
-        className="absolute left-1/2 -translate-x-1/2 leading-none text-[#64748B]"
-        style={{ top: arrowInset, fontSize: arrowSize }}
+        className="absolute left-1/2 -translate-x-1/2 leading-none text-[#64748B] top-[var(--joystick-arrow-inset)] text-[var(--joystick-arrow-size)]"
       >
         ^
       </span>
       <span
-        className="absolute left-1/2 -translate-x-1/2 leading-none text-[#64748B]"
-        style={{ bottom: arrowInset, fontSize: arrowSize }}
+        className="absolute left-1/2 -translate-x-1/2 leading-none text-[#64748B] bottom-[var(--joystick-arrow-inset)] text-[var(--joystick-arrow-size)]"
       >
         v
       </span>
       <span
-        className="absolute top-1/2 -translate-y-1/2 leading-none text-[#64748B]"
-        style={{ left: arrowInset, fontSize: arrowSize }}
+        className="absolute top-1/2 -translate-y-1/2 leading-none text-[#64748B] left-[var(--joystick-arrow-inset)] text-[var(--joystick-arrow-size)]"
       >
         &lt;
       </span>
       <span
-        className="absolute top-1/2 -translate-y-1/2 leading-none text-[#64748B]"
-        style={{ right: arrowInset, fontSize: arrowSize }}
+        className="absolute top-1/2 -translate-y-1/2 leading-none text-[#64748B] right-[var(--joystick-arrow-inset)] text-[var(--joystick-arrow-size)]"
       >
         &gt;
       </span>
 
       <div
-        className={`absolute rounded-full bg-[#334155] flex items-center justify-center ${
-          isDragging ? '' : 'transition-all duration-150 ease-out'
+        className={`absolute rounded-full bg-[#334155] flex items-center justify-center left-[var(--joystick-knob-left)] top-[var(--joystick-knob-top)] w-[var(--joystick-knob-size)] h-[var(--joystick-knob-size)] shadow-[var(--joystick-knob-shadow)] ${
+          isDragging ? 'transition-none' : 'transition-all duration-[150ms] ease-out'
         }`}
         style={{
-          width: knobSize,
-          height: knobSize,
-          left: `${knobBaseOffset + knobOffset.x}px`,
-          top: `${knobBaseOffset + knobOffset.y}px`,
-          boxShadow: isDragging ? '0 0 0 2px rgba(37,99,235,0.28)' : 'none',
           transitionDuration: `${knobTransitionMs}ms`,
         }}
       >
         <div
-          className="rounded-full bg-[#2563EB]"
+          className="rounded-full bg-[#2563EB] w-[var(--joystick-dot-size)] h-[var(--joystick-dot-size)]"
           style={{
-            width: dotSize,
-            height: dotSize,
             transform: `translate(${clamp(knobOffset.x * 0.1, -3 * ratio, 3 * ratio)}px, ${clamp(knobOffset.y * 0.1, -3 * ratio, 3 * ratio)}px)`,
           }}
         />

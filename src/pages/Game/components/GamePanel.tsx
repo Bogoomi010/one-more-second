@@ -204,15 +204,8 @@ export default function NewGamePanel({
       : 'relative w-full h-full min-h-0';
 
   return (
-      <div
-      className={containerClassName}
-      style={{
-        touchAction: 'manipulation',
-        WebkitTapHighlightColor: 'transparent',
-        userSelect: 'none',
-        WebkitUserSelect: 'none',
-        WebkitTouchCallout: 'none',
-      }}
+    <div
+      className={`${containerClassName} touch-manipulation [-webkit-tap-highlight-color:transparent] [-webkit-user-select:none] [-webkit-touch-callout:none]`}
       onDoubleClick={handlePanelDoubleClick}
       onTouchEndCapture={handlePanelTouchEndCapture}
       onContextMenu={handlePanelContextMenu}
@@ -279,17 +272,14 @@ export default function NewGamePanel({
               </div>
 
               {onDifficultyClick && (
-                <button
+                  <button
                   type="button"
                   onClick={onDifficultyClick}
                   onMouseEnter={() => setIsDifficultyHovered(true)}
                   onMouseLeave={() => setIsDifficultyHovered(false)}
-                  className="relative w-full max-w-[300px] sm:w-[280px] min-h-[68px] sm:h-[84px] border-[4px] border-[#46ffe0] bg-[linear-gradient(180deg,#10304a_0%,#071929_100%)] transition-[box-shadow,transform] duration-200 hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#46ffe0] focus-visible:ring-offset-2 focus-visible:ring-offset-bg-secondary"
-                  style={{
-                    boxShadow: isDifficultyHovered
-                      ? '0 0 16px rgba(43,229,185,0.42)'
-                      : '0 0 10px rgba(43,229,185,0.24)',
-                  }}
+                  className={`relative w-full max-w-[300px] sm:w-[280px] min-h-[68px] sm:h-[84px] border-[4px] border-[#46ffe0] bg-[linear-gradient(180deg,#10304a_0%,#071929_100%)] transition-[box-shadow,transform] duration-200 hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#46ffe0] focus-visible:ring-offset-2 focus-visible:ring-offset-bg-secondary ${
+                    isDifficultyHovered ? 'shadow-[0_0_16px_rgba(43,229,185,0.42)]' : 'shadow-[0_0_10px_rgba(43,229,185,0.24)]'
+                  }`}
                   aria-label={t('difficultyModal.title')}
                 >
                   <span className="absolute inset-[6px] sm:inset-[7px] border border-[#4ef9df] pointer-events-none" />
@@ -298,12 +288,11 @@ export default function NewGamePanel({
                   <span className="absolute left-[8px] bottom-[8px] w-[12px] h-[12px] border-l-2 border-b-2 border-[#5bffe7] pointer-events-none sm:left-[10px] sm:bottom-[10px]" />
                   <span className="absolute right-[8px] bottom-[8px] w-[12px] h-[12px] border-r-2 border-b-2 border-[#5bffe7] pointer-events-none sm:right-[10px] sm:bottom-[10px]" />
                   <span
-                    className="absolute inset-0 flex items-center justify-center px-2 text-center text-[#5bffe7] font-primary text-[clamp(20px,7vw,34px)] sm:text-[34px] tracking-[1px] sm:tracking-[3px] leading-tight"
-                    style={{
-                      filter: isDifficultyHovered
-                        ? 'drop-shadow(0 0 6px rgba(91,255,231,0.34))'
-                        : 'drop-shadow(0 0 4px rgba(91,255,231,0.22))',
-                    }}
+                    className={`absolute inset-0 flex items-center justify-center px-2 text-center text-[#5bffe7] font-primary text-[clamp(20px,7vw,34px)] sm:text-[34px] tracking-[1px] sm:tracking-[3px] leading-tight ${
+                      isDifficultyHovered
+                        ? '[filter:drop-shadow(0_0_6px_rgba(91,255,231,0.34))]'
+                        : '[filter:drop-shadow(0_0_4px_rgba(91,255,231,0.22))]'
+                    }`}
                   >
                     {t('difficultyModal.title', { defaultValue: '난이도 변경' })}
                   </span>

@@ -209,16 +209,17 @@ export default function NewRankingPanel({ userCountry, refreshTrigger = 0 }: New
                   key={entry.id}
                   className={`flex items-center gap-3 p-3 rounded-xl border transition-all duration-200 ${
                     isTopThree ? 'bg-white/[0.07]' : 'bg-white/[0.03]'
-                  }`}
+                  } border-[var(--rank-border-color)]`}
                   style={{
-                    borderColor: isTopThree ? `${rankColor}40` : '#ffffff0a'
-                  }}
+                    '--rank-border-color': isTopThree ? `${rankColor}40` : '#ffffff0a',
+                    '--rank-bg-color': isTopThree ? rankColor : 'transparent',
+                    '--rank-score-color': isTopThree ? rankColor : '#94a3b8',
+                  } as React.CSSProperties}
                 >
                   <div
                     className={`w-8 h-8 flex items-center justify-center rounded-full font-bold text-[13px] flex-shrink-0 font-primary ${
-                      isTopThree ? 'text-black' : 'text-white bg-bg-card-alt'
+                      isTopThree ? 'text-black bg-[var(--rank-bg-color)]' : 'text-white bg-bg-card-alt'
                     }`}
-                    style={isTopThree ? { background: rankColor } : {}}
                   >
                     {rank}
                   </div>
@@ -237,8 +238,7 @@ export default function NewRankingPanel({ userCountry, refreshTrigger = 0 }: New
 
                   <div className="flex flex-col items-end justify-center gap-0.5 leading-none flex-shrink-0">
                     <div
-                      className="text-[14px] font-bold font-secondary"
-                      style={{ color: isTopThree ? rankColor : '#94a3b8' }}
+                      className="text-[14px] font-bold font-secondary text-[var(--rank-score-color)]"
                     >
                       {formatScore(finalScore)}
                     </div>

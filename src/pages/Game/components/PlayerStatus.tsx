@@ -18,48 +18,32 @@ export default function PlayerStatus({
   onOpenMenu,
 }: PlayerStatusProps) {
   return (
-    <div style={{
-      display: 'flex',
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      width: 400,
-      gap: 12,
-    }}>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-        <div style={{ color: '#fff', fontFamily: 'monospace' }}>
+    <div className="flex flex-row items-center justify-between w-[400px] gap-3">
+      <div className="flex flex-col gap-1.5">
+        <div className="text-text-primary font-secondary">
           Score: {score}s
         </div>
-        <div style={{ color: '#a1a1aa', fontFamily: 'monospace', fontSize: 12 }}>
+        <div className="text-text-placeholder font-secondary text-[12px]">
           Best: {bestScore}s · Coins: {coins}
         </div>
       </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 6, alignItems: 'flex-end' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{ color: '#fff', fontFamily: 'monospace' }}>Lives:</span>
-          <div style={{ display: 'flex', gap: 4 }}>
+      <div className="flex flex-col gap-1.5 items-end">
+        <div className="flex items-center gap-2">
+          <span className="text-text-primary font-secondary">Lives:</span>
+          <div className="flex gap-1">
             {Array.from({ length: lives }).map((_, index) => (
-              <span key={index} style={{ color: '#f44', fontSize: 18 }}>♥</span>
+              <span key={index} className="text-[#f44] text-[18px]">♥</span>
             ))}
           </div>
         </div>
-        <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-          <div style={{ color: '#fff', fontFamily: 'monospace', fontSize: 12 }}>
+        <div className="flex gap-2.5 items-center">
+          <div className="text-text-primary font-secondary text-[12px]">
             Interval: {spawnInterval}ms
           </div>
           <button
             onClick={onOpenMenu}
-            style={{
-              padding: '6px 8px',
-              borderRadius: 10,
-              border: '1px solid rgba(255,255,255,0.15)',
-              background: 'rgba(255,255,255,0.06)',
-              color: '#fff',
-              fontSize: 12,
-              cursor: 'pointer',
-              fontFamily: 'Montserrat, -apple-system, BlinkMacSystemFont, sans-serif',
-            }}
+            className="px-2 py-1.5 rounded-[10px] border border-[rgba(255,255,255,0.15)] bg-[rgba(255,255,255,0.06)] text-text-primary text-[12px] cursor-pointer font-[Montserrat,_-apple-system,_BlinkMacSystemFont,_sans-serif]"
           >
             메뉴
           </button>

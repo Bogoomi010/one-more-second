@@ -207,8 +207,8 @@ export default function NewStatsPanel({ profile }: NewStatsPanelProps) {
 
             <div className="w-full h-1.5 bg-bg-card rounded-[3px] overflow-hidden">
               <div
-                className="h-full bg-accent-blue rounded-[3px] transition-all duration-300"
-                style={{ width: `${challengeProgress}%` }}
+                className="h-full bg-accent-blue rounded-[3px] transition-all duration-300 w-[var(--daily-challenge-progress)]"
+                style={{ '--daily-challenge-progress': `${challengeProgress}%` } as React.CSSProperties}
               />
             </div>
           </div>

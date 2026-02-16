@@ -853,19 +853,8 @@ function GameCanvasComponent({
   return (
     <div
       ref={containerRef}
-      className="w-full min-h-0 bg-zinc-900 border-2 border-zinc-800 rounded-xl overflow-hidden cursor-none select-none"
-      style={{
-        width: '100%',
-        height: 'auto',
-        aspectRatio: `${canvasAspectRatio}`,
-        maxHeight: '100%',
-        maxWidth: '100%',
-        touchAction: 'manipulation',
-        WebkitTapHighlightColor: 'transparent',
-        userSelect: 'none',
-        WebkitUserSelect: 'none',
-        WebkitTouchCallout: 'none',
-      }}
+      className="w-full h-auto max-h-full max-w-full bg-zinc-900 border-2 border-zinc-800 rounded-xl overflow-hidden cursor-none select-none touch-manipulation aspect-[var(--canvas-aspect-ratio)] [-webkit-tap-highlight-color:transparent] [-webkit-user-select:none] [-webkit-touch-callout:none]"
+      style={{ '--canvas-aspect-ratio': `${canvasAspectRatio}` } as React.CSSProperties}
       onDoubleClick={handleCanvasDoubleClick}
       onContextMenu={handleCanvasContextMenu}
     />
