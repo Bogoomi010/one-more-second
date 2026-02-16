@@ -95,11 +95,33 @@ export default function NewRankingPanel({ userCountry, refreshTrigger = 0 }: New
 
   const formatScore = (score: number): string => score.toLocaleString();
 
-  const getRankColor = (rank: number): string => {
-    if (rank === 1) return '#FFD700';
-    if (rank === 2) return '#C0C0C0';
-    if (rank === 3) return '#CD7F32';
-    return '#e0e0e0';
+  const getRankVisuals = (rank: number) => {
+    if (rank === 1) {
+      return {
+        borderClass: 'border-[#FFD70040]',
+        circleClass: 'text-black bg-[#FFD700]',
+        scoreClass: 'text-[#FFD700]',
+      };
+    }
+    if (rank === 2) {
+      return {
+        borderClass: 'border-[#C0C0C040]',
+        circleClass: 'text-black bg-[#C0C0C0]',
+        scoreClass: 'text-[#C0C0C0]',
+      };
+    }
+    if (rank === 3) {
+      return {
+        borderClass: 'border-[#CD7F3240]',
+        circleClass: 'text-black bg-[#CD7F32]',
+        scoreClass: 'text-[#CD7F32]',
+      };
+    }
+    return {
+      borderClass: 'border-[#ffffff0a]',
+      circleClass: 'text-white bg-bg-card-alt',
+      scoreClass: 'text-[#94a3b8]',
+    };
   };
 
   const getTabLabel = (type: RankingType): string => {
@@ -197,32 +219,25 @@ export default function NewRankingPanel({ userCountry, refreshTrigger = 0 }: New
           </div>
         ) : (
           <div className="flex flex-col gap-2 h-full overflow-y-auto pr-1">
-            {rankings.map((entry, index) => {
-              const rank = index + 1;
-              const isTopThree = rank <= 3;
-              const rankColor = getRankColor(rank);
-              const finalScore = entry.finalScore ?? entry.score;
-              const survivedTime = entry.normalScore ?? entry.score;
+                {rankings.map((entry, index) => {
+                  const rank = index + 1;
+                  const isTopThree = rank <= 3;
+                  const rankVisuals = getRankVisuals(rank);
+                  const finalScore = entry.finalScore ?? entry.score;
+                  const survivedTime = entry.normalScore ?? entry.score;
 
-              return (
-                <div
-                  key={entry.id}
-                  className={`flex items-center gap-3 p-3 rounded-xl border transition-all duration-200 ${
-                    isTopThree ? 'bg-white/[0.07]' : 'bg-white/[0.03]'
-                  } border-[var(--rank-border-color)]`}
-                  style={{
-                    '--rank-border-color': isTopThree ? `${rankColor}40` : '#ffffff0a',
-                    '--rank-bg-color': isTopThree ? rankColor : 'transparent',
-                    '--rank-score-color': isTopThree ? rankColor : '#94a3b8',
-                  } as React.CSSProperties}
-                >
-                  <div
-                    className={`w-8 h-8 flex items-center justify-center rounded-full font-bold text-[13px] flex-shrink-0 font-primary ${
-                      isTopThree ? 'text-black bg-[var(--rank-bg-color)]' : 'text-white bg-bg-card-alt'
-                    }`}
-                  >
-                    {rank}
-                  </div>
+                  return (
+                    <div
+                      key={entry.id}
+                      className={`flex items-center gap-3 p-3 rounded-xl border transition-all duration-200 ${
+                        isTopThree ? 'bg-white/[0.07]' : 'bg-white/[0.03]'
+                      } ${rankVisuals.borderClass}`}
+                    >
+                      <div
+                        className={`w-8 h-8 flex items-center justify-center rounded-full font-bold text-[13px] flex-shrink-0 font-primary ${rankVisuals.circleClass}`}
+                      >
+                        {rank}
+                      </div>
 
                   <div className="flex-shrink-0">
                     <CountryFlag countryCode={entry.country} className="rounded-[2px]" />
@@ -236,12 +251,12 @@ export default function NewRankingPanel({ userCountry, refreshTrigger = 0 }: New
                     {entry.nickname}
                   </div>
 
-                  <div className="flex flex-col items-end justify-center gap-0.5 leading-none flex-shrink-0">
-                    <div
-                      className="text-[14px] font-bold font-secondary text-[var(--rank-score-color)]"
-                    >
-                      {formatScore(finalScore)}
-                    </div>
+                      <div className="flex flex-col items-end justify-center gap-0.5 leading-none flex-shrink-0">
+                        <div
+                          className={`text-[14px] font-bold font-secondary ${rankVisuals.scoreClass}`}
+                        >
+                          {formatScore(finalScore)}
+                        </div>
                     <div className="text-[10px] font-medium text-text-placeholder font-secondary">
                       {formatTime(survivedTime)}
                     </div>

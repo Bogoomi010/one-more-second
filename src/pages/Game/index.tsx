@@ -65,6 +65,7 @@ export default function Game({
     setIsNewHighScore(result.scoreSeconds > profile.bestScore);
 
     // 프로필 업데이트 (코인/통계/업적/데일리)
+    const beforeAchievementIds = new Set(Object.keys(profile.achievements));
     let next = ensureDailyChallenge(profile);
 
     const { profile: afterRun, runReward } = applyRunToProfile(next, result);
@@ -75,11 +76,14 @@ export default function Game({
 
     const coinsBeforeAchievementRewards = next.coins;
     next = applyAchievements(next, result, coinsBeforeAchievementRewards);
+    const unlockedAchievementIds = Object.keys(next.achievements).filter(
+      (id) => !beforeAchievementIds.has(id)
+    );
     const achievementReward = Math.max(0, next.coins - coinsBeforeAchievementRewards);
 
     saveProfile(next);
     setProfile(next);
-    void syncLocalProfileToCloud(next);
+    void syncLocalProfileToCloud(next, { unlockedAchievementIds });
 
     const lines: string[] = [];
     lines.push(`+${runReward} coins`);

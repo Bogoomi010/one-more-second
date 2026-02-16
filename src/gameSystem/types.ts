@@ -35,6 +35,10 @@ export interface PlayerProfile {
   totalRuns: number;
   totalSecondsSurvived: number;
   bestScore: number;
+  totalBulletsSpawned: number;
+  totalBulletsDodged: number;
+  totalBulletsHit: number;
+  totalDeaths: number;
   selectedPlayerSkinId: PlayerSkinId;
   selectedBulletSkinId: BulletSkinId;
   ownedPlayerSkins: PlayerSkinId[];
@@ -53,6 +57,10 @@ export interface PlayerProfile {
 export interface GameResult {
   scoreSeconds: number;
   hitsTaken: number;
+  bulletsSpawned?: number;
+  bulletsDodged?: number;
+  bulletsHit?: number;
+  deaths?: number;
   firstHitSeconds?: number | null;
   baseScore?: number;
   adjustmentScore?: number;

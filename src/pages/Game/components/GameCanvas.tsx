@@ -44,6 +44,32 @@ const MOVEMENT_CODES = new Set([
   'KeyD',
 ]);
 
+const CANVAS_ASPECT_CLASS_BY_RATIO: Record<string, string> = {
+  '0.6': 'aspect-[0.6]',
+  '0.7': 'aspect-[0.7]',
+  '0.8': 'aspect-[0.8]',
+  '0.9': 'aspect-[0.9]',
+  '1.0': 'aspect-[1]',
+  '1.1': 'aspect-[1.1]',
+  '1.2': 'aspect-[1.2]',
+  '1.3': 'aspect-[1.3]',
+  '1.4': 'aspect-[1.4]',
+  '1.5': 'aspect-[1.5]',
+  '1.6': 'aspect-[1.6]',
+  '1.7': 'aspect-[1.7]',
+  '1.8': 'aspect-[1.8]',
+  '1.9': 'aspect-[1.9]',
+  '2.0': 'aspect-[2]',
+  '2.1': 'aspect-[2.1]',
+  '2.2': 'aspect-[2.2]',
+};
+
+function getCanvasAspectClass(ratio: number): string {
+  const clamped = Math.max(0.6, Math.min(2.2, ratio));
+  const rounded = (Math.round(clamped * 10) / 10).toFixed(1);
+  return CANVAS_ASPECT_CLASS_BY_RATIO[rounded] ?? CANVAS_ASPECT_CLASS_BY_RATIO['1.0'];
+}
+
 interface GameCanvasProps {
   onGameOver: (result: GameResult) => void;
   onLivesChange: (lives: number) => void;
@@ -89,6 +115,9 @@ type GameState = {
   gameOver: boolean;
   elapsedMs: number;
   lastScoreSec: number;
+  bulletsSpawned: number;
+  bulletsDodged: number;
+  bulletsHit: number;
   lives: number;
   hits: number;
   spawnInterval: number;
@@ -284,6 +313,9 @@ function GameCanvasComponent({
       gameOver: false,
       elapsedMs: 0,
       lastScoreSec: 0,
+      bulletsSpawned: 0,
+      bulletsDodged: 0,
+      bulletsHit: 0,
       lives: modifierEffects.startingLives,
       hits: 0,
       spawnInterval: INITIAL_SPAWN_INTERVAL,
@@ -454,6 +486,7 @@ function GameCanvasComponent({
       bulletSprite.x = request.x;
       bulletSprite.y = request.y;
       stage.addChild(bulletSprite);
+      state.bulletsSpawned += 1;
 
       state.bullets.push({
         sprite: bulletSprite,
@@ -573,9 +606,17 @@ function GameCanvasComponent({
       appendBullet(buildCriticalShotRequest());
     };
 
-    const removeBulletAt = (index: number) => {
+    const removeBulletAt = (
+      index: number,
+      reason: 'hit' | 'dodged'
+    ) => {
       const [removed] = state.bullets.splice(index, 1);
       if (!removed) return;
+      if (reason === 'hit') {
+        state.bulletsHit += 1;
+      } else if (reason === 'dodged') {
+        state.bulletsDodged += 1;
+      }
       stage.removeChild(removed.sprite);
       removed.sprite.destroy();
     };
@@ -602,6 +643,10 @@ function GameCanvasComponent({
         onGameOverRef.current({
           scoreSeconds: elapsedSeconds,
           hitsTaken: state.hits,
+          bulletsSpawned: state.bulletsSpawned,
+          bulletsDodged: state.bulletsDodged,
+          bulletsHit: state.bulletsHit,
+          deaths: 1,
           firstHitSeconds: state.firstHitSeconds,
           ...scoreBreakdown,
           usedGimmicks: enabledModifiers.map((modifier) => ({
@@ -689,7 +734,7 @@ function GameCanvasComponent({
 
         const distance = Math.hypot(state.player.x - bullet.x, state.player.y - bullet.y);
         if (distance < BULLET_RADIUS + PLAYER_SIZE / 2) {
-          removeBulletAt(i);
+          removeBulletAt(i, 'hit');
           triggerHit();
           if (state.gameOver) return;
           continue;
@@ -702,7 +747,7 @@ function GameCanvasComponent({
           bullet.y > state.playfield.bottom + BULLET_SIZE;
 
         if (outOfBounds) {
-          removeBulletAt(i);
+          removeBulletAt(i, 'dodged');
         }
       }
 
@@ -853,8 +898,9 @@ function GameCanvasComponent({
   return (
     <div
       ref={containerRef}
-      className="w-full h-auto max-h-full max-w-full bg-zinc-900 border-2 border-zinc-800 rounded-xl overflow-hidden cursor-none select-none touch-manipulation aspect-[var(--canvas-aspect-ratio)] [-webkit-tap-highlight-color:transparent] [-webkit-user-select:none] [-webkit-touch-callout:none]"
-      style={{ '--canvas-aspect-ratio': `${canvasAspectRatio}` } as React.CSSProperties}
+      className={`w-full h-auto max-h-full max-w-full bg-zinc-900 border-2 border-zinc-800 rounded-xl overflow-hidden cursor-none select-none touch-manipulation ${getCanvasAspectClass(
+        canvasAspectRatio
+      )} [-webkit-tap-highlight-color:transparent] [-webkit-user-select:none] [-webkit-touch-callout:none]`}
       onDoubleClick={handleCanvasDoubleClick}
       onContextMenu={handleCanvasContextMenu}
     />

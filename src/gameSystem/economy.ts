@@ -12,8 +12,18 @@ export function calcRunRewardCoins(result: GameResult): number {
   return base + noHitBonus;
 }
 
+function sanitizeRunMetric(value: unknown): number {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) return 0;
+  return Math.max(0, Math.floor(parsed));
+}
+
 export function applyRunToProfile(profile: PlayerProfile, result: GameResult): { profile: PlayerProfile; runReward: number } {
   const runReward = calcRunRewardCoins(result);
+  const runBulletsSpawned = sanitizeRunMetric(result.bulletsSpawned);
+  const runBulletsDodged = sanitizeRunMetric(result.bulletsDodged);
+  const runBulletsHit = sanitizeRunMetric(result.bulletsHit ?? result.hitsTaken);
+  const runDeaths = sanitizeRunMetric(result.deaths ?? 1);
 
   const bestScore = Math.max(profile.bestScore, result.scoreSeconds);
 
@@ -24,6 +34,10 @@ export function applyRunToProfile(profile: PlayerProfile, result: GameResult): {
       coins: profile.coins + runReward,
       totalRuns: profile.totalRuns + 1,
       totalSecondsSurvived: profile.totalSecondsSurvived + result.scoreSeconds,
+      totalBulletsSpawned: profile.totalBulletsSpawned + runBulletsSpawned,
+      totalBulletsDodged: profile.totalBulletsDodged + runBulletsDodged,
+      totalBulletsHit: profile.totalBulletsHit + runBulletsHit,
+      totalDeaths: profile.totalDeaths + runDeaths,
       bestScore,
     },
   };
