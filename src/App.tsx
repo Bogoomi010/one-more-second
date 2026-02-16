@@ -4,9 +4,19 @@ import Layout from './components/Layout';
 import DifficultyModal from './components/DifficultyModal';
 import ProfileSetupModal from './components/ProfileSetupModal';
 import Toast from './components/Toast';
+import AchievementCelebrationModal from './components/AchievementCelebrationModal';
+import AchievementConfetti from './components/AchievementConfetti';
 import ConfirmModal from './components/ConfirmModal';
 import GamePage from './pages/Game';
-import { audioManager, ensureDailyChallenge, loadProfile, loadSettings, saveSettings } from './gameSystem';
+import {
+  audioManager,
+  ensureDailyChallenge,
+  defaultProfile,
+  loadProfile,
+  loadSettings,
+  resetProfile,
+  saveSettings,
+} from './gameSystem';
 import SystemMenuModal from './pages/Game/overlays/SystemMenuModal';
 import ShopModal from './pages/Game/overlays/ShopModal';
 import AchievementsModal from './pages/Game/overlays/AchievementsModal';
@@ -24,8 +34,14 @@ import {
 type ToastVariant = 'info' | 'success' | 'error';
 
 function App() {
-  const { firebaseEnabled, user, signInWithGoogle, signOut } = useAuth();
-  const [profile, setProfile] = useState(() => ensureDailyChallenge(loadProfile()));
+  const {
+    firebaseEnabled,
+    user,
+    signInWithGoogle,
+    signOut,
+    loading: authLoading,
+  } = useAuth();
+  const [profile, setProfile] = useState(() => ensureDailyChallenge(defaultProfile()));
   const [userCountry, setUserCountry] = useState<string>('KR');
   const [userIdentity, setUserIdentity] = useState<UserIdentityProfile | null>(null);
   const [identityLoading, setIdentityLoading] = useState(false);
@@ -48,6 +64,7 @@ function App() {
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [toastVariant, setToastVariant] = useState<ToastVariant>('info');
   const [compactPanelMode, setCompactPanelMode] = useState(false);
+  const [achievementPopupIds, setAchievementPopupIds] = useState<string[]>([]);
 
   const showToast = (message: string, variant: ToastVariant = 'info') => {
     setToastVariant(variant);
@@ -82,6 +99,24 @@ function App() {
     const timer = window.setTimeout(() => setToastMessage(null), 1800);
     return () => window.clearTimeout(timer);
   }, [toastMessage]);
+
+  useEffect(() => {
+    if (achievementPopupIds.length === 0) return;
+    const timer = window.setTimeout(() => setAchievementPopupIds([]), 5200);
+    return () => window.clearTimeout(timer);
+  }, [achievementPopupIds]);
+
+  useEffect(() => {
+    if (authLoading) return;
+    if (user) {
+      setProfile(ensureDailyChallenge(loadProfile()));
+      return;
+    }
+
+    setProfile(resetProfile());
+    setUserCountry('KR');
+    setAchievementPopupIds([]);
+  }, [authLoading, user]);
 
   useEffect(() => {
     let cancelled = false;
@@ -150,6 +185,8 @@ function App() {
   const handleConfirmLogout = async () => {
     try {
       await signOut();
+      setProfile(resetProfile());
+      setAchievementPopupIds([]);
       setLogoutConfirmOpen(false);
       setUserIdentity(null);
       setIdentityLoading(false);
@@ -232,6 +269,12 @@ function App() {
           isProfileSetupOpen={profileSetupOpen}
           identityLoading={identityLoading}
           onRequestProfileSetup={() => setProfileSetupOpen(true)}
+          onAchievementsUnlocked={(ids) => {
+            const uniqueIds = Array.from(new Set(ids));
+            if (uniqueIds.length > 0) {
+              setAchievementPopupIds(uniqueIds);
+            }
+          }}
         />
       </Layout>
 
@@ -312,6 +355,12 @@ function App() {
       />
 
       <Toast message={toastMessage} visible={Boolean(toastMessage)} variant={toastVariant} />
+      <AchievementConfetti isActive={achievementPopupIds.length > 0} achievementCount={achievementPopupIds.length} />
+      <AchievementCelebrationModal
+        isOpen={achievementPopupIds.length > 0}
+        onClose={() => setAchievementPopupIds([])}
+        achievementIds={achievementPopupIds}
+      />
     </>
   );
 }

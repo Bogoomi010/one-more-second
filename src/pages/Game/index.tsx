@@ -27,6 +27,7 @@ interface GameProps {
   isProfileSetupOpen: boolean;
   identityLoading: boolean;
   onRequestProfileSetup: () => void;
+  onAchievementsUnlocked?: (achievementIds: string[]) => void;
 }
 
 export default function Game({
@@ -42,6 +43,7 @@ export default function Game({
   isProfileSetupOpen,
   identityLoading,
   onRequestProfileSetup,
+  onAchievementsUnlocked,
 }: GameProps) {
   const [score, setScore] = useState(0);
   const [normalScore, setNormalScore] = useState(0);
@@ -87,6 +89,9 @@ export default function Game({
       (id) => !beforeAchievementIds.has(id)
     );
     const achievementReward = Math.max(0, next.coins - coinsBeforeAchievementRewards);
+    if (unlockedAchievementIds.length > 0) {
+      onAchievementsUnlocked?.(unlockedAchievementIds);
+    }
 
     saveProfile(next);
     setProfile(next);
