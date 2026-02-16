@@ -3,9 +3,6 @@ import { sound } from '@pixi/sound';
 import { useTranslation } from 'react-i18next';
 import GameCanvas from '../pages/Game/components/GameCanvas';
 import MobileJoystick from '../pages/Game/components/MobileJoystick';
-import countdownOneImage from '../assets/icon-countdown-one.png';
-import countdownTwoImage from '../assets/icon-countdown-two.png';
-import countdownThreeImage from '../assets/icon-countdown-three.png';
 import { audioManager } from '../gameSystem/audio';
 import { GameResult, GameplayModifierId, PlayerProfile } from '../gameSystem/types';
 import lifeIcon from '../assets/icon_life.png';
@@ -150,15 +147,6 @@ export default function NewGamePanel({
     onGameOver(result);
   };
 
-  const countdownImage =
-    countdown === 3
-      ? countdownThreeImage
-      : countdown === 2
-        ? countdownTwoImage
-        : countdown === 1
-          ? countdownOneImage
-          : null;
-
   const handleScoreChange = (newScore: number) => {
     setScore(newScore);
   };
@@ -192,7 +180,7 @@ export default function NewGamePanel({
     event.preventDefault();
   };
 
-  const isGameRunning = gameStarted;
+  const isGameRunning = gameStarted || isCountingDown;
 
   const containerClassName = isCompactGameLayout
     ? 'w-full h-full min-w-0 min-h-0 bg-bg-secondary border border-border-primary rounded-none p-0 sm:p-1 flex flex-col gap-2 backdrop-blur-[10px] font-primary overflow-hidden box-border select-none'
@@ -271,18 +259,7 @@ export default function NewGamePanel({
       </div>
 
       <div className={canvasAreaClassName}>
-        {!gameStarted ? (
-          isCountingDown ? (
-            <div className="h-full min-h-0 flex items-center justify-center px-2">
-              {countdownImage && (
-                <img
-                  src={countdownImage}
-                  alt={`Countdown ${countdown}`}
-                  className="w-[180px] h-[180px] sm:w-[220px] sm:h-[220px] object-contain"
-                />
-              )}
-            </div>
-          ) : (
+        {(!gameStarted && !isCountingDown) ? (
             <div className="h-full min-h-0 flex flex-col items-center justify-center gap-4 sm:gap-6 px-2">
               <div className="text-text-primary font-secondary text-[12px] sm:text-ui-body font-bold tracking-[2px] text-center">
                 {isTouchInput ? t('game.touchPrompt', { defaultValue: 'TAP' }) : startPromptText}
@@ -359,21 +336,21 @@ export default function NewGamePanel({
                 </div>
               )}
             </div>
-          )
-        ) : (
+          ) : (
             <div className={inGameCanvasContainerClassName}>
-            <GameCanvas
-              onGameOver={handleGameOver}
-              onLivesChange={handleLivesChange}
-              onScoreChange={handleScoreChange}
-              onSpawnIntervalChange={handleSpawnIntervalChange}
-              playerImage={playerImage}
-              bulletImage={bulletImage}
-              isModalOpen={isModalOpen}
-              joystickVectorRef={isTouchInput ? joystickVectorRef : undefined}
-              activeModifiers={activeModifiers}
-            />
-            {isTouchInput && (
+              <GameCanvas
+                onGameOver={handleGameOver}
+                onLivesChange={handleLivesChange}
+                onScoreChange={handleScoreChange}
+                onSpawnIntervalChange={handleSpawnIntervalChange}
+                playerImage={playerImage}
+                bulletImage={bulletImage}
+                isModalOpen={isModalOpen}
+                joystickVectorRef={isTouchInput ? joystickVectorRef : undefined}
+                activeModifiers={activeModifiers}
+                countdown={isCountingDown ? countdown : null}
+              />
+            {isTouchInput && gameStarted && (
               <div
                 className="absolute z-20 pointer-events-none"
                 style={{

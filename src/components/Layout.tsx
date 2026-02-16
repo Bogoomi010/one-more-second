@@ -218,7 +218,7 @@ export default function Layout({
             {onAchievementsClick ? (
               <button
                 type="button"
-                className="text-accent-green font-primary text-[14px] font-bold cursor-pointer bg-transparent border-none p-0 hover:text-accent-blue transition-colors duration-200"
+                className="text-text-muted font-primary text-sm sm:text-lg font-bold cursor-pointer bg-transparent border-none p-0 hover:text-text-primary transition-colors duration-200"
                 onClick={onAchievementsClick}
                 title={t('systemMenu.achievements')}
                 aria-label={t('systemMenu.achievements')}
@@ -226,13 +226,13 @@ export default function Layout({
                 {t('systemMenu.achievements')}
               </button>
             ) : (
-              <span className="text-accent-green font-primary text-[14px] font-bold">
+              <span className="text-text-muted font-primary text-sm sm:text-lg font-bold">
                 {t('systemMenu.achievements')}
               </span>
             )}
             <button
               type="button"
-              className="text-text-muted font-primary text-[14px] font-bold cursor-pointer bg-transparent border-none p-0 hover:text-text-primary transition-colors duration-200"
+              className="text-text-muted font-primary text-sm sm:text-lg font-bold cursor-pointer bg-transparent border-none p-0 hover:text-text-primary transition-colors duration-200"
               onClick={onMarketClick}
               title={t('layout.navMarket')}
               aria-label={t('layout.navMarket')}

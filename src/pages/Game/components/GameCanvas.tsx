@@ -4,6 +4,9 @@ import { sound } from '@pixi/sound';
 import { GameResult, GameplayModifierId } from '../../../gameSystem/types';
 import { loadSettings, SETTINGS_UPDATED_EVENT } from '../../../gameSystem/settings';
 import { audioManager } from '../../../gameSystem/audio';
+import countdownOneImage from '../../../assets/icon-countdown-one.png';
+import countdownThreeImage from '../../../assets/icon-countdown-three.png';
+import countdownTwoImage from '../../../assets/icon-countdown-two.png';
 import {
   MODIFIER_BULLET_SKIN,
   calculateScoreBreakdown,
@@ -22,6 +25,7 @@ const CROSSLINE_FIRE_INTERVAL_MS = 3000;
 const CRITICAL_SHOT_FIRE_INTERVAL_MS = 4500;
 const CROSSLINE_MAX_LANES = 2;
 const CROSSLINE_LANE_RATIOS = [0.2, 0.35, 0.5, 0.65, 0.8] as const;
+const PLAYER_BOUNDS_MARGIN = 6;
 const INITIAL_SPAWN_INTERVAL = 500;
 const INTERVAL_DECREASE = 50;
 const MIN_SPAWN_INTERVAL = 100;
@@ -50,6 +54,7 @@ interface GameCanvasProps {
   isModalOpen?: boolean;
   joystickVectorRef?: React.MutableRefObject<{ x: number; y: number }>;
   activeModifiers?: GameplayModifierId[];
+  countdown?: number | null;
 }
 
 type Bullet = {
@@ -167,6 +172,7 @@ function GameCanvasComponent({
   isModalOpen = false,
   joystickVectorRef,
   activeModifiers = [],
+  countdown = null,
 }: GameCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const onGameOverRef = useRef(onGameOver);
@@ -177,6 +183,7 @@ function GameCanvasComponent({
   const joystickVectorSourceRef = useRef(joystickVectorRef);
   const fpsLimitRef = useRef<number>(0);
   const frameAccumulatorRef = useRef(0);
+  const countdownRef = useRef<number | null>(null);
   const [canvasAspectRatio, setCanvasAspectRatio] = useState(resolveCanvasAspectRatio);
 
   useEffect(() => {
@@ -205,6 +212,10 @@ function GameCanvasComponent({
   useEffect(() => {
     joystickVectorSourceRef.current = joystickVectorRef;
   }, [joystickVectorRef]);
+
+  useEffect(() => {
+    countdownRef.current = countdown ?? null;
+  }, [countdown]);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -240,12 +251,22 @@ function GameCanvasComponent({
     const playerTexture = Texture.from(playerImage);
     const bulletTexture = Texture.from(bulletImage);
     const gimmickBulletTexture = Texture.from(MODIFIER_BULLET_SKIN);
+    const countdownTextures: Record<number, Texture> = {
+      1: Texture.from(countdownOneImage),
+      2: Texture.from(countdownTwoImage),
+      3: Texture.from(countdownThreeImage),
+    };
 
     const playerSprite = new Sprite(playerTexture);
     playerSprite.anchor.set(0.5);
     playerSprite.width = PLAYER_SIZE;
     playerSprite.height = PLAYER_SIZE;
     stage.addChild(playerSprite);
+
+    const countdownSprite = new Sprite();
+    countdownSprite.anchor.set(0.5);
+    countdownSprite.visible = false;
+    stage.addChild(countdownSprite);
 
     const initialPlayfield = createPlayfield(
       app.screen.width,
@@ -402,10 +423,11 @@ function GameCanvasComponent({
     };
 
     const clampPlayer = () => {
-      const maxX = state.playfield.right - PLAYER_SIZE / 2;
-      const maxY = state.playfield.bottom - PLAYER_SIZE / 2;
-      const minX = state.playfield.left + PLAYER_SIZE / 2;
-      const minY = state.playfield.top + PLAYER_SIZE / 2;
+      const halfSize = PLAYER_SIZE / 2;
+      const maxX = state.playfield.right - halfSize - PLAYER_BOUNDS_MARGIN;
+      const maxY = state.playfield.bottom - halfSize - PLAYER_BOUNDS_MARGIN;
+      const minX = state.playfield.left + halfSize + PLAYER_BOUNDS_MARGIN;
+      const minY = state.playfield.top + halfSize + PLAYER_BOUNDS_MARGIN;
       state.player.x = Math.max(minX, Math.min(maxX, state.player.x));
       state.player.y = Math.max(minY, Math.min(maxY, state.player.y));
     };
@@ -591,8 +613,41 @@ function GameCanvasComponent({
       }
     };
 
+    const updateCountdownSprite = () => {
+      const countdownValue = countdownRef.current;
+      if (countdownValue === null) {
+        countdownSprite.visible = false;
+        return;
+      }
+
+      const countdownTexture = countdownTextures[countdownValue];
+      if (!countdownTexture) {
+        countdownSprite.visible = false;
+        return;
+      }
+
+      const baseSize = Math.min(app.screen.width, app.screen.height) * 0.35;
+      const hasTextureDimensions =
+        countdownTexture.width > 0 && countdownTexture.height > 0;
+
+      if (hasTextureDimensions) {
+        const ratio = countdownTexture.height / countdownTexture.width;
+        countdownSprite.width = baseSize;
+        countdownSprite.height = baseSize * ratio;
+      } else {
+        countdownSprite.width = baseSize;
+        countdownSprite.height = baseSize;
+      }
+
+      countdownSprite.texture = countdownTexture;
+      countdownSprite.x = app.screen.width / 2;
+      countdownSprite.y = app.screen.height / 2;
+      countdownSprite.visible = true;
+    };
+
     const update = (deltaTimeSec: number) => {
       if (state.gameOver || isModalOpenRef.current) return;
+      if (countdownRef.current !== null) return;
 
       const deltaMs = deltaTimeSec * 1000;
       state.elapsedMs += deltaMs;
@@ -734,6 +789,8 @@ function GameCanvasComponent({
     const ticker = () => {
       syncViewport();
       const clampedDeltaMs = Math.min(app.ticker.deltaMS, 50);
+      updateCountdownSprite();
+
       if (fpsLimitRef.current > 0) {
         frameAccumulatorRef.current += clampedDeltaMs;
         const targetFrameMs = 1000 / fpsLimitRef.current;
@@ -820,6 +877,7 @@ export default React.memo(GameCanvasComponent, (prevProps, nextProps) => {
     prevProps.playerImage === nextProps.playerImage &&
     prevProps.bulletImage === nextProps.bulletImage &&
     prevProps.isModalOpen === nextProps.isModalOpen &&
-    prevProps.joystickVectorRef === nextProps.joystickVectorRef
+    prevProps.joystickVectorRef === nextProps.joystickVectorRef &&
+    prevProps.countdown === nextProps.countdown
   );
 });
