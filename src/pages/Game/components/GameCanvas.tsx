@@ -131,6 +131,7 @@ type GameState = {
   viewportWidth: number;
   viewportHeight: number;
   playfield: Playfield;
+  spawnArea: Playfield;
 };
 
 function resolveBgmVolume(): number {
@@ -302,6 +303,7 @@ function GameCanvasComponent({
       app.screen.height,
       modifierEffects.playfieldScale
     );
+    const initialSpawnArea = createPlayfield(app.screen.width, app.screen.height, 1);
 
     const state: GameState = {
       player: {
@@ -329,6 +331,7 @@ function GameCanvasComponent({
       viewportWidth: app.screen.width,
       viewportHeight: app.screen.height,
       playfield: initialPlayfield,
+      spawnArea: initialSpawnArea,
     };
 
     const touchControls = {
@@ -474,6 +477,7 @@ function GameCanvasComponent({
       state.viewportWidth = width;
       state.viewportHeight = height;
       state.playfield = createPlayfield(width, height, modifierEffects.playfieldScale);
+      state.spawnArea = createPlayfield(width, height, 1);
       drawBackground(width, height);
       clampPlayer();
     };
@@ -499,10 +503,11 @@ function GameCanvasComponent({
 
     const buildTrackingBulletRequest = (): SpawnRequest => {
       const margin = BULLET_RADIUS * 2;
-      const x = Math.random() * (state.playfield.width - margin * 2) + (state.playfield.left + margin);
+      const x =
+        Math.random() * (state.spawnArea.width - margin * 2) + (state.spawnArea.left + margin);
       const y = state.spawnFromTop
-        ? state.playfield.top + margin
-        : state.playfield.bottom - margin;
+        ? state.spawnArea.top + margin
+        : state.spawnArea.bottom - margin;
 
       const dx = state.player.x - x;
       const dy = state.player.y - y;
@@ -523,21 +528,23 @@ function GameCanvasComponent({
     const buildCriticalShotRequest = (): SpawnRequest => {
       const margin = BULLET_RADIUS * 2;
       const side = Math.floor(Math.random() * 4);
-      let x = state.playfield.left;
-      let y = state.playfield.top;
+      let x = state.spawnArea.left;
+      let y = state.spawnArea.top;
 
       if (side === 0) {
-        x = Math.random() * (state.playfield.width - margin * 2) + (state.playfield.left + margin);
-        y = state.playfield.top - BULLET_RADIUS;
+        x =
+          Math.random() * (state.spawnArea.width - margin * 2) + (state.spawnArea.left + margin);
+        y = state.spawnArea.top - BULLET_RADIUS;
       } else if (side === 1) {
-        x = Math.random() * (state.playfield.width - margin * 2) + (state.playfield.left + margin);
-        y = state.playfield.bottom + BULLET_RADIUS;
+        x =
+          Math.random() * (state.spawnArea.width - margin * 2) + (state.spawnArea.left + margin);
+        y = state.spawnArea.bottom + BULLET_RADIUS;
       } else if (side === 2) {
-        x = state.playfield.left - BULLET_RADIUS;
-        y = Math.random() * (state.playfield.height - margin * 2) + (state.playfield.top + margin);
+        x = state.spawnArea.left - BULLET_RADIUS;
+        y = Math.random() * (state.spawnArea.height - margin * 2) + (state.spawnArea.top + margin);
       } else {
-        x = state.playfield.right + BULLET_RADIUS;
-        y = Math.random() * (state.playfield.height - margin * 2) + (state.playfield.top + margin);
+        x = state.spawnArea.right + BULLET_RADIUS;
+        y = Math.random() * (state.spawnArea.height - margin * 2) + (state.spawnArea.top + margin);
       }
 
       const dx = state.player.x - x;
@@ -557,12 +564,12 @@ function GameCanvasComponent({
     const buildCrosslineRequests = (): SpawnRequest[] => {
       if (!modifierEffects.crosslineSpawn) return [];
 
-      const mapLeft = state.playfield.left;
-      const mapTop = state.playfield.top;
-      const mapRight = state.playfield.right;
-      const mapBottom = state.playfield.bottom;
-      const mapWidth = state.playfield.width;
-      const mapHeight = state.playfield.height;
+      const mapLeft = state.spawnArea.left;
+      const mapTop = state.spawnArea.top;
+      const mapRight = state.spawnArea.right;
+      const mapBottom = state.spawnArea.bottom;
+      const mapWidth = state.spawnArea.width;
+      const mapHeight = state.spawnArea.height;
 
       const lanePool = [...CROSSLINE_LANE_RATIOS];
       for (let i = lanePool.length - 1; i > 0; i -= 1) {
@@ -741,10 +748,10 @@ function GameCanvasComponent({
         }
 
         const outOfBounds =
-          bullet.x < state.playfield.left - BULLET_SIZE ||
-          bullet.x > state.playfield.right + BULLET_SIZE ||
-          bullet.y < state.playfield.top - BULLET_SIZE ||
-          bullet.y > state.playfield.bottom + BULLET_SIZE;
+          bullet.x < state.spawnArea.left - BULLET_SIZE ||
+          bullet.x > state.spawnArea.right + BULLET_SIZE ||
+          bullet.y < state.spawnArea.top - BULLET_SIZE ||
+          bullet.y > state.spawnArea.bottom + BULLET_SIZE;
 
         if (outOfBounds) {
           removeBulletAt(i, 'dodged');
