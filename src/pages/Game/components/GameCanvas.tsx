@@ -222,6 +222,7 @@ function GameCanvasComponent({
   const fpsLimitRef = useRef<number>(0);
   const frameAccumulatorRef = useRef(0);
   const countdownRef = useRef<number | null>(null);
+  const bgmPlaybackSessionRef = useRef(0);
   const [canvasAspectRatio, setCanvasAspectRatio] = useState(resolveCanvasAspectRatio);
 
   useEffect(() => {
@@ -398,12 +399,36 @@ function GameCanvasComponent({
       sound.resumeAll();
     };
 
+    const stopBgm = () => {
+      bgmPlaybackSessionRef.current += 1;
+      if (sound.exists(PIXI_BGM_ALIAS)) {
+        try {
+          sound.stop(PIXI_BGM_ALIAS);
+        } catch (error) {
+          console.warn('Failed to stop BGM:', error);
+        }
+      }
+      audioManager.stopBGM();
+    };
+
+    const stopBgmAndCleanup = () => {
+      stopBgm();
+      if (sound.exists(PIXI_BGM_ALIAS)) {
+        try {
+          sound.remove(PIXI_BGM_ALIAS);
+        } catch (error) {
+          console.warn('Failed to remove BGM alias:', error);
+        }
+      }
+    };
+
     const ensureBgmPlayback = () => {
       if (destroyed || state.gameOver) return;
       const settings = loadSettings();
       if (!settings.audio.bgmEnabled) return;
       if (!sound.exists(PIXI_BGM_ALIAS)) return;
       if (sound.find(PIXI_BGM_ALIAS).isPlaying) return;
+      const playbackSession = bgmPlaybackSessionRef.current;
 
       try {
         const playback = sound.play(PIXI_BGM_ALIAS, {
@@ -413,9 +438,25 @@ function GameCanvasComponent({
         });
 
         if (isPromise(playback)) {
-          void playback.catch(() => {
-            // Autoplay lock can reject; retry on next gesture.
-          });
+          void playback
+            .then(() => {
+              if (
+                destroyed ||
+                state.gameOver ||
+                playbackSession !== bgmPlaybackSessionRef.current
+              ) {
+                stopBgm();
+              }
+            })
+            .catch(() => {
+              // Autoplay lock can reject; retry on next gesture.
+            });
+        } else if (
+          destroyed ||
+          state.gameOver ||
+          playbackSession !== bgmPlaybackSessionRef.current
+        ) {
+          stopBgm();
         }
       } catch {
         // Autoplay lock can throw; retry on next gesture.
@@ -428,17 +469,6 @@ function GameCanvasComponent({
       void audioManager.init();
       resumeAllAudioContexts();
       ensureBgmPlayback();
-    };
-
-    const stopBgm = () => {
-      if (sound.exists(PIXI_BGM_ALIAS)) {
-        try {
-          sound.stop(PIXI_BGM_ALIAS);
-        } catch (error) {
-          console.warn('Failed to stop BGM:', error);
-        }
-      }
-      audioManager.stopBGM();
     };
 
     const drawBackground = (width: number, height: number) => {
@@ -747,7 +777,7 @@ function GameCanvasComponent({
         state.gameOver = true;
         const elapsedSeconds = Math.floor(state.elapsedMs / 1000);
         const scoreBreakdown = calculateScoreBreakdown(elapsedSeconds, enabledModifierIds);
-        stopBgm();
+        stopBgmAndCleanup();
         audioManager.playGameOverSound();
         onGameOverRef.current({
           scoreSeconds: elapsedSeconds,
@@ -999,7 +1029,7 @@ function GameCanvasComponent({
       view.removeEventListener('blur', handleBlur);
       window.removeEventListener(SETTINGS_UPDATED_EVENT, syncCanvasSettings as EventListener);
       state.bullets.forEach((bullet) => bullet.sprite.destroy());
-      stopBgm();
+      stopBgmAndCleanup();
       app.destroy(true, true);
     };
   }, [activeModifiers, bulletImage, playerImage, isAiMode]);

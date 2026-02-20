@@ -43,7 +43,7 @@ export function defaultSettings(): GameSettings {
     },
     gameplay: {
       enabledModifiers: [],
-      countdownEnabled: true,
+      countdownEnabled: false,
     },
   };
 }

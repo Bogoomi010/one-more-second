@@ -54,19 +54,15 @@ class AudioManager {
 
   updateVolumes() {
     const settings = loadSettings();
-    
+
     if (this.bgmGainNode) {
       const bgmVolume = settings.audio.bgmEnabled ? settings.audio.bgmVolume / 100 : 0;
       this.bgmGainNode.gain.value = bgmVolume;
-
-      // BGM 활성화 상태에 따라 재생/정지
-      if (settings.audio.bgmEnabled && !this.bgmSource && this.bgmBuffer && this.userUnlockedAudio) {
-        this.playBGM();
-      } else if (!settings.audio.bgmEnabled && this.bgmSource) {
+      if (!settings.audio.bgmEnabled && this.bgmSource) {
         this.stopBGM();
       }
     }
-    
+
     if (this.sfxGainNode) {
       const sfxVolume = settings.audio.sfxEnabled ? settings.audio.sfxVolume / 100 : 0;
       this.sfxGainNode.gain.value = sfxVolume;
