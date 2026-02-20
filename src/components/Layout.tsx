@@ -61,6 +61,7 @@ interface LayoutProps {
   isLoggedIn?: boolean;
   userDisplayName?: string;
   userInitial?: string;
+  userPhotoUrl?: string;
   compactPanelModeOverride?: boolean;
   onCompactPanelModeChange?: (enabled: boolean) => void;
 }
@@ -84,6 +85,7 @@ export default function Layout({
   isLoggedIn = false,
   userDisplayName,
   userInitial,
+  userPhotoUrl,
   compactPanelModeOverride,
   onCompactPanelModeChange,
 }: LayoutProps) {
@@ -93,6 +95,7 @@ export default function Layout({
   const [compactPanelMode, setCompactPanelMode] = useState(false);
   const [mobilePanel, setMobilePanel] = useState<MobilePanelType | null>(null);
   const [onlineUsers, setOnlineUsers] = useState<number>(DEFAULT_ONLINE_USERS_FALLBACK);
+  const [isUserPhotoLoadFailed, setIsUserPhotoLoadFailed] = useState(false);
   const languageMenuRef = useRef<HTMLDivElement | null>(null);
   const userMenuRef = useRef<HTMLDivElement | null>(null);
 
@@ -156,6 +159,10 @@ export default function Layout({
     }
   }, [compactPanelMode]);
 
+  useEffect(() => {
+    setIsUserPhotoLoadFailed(false);
+  }, [userPhotoUrl, isLoggedIn]);
+
   const handleLanguageButtonClick = () => {
     setIsLanguageMenuOpen(prev => !prev);
   };
@@ -177,6 +184,8 @@ export default function Layout({
   const handleBrandClick = () => {
     window.location.assign('/');
   };
+
+  const shouldShowUserPhoto = isLoggedIn && Boolean(userPhotoUrl) && !isUserPhotoLoadFailed;
 
   return (
     <div className="h-screen bg-bg-primary flex flex-col items-center w-full overflow-hidden box-border">
@@ -332,7 +341,24 @@ export default function Layout({
               aria-expanded={isUserMenuOpen}
               aria-haspopup="menu"
             >
-              <i className="fi-rr-circle-user text-[27px] leading-none text-text-primary" aria-hidden="true" />
+              {shouldShowUserPhoto ? (
+                <img
+                  src={userPhotoUrl}
+                  alt={userDisplayName ?? t('layout.userDefaultName')}
+                  className="w-8 h-8 rounded-full object-cover border border-border-secondary bg-bg-card"
+                  onError={() => setIsUserPhotoLoadFailed(true)}
+                />
+              ) : isLoggedIn ? (
+                userInitial ? (
+                  <span className="w-8 h-8 rounded-full bg-bg-card border border-border-secondary text-text-primary/90 text-xs font-bold font-primary flex items-center justify-center">
+                    {userInitial}
+                  </span>
+                ) : (
+                  <i className="fi-rr-circle-user text-[27px] leading-none text-text-primary" aria-hidden="true" />
+                )
+              ) : (
+                <i className="fi-rr-circle-user text-[27px] leading-none text-text-primary" aria-hidden="true" />
+              )}
             </button>
 
             {isUserMenuOpen && (

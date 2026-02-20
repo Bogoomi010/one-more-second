@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import NewGamePanel from './components/GamePanel';
 import ScoreSubmitModal from './components/ScoreSubmitModal';
 import {
@@ -127,13 +127,13 @@ export default function Game({
     setShowScoreModal(true);
   };
 
-  const handleRestartGame = () => {
+  const handleRestartGame = useCallback(() => {
     setScore(0);
     setNormalScore(0);
     setIsNewHighScore(false);
     setShowScoreModal(false);
     setLastRunMessage([]);
-  };
+  }, []);
 
   useEffect(() => {
     if (!isAiModeValue || !showScoreModal) return;

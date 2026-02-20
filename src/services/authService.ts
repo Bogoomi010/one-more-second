@@ -8,6 +8,8 @@ import {
 import { firebaseAuth, firebaseEnabled } from '../lib/firebase';
 
 const provider = new GoogleAuthProvider();
+provider.addScope('profile');
+provider.addScope('email');
 
 export function isAuthAvailable(): boolean {
   return Boolean(firebaseEnabled && firebaseAuth);

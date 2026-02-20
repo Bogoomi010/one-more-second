@@ -264,6 +264,7 @@ function App() {
         onLogoutClick={handleLogoutClick}
         isLoggedIn={Boolean(user)}
         userDisplayName={userIdentity?.nickname ?? user?.displayName ?? undefined}
+        userPhotoUrl={user?.photoURL ?? undefined}
         userInitial={userInitial}
       >
         <GamePage
