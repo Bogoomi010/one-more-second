@@ -4,10 +4,21 @@ import bgmFile from '../Sound/Sound_main.mp3';
 class AudioManager {
   private audioContext: AudioContext | null = null;
   private bgmGainNode: GainNode | null = null;
+  private bgmVolumeNode: GainNode | null = null;
   private sfxGainNode: GainNode | null = null;
   private bgmSource: AudioBufferSourceNode | null = null;
   private bgmBuffer: AudioBuffer | null = null;
   private initialized = false;
+  private userUnlockedAudio = false;
+
+  markUserInteraction() {
+    this.userUnlockedAudio = true;
+    this.resume();
+  }
+
+  canPlayAudioNow(): boolean {
+    return this.userUnlockedAudio;
+  }
 
   async init() {
     if (this.initialized) return;
@@ -18,6 +29,10 @@ class AudioManager {
       // BGM 게인 노드
       this.bgmGainNode = this.audioContext.createGain();
       this.bgmGainNode.connect(this.audioContext.destination);
+
+      this.bgmVolumeNode = this.audioContext.createGain();
+      this.bgmVolumeNode.gain.value = 0.4;
+      this.bgmVolumeNode.connect(this.bgmGainNode);
       
       // SFX 게인 노드
       this.sfxGainNode = this.audioContext.createGain();
@@ -25,6 +40,10 @@ class AudioManager {
       
       this.updateVolumes();
       this.initialized = true;
+
+      if (this.userUnlockedAudio) {
+        this.resume();
+      }
 
       // BGM 로드 (재생은 하지 않음)
       await this.loadBGM();
@@ -41,7 +60,7 @@ class AudioManager {
       this.bgmGainNode.gain.value = bgmVolume;
 
       // BGM 활성화 상태에 따라 재생/정지
-      if (settings.audio.bgmEnabled && !this.bgmSource && this.bgmBuffer) {
+      if (settings.audio.bgmEnabled && !this.bgmSource && this.bgmBuffer && this.userUnlockedAudio) {
         this.playBGM();
       } else if (!settings.audio.bgmEnabled && this.bgmSource) {
         this.stopBGM();
@@ -125,33 +144,31 @@ class AudioManager {
 
   playBGM() {
     if (!this.audioContext || !this.bgmGainNode || !this.bgmBuffer) return;
+    if (!this.userUnlockedAudio) return;
 
     const settings = loadSettings();
     if (!settings.audio.bgmEnabled) return;
+    if (this.bgmSource) return;
 
     try {
-      // 기존 BGM이 재생 중이면 중지
-      this.stopBGM();
-
-      // 추가 게인 노드로 볼륨 절반으로 조절
-      const bgmVolumeGain = this.audioContext.createGain();
-      bgmVolumeGain.gain.value = 0.4; // 볼륨 50%로 설정
-      bgmVolumeGain.connect(this.bgmGainNode);
-
-      // 새로운 소스 생성
-      this.bgmSource = this.audioContext.createBufferSource();
-      this.bgmSource.buffer = this.bgmBuffer;
-      this.bgmSource.loop = true; // 반복 재생
-      this.bgmSource.connect(bgmVolumeGain);
-
-      // BGM이 끝나면 자동으로 다시 재생 (루프 보장)
-      this.bgmSource.onended = () => {
-        if (this.bgmSource) {
-          this.playBGM();
+      const source = this.audioContext.createBufferSource();
+      source.buffer = this.bgmBuffer;
+      source.loop = true; // 반복 재생
+      source.connect(this.bgmVolumeNode || this.bgmGainNode);
+      source.onended = () => {
+        if (this.bgmSource === source) {
+          this.bgmSource = null;
         }
+        try {
+          source.disconnect();
+        } catch (error) {
+          // Already disconnected
+        }
+        source.onended = null;
       };
+      this.bgmSource = source;
+      source.start(0);
 
-      this.bgmSource.start(0);
     } catch (error) {
       console.warn('Failed to play BGM:', error);
     }
@@ -159,17 +176,26 @@ class AudioManager {
 
   stopBGM() {
     if (this.bgmSource) {
+      const source = this.bgmSource;
+      this.bgmSource = null;
+
       try {
-        this.bgmSource.stop();
+        source.stop();
       } catch (error) {
         // Already stopped
       }
-      this.bgmSource = null;
+      source.onended = null;
+      try {
+        source.disconnect();
+      } catch (error) {
+        // Ignore disconnect errors on already disconnected nodes.
+      }
     }
   }
 
   resume() {
     if (!this.audioContext) return;
+    if (!this.userUnlockedAudio) return;
     if (this.audioContext.state !== 'running') {
       void this.audioContext.resume().catch(() => {
         // Browser may block until a valid user gesture.

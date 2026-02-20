@@ -8,6 +8,8 @@ import {
 import { firebaseAuth, firebaseEnabled } from '../lib/firebase';
 
 const provider = new GoogleAuthProvider();
+provider.addScope('profile');
+provider.addScope('email');
 
 export function isAuthAvailable(): boolean {
   return Boolean(firebaseEnabled && firebaseAuth);
@@ -19,7 +21,11 @@ export function getCurrentUser(): User | null {
 }
 
 export async function signInWithGooglePopup(): Promise<User | null> {
-  if (!firebaseAuth) return null;
+  if (!firebaseAuth) {
+    const error = new Error('Firebase Authentication is not configured.');
+    (error as { code?: string }).code = 'auth/not-configured';
+    throw error;
+  }
   const result = await signInWithPopup(firebaseAuth, provider);
   return result.user;
 }

@@ -21,6 +21,7 @@ export interface GameSettings {
   };
   gameplay: {
     enabledModifiers: GameplayModifierId[];
+    countdownEnabled: boolean;
   };
 }
 
@@ -42,6 +43,7 @@ export function defaultSettings(): GameSettings {
     },
     gameplay: {
       enabledModifiers: [],
+      countdownEnabled: true,
     },
   };
 }
@@ -123,6 +125,7 @@ export function loadSettings(): GameSettings {
           merged.gameplay.enabledModifiers,
           defaults.gameplay.enabledModifiers
         ),
+        countdownEnabled: Boolean(merged.gameplay.countdownEnabled),
       },
     };
   } catch {

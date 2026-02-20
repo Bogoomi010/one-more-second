@@ -17,6 +17,7 @@ const LANGUAGE_NAMES: Record<SupportedLanguage, string> = {
   ja: '日本語',
   'zh-CN': '简体中文',
 };
+const COMPACT_PANEL_BREAKPOINT = 1240;
 
 function normalizeLanguage(language?: string | null): SupportedLanguage {
   if (!language) return 'ko';
@@ -60,6 +61,9 @@ interface LayoutProps {
   isLoggedIn?: boolean;
   userDisplayName?: string;
   userInitial?: string;
+  userPhotoUrl?: string;
+  compactPanelModeOverride?: boolean;
+  onCompactPanelModeChange?: (enabled: boolean) => void;
 }
 
 type MobilePanelType = 'ranking' | 'stats';
@@ -81,14 +85,21 @@ export default function Layout({
   isLoggedIn = false,
   userDisplayName,
   userInitial,
+  userPhotoUrl,
+  compactPanelModeOverride,
+  onCompactPanelModeChange,
 }: LayoutProps) {
   const { t, i18n } = useTranslation();
   const [isLanguageMenuOpen, setIsLanguageMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const [compactPanelMode, setCompactPanelMode] = useState(false);
   const [mobilePanel, setMobilePanel] = useState<MobilePanelType | null>(null);
   const [onlineUsers, setOnlineUsers] = useState<number>(DEFAULT_ONLINE_USERS_FALLBACK);
+  const [isUserPhotoLoadFailed, setIsUserPhotoLoadFailed] = useState(false);
   const languageMenuRef = useRef<HTMLDivElement | null>(null);
   const userMenuRef = useRef<HTMLDivElement | null>(null);
+
+  const shouldUseCompactGameLayout = compactPanelMode && Boolean(compactPanelModeOverride);
 
   const currentLanguage = normalizeLanguage(i18n.resolvedLanguage ?? i18n.language);
 
@@ -127,6 +138,31 @@ export default function Layout({
     return subscribeOnlineUsersCount(setOnlineUsers);
   }, []);
 
+  useEffect(() => {
+    const mediaQuery = window.matchMedia(`(max-width: ${COMPACT_PANEL_BREAKPOINT - 1}px)`);
+    const handleMediaChange = () => {
+      const next = mediaQuery.matches;
+      setCompactPanelMode(next);
+      onCompactPanelModeChange?.(next);
+    };
+
+    handleMediaChange();
+    mediaQuery.addEventListener('change', handleMediaChange);
+    return () => {
+      mediaQuery.removeEventListener('change', handleMediaChange);
+    };
+  }, [onCompactPanelModeChange]);
+
+  useEffect(() => {
+    if (!compactPanelMode) {
+      setMobilePanel(null);
+    }
+  }, [compactPanelMode]);
+
+  useEffect(() => {
+    setIsUserPhotoLoadFailed(false);
+  }, [userPhotoUrl, isLoggedIn]);
+
   const handleLanguageButtonClick = () => {
     setIsLanguageMenuOpen(prev => !prev);
   };
@@ -141,9 +177,15 @@ export default function Layout({
     setIsLanguageMenuOpen(false);
   };
 
+  const toggleMobilePanel = (next: MobilePanelType) => {
+    setMobilePanel((prev) => (prev === next ? null : next));
+  };
+
   const handleBrandClick = () => {
     window.location.assign('/');
   };
+
+  const shouldShowUserPhoto = isLoggedIn && Boolean(userPhotoUrl) && !isUserPhotoLoadFailed;
 
   return (
     <div className="h-screen bg-bg-primary flex flex-col items-center w-full overflow-hidden box-border">
@@ -162,11 +204,30 @@ export default function Layout({
         </div>
 
         <div className="flex items-center gap-3 sm:gap-6">
+          {compactPanelMode && (
+            <>
+              <button
+                type="button"
+                className="h-8 px-2 rounded-lg border border-border-secondary bg-bg-card text-text-primary text-[10px] sm:text-[11px] font-primary font-semibold"
+                onClick={() => toggleMobilePanel('ranking')}
+              >
+                {t('ranking.title')}
+              </button>
+              <button
+                type="button"
+                className="h-8 px-2 rounded-lg border border-border-secondary bg-bg-card text-text-primary text-[10px] sm:text-[11px] font-primary font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                onClick={() => toggleMobilePanel('stats')}
+                disabled={!profile}
+              >
+                {t('stats.title')}
+              </button>
+            </>
+          )}
           <div className="hidden md:flex gap-8 items-center">
             {onAchievementsClick ? (
               <button
                 type="button"
-                className="text-accent-green font-primary text-[14px] font-bold cursor-pointer bg-transparent border-none p-0 hover:text-accent-blue transition-colors duration-200"
+                className="text-text-muted font-primary text-sm sm:text-lg font-bold cursor-pointer bg-transparent border-none p-0 hover:text-text-primary transition-colors duration-200"
                 onClick={onAchievementsClick}
                 title={t('systemMenu.achievements')}
                 aria-label={t('systemMenu.achievements')}
@@ -174,13 +235,13 @@ export default function Layout({
                 {t('systemMenu.achievements')}
               </button>
             ) : (
-              <span className="text-accent-green font-primary text-[14px] font-bold">
+              <span className="text-text-muted font-primary text-sm sm:text-lg font-bold">
                 {t('systemMenu.achievements')}
               </span>
             )}
             <button
               type="button"
-              className="text-text-muted font-primary text-[14px] font-bold cursor-pointer bg-transparent border-none p-0 hover:text-text-primary transition-colors duration-200"
+              className="text-text-muted font-primary text-sm sm:text-lg font-bold cursor-pointer bg-transparent border-none p-0 hover:text-text-primary transition-colors duration-200"
               onClick={onMarketClick}
               title={t('layout.navMarket')}
               aria-label={t('layout.navMarket')}
@@ -192,15 +253,19 @@ export default function Layout({
           <div className="hidden md:block w-px h-6 bg-bg-card-alt" />
 
           {onMarketClick && (
-            <button
-              type="button"
-              className="md:hidden h-8 px-2 rounded-lg border border-border-secondary bg-bg-card text-text-primary text-[11px] font-primary font-semibold"
-              onClick={onMarketClick}
-              title={t('layout.navMarket')}
-              aria-label={t('layout.navMarket')}
-            >
-              {t('layout.navMarket')}
-            </button>
+            <>
+              <button
+                type="button"
+                className={compactPanelMode
+                  ? 'h-8 px-2 rounded-lg border border-border-secondary bg-bg-card text-text-primary text-[10px] sm:text-[11px] font-primary font-semibold'
+                  : 'md:hidden h-8 px-2 rounded-lg border border-border-secondary bg-bg-card text-text-primary text-[11px] font-primary font-semibold'}
+                onClick={onMarketClick}
+                title={t('layout.navMarket')}
+                aria-label={t('layout.navMarket')}
+              >
+                {t('layout.navMarket')}
+              </button>
+            </>
           )}
 
           <div className="relative" ref={languageMenuRef}>
@@ -276,7 +341,24 @@ export default function Layout({
               aria-expanded={isUserMenuOpen}
               aria-haspopup="menu"
             >
-              <i className="fi-rr-circle-user text-[27px] leading-none text-text-primary" aria-hidden="true" />
+              {shouldShowUserPhoto ? (
+                <img
+                  src={userPhotoUrl}
+                  alt={userDisplayName ?? t('layout.userDefaultName')}
+                  className="w-8 h-8 rounded-full object-cover border border-border-secondary bg-bg-card"
+                  onError={() => setIsUserPhotoLoadFailed(true)}
+                />
+              ) : isLoggedIn ? (
+                userInitial ? (
+                  <span className="w-8 h-8 rounded-full bg-bg-card border border-border-secondary text-text-primary/90 text-xs font-bold font-primary flex items-center justify-center">
+                    {userInitial}
+                  </span>
+                ) : (
+                  <i className="fi-rr-circle-user text-[27px] leading-none text-text-primary" aria-hidden="true" />
+                )
+              ) : (
+                <i className="fi-rr-circle-user text-[27px] leading-none text-text-primary" aria-hidden="true" />
+              )}
             </button>
 
             {isUserMenuOpen && (
@@ -338,85 +420,64 @@ export default function Layout({
         </div>
       </div>
 
-      <main className="flex-1 w-full min-h-0 flex justify-center px-3 pt-3 pb-24 md:p-5 box-border overflow-hidden">
-        <div className="w-full max-w-[min(1920px,calc(100%-40px))] h-full min-h-0 box-border overflow-hidden">
-          <div className="hidden md:grid h-full min-h-0 grid-cols-[minmax(0,1fr)_minmax(0,2fr)_minmax(0,1fr)] gap-5 items-stretch">
-            <LeftColumn
-              mainPanel={
-                <div className="w-full h-full min-w-0 min-h-0 overflow-hidden">
-                  <RankingPanel userCountry={userCountry} refreshTrigger={rankingRefreshTrigger} />
-                </div>
-              }
-            />
-
-            <MainColumn
-              mainPanel={
-                <div className="w-full h-full min-w-0 min-h-0 flex flex-col gap-4 overflow-hidden">
-                  <div className="w-full flex-1 min-w-0 min-h-0 overflow-hidden">{children}</div>
-                  <div className="hidden md:block">
-                    <GameBottomBar onlineUsers={onlineUsers} onSettingsClick={onSettingsClick} />
+      <main
+        className={
+          shouldUseCompactGameLayout
+            ? 'flex-1 w-full min-h-0 overflow-hidden'
+            : 'flex-1 w-full min-h-0 flex justify-center px-3 pt-3 pb-24 md:p-5 box-border overflow-hidden'
+        }
+      >
+        <div
+          className={
+            shouldUseCompactGameLayout
+              ? 'w-full h-full min-h-0 min-w-0 overflow-hidden'
+              : 'w-full max-w-[min(1920px,calc(100%-40px))] h-full min-h-0 box-border overflow-hidden'
+          }
+        >
+          {compactPanelMode ? (
+            <div className="w-full h-full min-h-0 min-w-0 overflow-hidden">
+              {children}
+            </div>
+          ) : (
+            <div className="hidden md:grid h-full min-h-0 grid-cols-[minmax(0,1fr)_minmax(0,2fr)_minmax(0,1fr)] gap-5 items-stretch">
+              <LeftColumn
+                mainPanel={
+                  <div className="w-full h-full min-w-0 min-h-0 overflow-hidden">
+                    <RankingPanel userCountry={userCountry} refreshTrigger={rankingRefreshTrigger} />
                   </div>
-                </div>
-              }
-            />
+                }
+              />
 
-            <RightColumn
-              mainPanel={
-                <div className="w-full h-full min-w-0 min-h-0 overflow-hidden">
-                  {profile ? <StatsPanel profile={profile} /> : <div className="w-full h-full min-w-0 min-h-0" />}
-                </div>
-              }
-            />
-          </div>
+              <MainColumn
+                mainPanel={
+                  <div className="w-full h-full min-w-0 min-h-0 flex flex-col gap-4 overflow-hidden">
+                    <div className="w-full flex-1 min-w-0 min-h-0 overflow-hidden">{children}</div>
+                    <div className="hidden md:block">
+                      <GameBottomBar onlineUsers={onlineUsers} onSettingsClick={onSettingsClick} />
+                    </div>
+                  </div>
+                }
+              />
 
-          <div className="md:hidden w-full h-full min-h-0 overflow-hidden">
-            <div className="w-full h-full min-w-0 min-h-0 overflow-hidden">{children}</div>
-          </div>
+              <RightColumn
+                mainPanel={
+                  <div className="w-full h-full min-w-0 min-h-0 overflow-hidden">
+                    {profile ? <StatsPanel profile={profile} /> : <div className="w-full h-full min-w-0 min-h-0" />}
+                  </div>
+                }
+              />
+            </div>
+          )}
         </div>
       </main>
 
-      <div className="md:hidden fixed left-1/2 bottom-4 -translate-x-1/2 z-[10010] w-[calc(100%-24px)] max-w-[420px]">
-        <div className="w-full rounded-2xl border border-border-primary bg-bg-secondary/95 backdrop-blur-[10px] p-2 flex items-center gap-2">
-          <button
-            type="button"
-            className={`flex-1 h-[44px] rounded-xl border text-[12px] font-bold font-primary transition-colors ${
-              mobilePanel === 'ranking'
-                ? 'bg-accent-green text-bg-primary border-accent-green'
-                : 'bg-bg-card border-border-secondary text-text-primary'
-            }`}
-            onClick={() => setMobilePanel((prev) => (prev === 'ranking' ? null : 'ranking'))}
-            aria-pressed={mobilePanel === 'ranking'}
-          >
-            {t('ranking.title')}
-          </button>
-          <button
-            type="button"
-            className={`flex-1 h-[44px] rounded-xl border text-[12px] font-bold font-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
-              mobilePanel === 'stats'
-                ? 'bg-accent-blue text-bg-primary border-accent-blue'
-                : 'bg-bg-card border-border-secondary text-text-primary'
-            }`}
-            onClick={() => setMobilePanel((prev) => (prev === 'stats' ? null : 'stats'))}
-            aria-pressed={mobilePanel === 'stats'}
-            disabled={!profile}
-          >
-            {t('stats.tabStats')}
-          </button>
-        </div>
-      </div>
-
-      {mobilePanel && (
-        <div
-          className="md:hidden fixed inset-0 z-[10020] bg-black/75 backdrop-blur-lg"
-          role="presentation"
-          onClick={() => setMobilePanel(null)}
-        >
+      {compactPanelMode && mobilePanel && (
+        <div className="absolute left-3 right-3 top-full mt-2 z-[10020]">
           <div
-            className="absolute inset-x-0 bottom-0 h-[min(78vh,720px)] rounded-t-[24px] border border-border-primary bg-bg-primary p-3 pb-5 flex flex-col gap-3"
+            className="rounded-[20px] border border-border-primary bg-bg-primary shadow-[0_24px_70px_rgba(0,0,0,0.55)] p-3 pb-5 flex flex-col gap-3"
             role="dialog"
             aria-modal="true"
             aria-label={mobilePanel === 'ranking' ? t('ranking.title') : t('stats.title')}
-            onClick={(event) => event.stopPropagation()}
           >
             <div className="flex items-center justify-between px-1">
               <h2 className="m-0 text-[18px] font-bold font-primary text-text-primary">

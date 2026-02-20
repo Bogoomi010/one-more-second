@@ -9,6 +9,30 @@ interface NewStatsPanelProps {
 
 type TabType = 'stats' | 'trophy';
 
+const DAILY_CHALLENGE_PROGRESS_WIDTH_CLASSES: Record<number, string> = {
+  0: 'w-[0%]',
+  5: 'w-[5%]',
+  10: 'w-[10%]',
+  15: 'w-[15%]',
+  20: 'w-[20%]',
+  25: 'w-[25%]',
+  30: 'w-[30%]',
+  35: 'w-[35%]',
+  40: 'w-[40%]',
+  45: 'w-[45%]',
+  50: 'w-[50%]',
+  55: 'w-[55%]',
+  60: 'w-[60%]',
+  65: 'w-[65%]',
+  70: 'w-[70%]',
+  75: 'w-[75%]',
+  80: 'w-[80%]',
+  85: 'w-[85%]',
+  90: 'w-[90%]',
+  95: 'w-[95%]',
+  100: 'w-[100%]',
+};
+
 export default function NewStatsPanel({ profile }: NewStatsPanelProps) {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<TabType>('stats');
@@ -56,10 +80,15 @@ export default function NewStatsPanel({ profile }: NewStatsPanelProps) {
   const bestTime = formatBestTime(profile.bestScore);
   const avgSurvival = Math.floor(profile.totalSecondsSurvived / Math.max(1, profile.totalRuns));
   const challengeProgress = Math.min((profile.bestScore / profile.dailyChallenge.targetSeconds) * 100, 100);
+  const challengeWidthStep = Math.max(0, Math.min(100, Math.round(challengeProgress / 5) * 5));
   const ownedSkinCount = Math.max(
     1,
     (profile.ownedPlayerSkins?.length ?? 0) + (profile.ownedBulletSkins?.length ?? 0) - 1
   );
+  const dodgeRate =
+    profile.totalBulletsSpawned > 0
+      ? (profile.totalBulletsDodged / profile.totalBulletsSpawned) * 100
+      : 0;
 
   return (
     <div className="w-full h-full min-w-0 min-h-0 overflow-y-auto bg-bg-secondary border border-border-primary rounded-[24px] p-6 flex flex-col gap-4 backdrop-blur-[10px] font-primary">
@@ -129,6 +158,46 @@ export default function NewStatsPanel({ profile }: NewStatsPanelProps) {
                 </div>
                 <div className="text-ui-value font-bold text-rose-400 font-secondary">
                   {profile.coins}
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-4">
+              <div className="flex-1 rounded-2xl p-2 bg-bg-card border border-bg-card flex flex-col gap-2">
+                <div className="text-ui-tab font-black text-text-placeholder font-secondary tracking-wide">
+                  {t('stats.deaths')}
+                </div>
+                <div className="text-ui-value font-bold text-rose-400 font-secondary">
+                  {profile.totalDeaths}
+                </div>
+              </div>
+
+              <div className="flex-1 rounded-2xl p-2 bg-bg-card border border-bg-card flex flex-col gap-2">
+                <div className="text-ui-tab font-black text-text-placeholder font-secondary tracking-wide">
+                  {t('stats.bulletsDodged')}
+                </div>
+                <div className="text-ui-value font-bold text-accent-blue font-secondary">
+                  {profile.totalBulletsDodged}
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-4">
+              <div className="flex-1 rounded-2xl p-2 bg-bg-card border border-bg-card flex flex-col gap-2">
+                <div className="text-ui-tab font-black text-text-placeholder font-secondary tracking-wide">
+                  {t('stats.bulletsHit')}
+                </div>
+                <div className="text-ui-value font-bold text-rose-400 font-secondary">
+                  {profile.totalBulletsHit}
+                </div>
+              </div>
+
+              <div className="flex-1 rounded-2xl p-2 bg-bg-card border border-bg-card flex flex-col gap-2">
+                <div className="text-ui-tab font-black text-text-placeholder font-secondary tracking-wide">
+                  {t('stats.bulletDodgeRate')}
+                </div>
+                <div className="text-ui-value font-bold text-accent-green font-secondary">
+                  {dodgeRate.toFixed(1)}%
                 </div>
               </div>
             </div>
@@ -207,8 +276,7 @@ export default function NewStatsPanel({ profile }: NewStatsPanelProps) {
 
             <div className="w-full h-1.5 bg-bg-card rounded-[3px] overflow-hidden">
               <div
-                className="h-full bg-accent-blue rounded-[3px] transition-all duration-300"
-                style={{ width: `${challengeProgress}%` }}
+                className={`h-full bg-accent-blue rounded-[3px] transition-all duration-300 ${DAILY_CHALLENGE_PROGRESS_WIDTH_CLASSES[challengeWidthStep]}`}
               />
             </div>
           </div>

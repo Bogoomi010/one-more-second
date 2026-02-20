@@ -1,9 +1,12 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Application, Graphics, Rectangle, Sprite, Texture } from 'pixi.js';
 import { sound } from '@pixi/sound';
 import { GameResult, GameplayModifierId } from '../../../gameSystem/types';
 import { loadSettings, SETTINGS_UPDATED_EVENT } from '../../../gameSystem/settings';
 import { audioManager } from '../../../gameSystem/audio';
+import countdownOneImage from '../../../assets/icon-countdown-one.png';
+import countdownThreeImage from '../../../assets/icon-countdown-three.png';
+import countdownTwoImage from '../../../assets/icon-countdown-two.png';
 import {
   MODIFIER_BULLET_SKIN,
   calculateScoreBreakdown,
@@ -22,11 +25,20 @@ const CROSSLINE_FIRE_INTERVAL_MS = 3000;
 const CRITICAL_SHOT_FIRE_INTERVAL_MS = 4500;
 const CROSSLINE_MAX_LANES = 2;
 const CROSSLINE_LANE_RATIOS = [0.2, 0.35, 0.5, 0.65, 0.8] as const;
+const PLAYER_BOUNDS_MARGIN = 6;
 const INITIAL_SPAWN_INTERVAL = 500;
 const INTERVAL_DECREASE = 50;
 const MIN_SPAWN_INTERVAL = 100;
 const DIFFICULTY_INTERVAL = 3000;
-const PIXI_BGM_ALIAS = 'oms-main-bgm';
+const AI_DANGER_DISTANCE = 220;
+const AI_MOVE_SPEED_MULTIPLIER = 0.82;
+const AI_SIDE_SWITCH_MS = 920;
+const AI_WALL_EVASION_PADDING = 26;
+const AI_CENTER_PULL_STRENGTH = 0.62;
+const AI_IDLE_ORBIT_STRENGTH = 0.18;
+export const PIXI_BGM_ALIAS = 'oms-main-bgm';
+const DESKTOP_CANVAS_ASPECT_RATIO = 1;
+const MOBILE_CANVAS_BREAKPOINT_PX = 768;
 const MOVEMENT_CODES = new Set([
   'ArrowLeft',
   'ArrowRight',
@@ -38,6 +50,32 @@ const MOVEMENT_CODES = new Set([
   'KeyD',
 ]);
 
+const CANVAS_ASPECT_CLASS_BY_RATIO: Record<string, string> = {
+  '0.6': 'aspect-[0.6]',
+  '0.7': 'aspect-[0.7]',
+  '0.8': 'aspect-[0.8]',
+  '0.9': 'aspect-[0.9]',
+  '1.0': 'aspect-[1]',
+  '1.1': 'aspect-[1.1]',
+  '1.2': 'aspect-[1.2]',
+  '1.3': 'aspect-[1.3]',
+  '1.4': 'aspect-[1.4]',
+  '1.5': 'aspect-[1.5]',
+  '1.6': 'aspect-[1.6]',
+  '1.7': 'aspect-[1.7]',
+  '1.8': 'aspect-[1.8]',
+  '1.9': 'aspect-[1.9]',
+  '2.0': 'aspect-[2]',
+  '2.1': 'aspect-[2.1]',
+  '2.2': 'aspect-[2.2]',
+};
+
+function getCanvasAspectClass(ratio: number): string {
+  const clamped = Math.max(0.6, Math.min(2.2, ratio));
+  const rounded = (Math.round(clamped * 10) / 10).toFixed(1);
+  return CANVAS_ASPECT_CLASS_BY_RATIO[rounded] ?? CANVAS_ASPECT_CLASS_BY_RATIO['1.0'];
+}
+
 interface GameCanvasProps {
   onGameOver: (result: GameResult) => void;
   onLivesChange: (lives: number) => void;
@@ -48,6 +86,8 @@ interface GameCanvasProps {
   isModalOpen?: boolean;
   joystickVectorRef?: React.MutableRefObject<{ x: number; y: number }>;
   activeModifiers?: GameplayModifierId[];
+  countdown?: number | null;
+  isAiMode?: boolean;
 }
 
 type Bullet = {
@@ -82,6 +122,9 @@ type GameState = {
   gameOver: boolean;
   elapsedMs: number;
   lastScoreSec: number;
+  bulletsSpawned: number;
+  bulletsDodged: number;
+  bulletsHit: number;
   lives: number;
   hits: number;
   spawnInterval: number;
@@ -95,6 +138,7 @@ type GameState = {
   viewportWidth: number;
   viewportHeight: number;
   playfield: Playfield;
+  spawnArea: Playfield;
 };
 
 function resolveBgmVolume(): number {
@@ -113,6 +157,23 @@ function resolveTouchControls() {
     responseAlphaActive: 0.2 + normalizedSpeed * 0.28,
     responseAlphaRelease: 0.16 + normalizedSpeed * 0.2,
   };
+}
+
+function isMobileCanvasViewport(): boolean {
+  if (typeof window === 'undefined') return false;
+  const isNarrowScreen = window.innerWidth <= MOBILE_CANVAS_BREAKPOINT_PX;
+  const isCoarsePointer =
+    typeof window.matchMedia === 'function' && window.matchMedia('(pointer: coarse)').matches;
+  return isNarrowScreen || isCoarsePointer;
+}
+
+function resolveCanvasAspectRatio(): number {
+  if (!isMobileCanvasViewport()) return DESKTOP_CANVAS_ASPECT_RATIO;
+
+  const width = Math.max(1, window.innerWidth);
+  const height = Math.max(1, window.innerHeight);
+  const viewportRatio = width / height;
+  return Math.max(0.6, Math.min(2.2, viewportRatio));
 }
 
 function isPromise<T>(value: T | Promise<T>): value is Promise<T> {
@@ -148,6 +209,8 @@ function GameCanvasComponent({
   isModalOpen = false,
   joystickVectorRef,
   activeModifiers = [],
+  countdown = null,
+  isAiMode = false,
 }: GameCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const onGameOverRef = useRef(onGameOver);
@@ -156,6 +219,25 @@ function GameCanvasComponent({
   const onSpawnIntervalChangeRef = useRef(onSpawnIntervalChange);
   const isModalOpenRef = useRef(isModalOpen);
   const joystickVectorSourceRef = useRef(joystickVectorRef);
+  const fpsLimitRef = useRef<number>(0);
+  const frameAccumulatorRef = useRef(0);
+  const countdownRef = useRef<number | null>(null);
+  const [canvasAspectRatio, setCanvasAspectRatio] = useState(resolveCanvasAspectRatio);
+
+  useEffect(() => {
+    const updateAspectRatio = () => {
+      setCanvasAspectRatio(resolveCanvasAspectRatio());
+    };
+
+    updateAspectRatio();
+    window.addEventListener('resize', updateAspectRatio);
+    window.addEventListener('orientationchange', updateAspectRatio);
+
+    return () => {
+      window.removeEventListener('resize', updateAspectRatio);
+      window.removeEventListener('orientationchange', updateAspectRatio);
+    };
+  }, []);
 
   useEffect(() => {
     onGameOverRef.current = onGameOver;
@@ -168,6 +250,10 @@ function GameCanvasComponent({
   useEffect(() => {
     joystickVectorSourceRef.current = joystickVectorRef;
   }, [joystickVectorRef]);
+
+  useEffect(() => {
+    countdownRef.current = countdown ?? null;
+  }, [countdown]);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -203,6 +289,11 @@ function GameCanvasComponent({
     const playerTexture = Texture.from(playerImage);
     const bulletTexture = Texture.from(bulletImage);
     const gimmickBulletTexture = Texture.from(MODIFIER_BULLET_SKIN);
+    const countdownTextures: Record<number, Texture> = {
+      1: Texture.from(countdownOneImage),
+      2: Texture.from(countdownTwoImage),
+      3: Texture.from(countdownThreeImage),
+    };
 
     const playerSprite = new Sprite(playerTexture);
     playerSprite.anchor.set(0.5);
@@ -210,11 +301,17 @@ function GameCanvasComponent({
     playerSprite.height = PLAYER_SIZE;
     stage.addChild(playerSprite);
 
+    const countdownSprite = new Sprite();
+    countdownSprite.anchor.set(0.5);
+    countdownSprite.visible = false;
+    stage.addChild(countdownSprite);
+
     const initialPlayfield = createPlayfield(
       app.screen.width,
       app.screen.height,
       modifierEffects.playfieldScale
     );
+    const initialSpawnArea = createPlayfield(app.screen.width, app.screen.height, 1);
 
     const state: GameState = {
       player: {
@@ -226,6 +323,9 @@ function GameCanvasComponent({
       gameOver: false,
       elapsedMs: 0,
       lastScoreSec: 0,
+      bulletsSpawned: 0,
+      bulletsDodged: 0,
+      bulletsHit: 0,
       lives: modifierEffects.startingLives,
       hits: 0,
       spawnInterval: INITIAL_SPAWN_INTERVAL,
@@ -239,6 +339,7 @@ function GameCanvasComponent({
       viewportWidth: app.screen.width,
       viewportHeight: app.screen.height,
       playfield: initialPlayfield,
+      spawnArea: initialSpawnArea,
     };
 
     const touchControls = {
@@ -255,10 +356,21 @@ function GameCanvasComponent({
       touchControls.responseAlphaRelease = next.responseAlphaRelease;
     };
 
+    const syncFpsLimit = () => {
+      const settings = loadSettings();
+      fpsLimitRef.current = settings.graphics.fpsLimit;
+      frameAccumulatorRef.current = 0;
+    };
+
+    const syncCanvasSettings = () => {
+      syncTouchControls();
+      syncFpsLimit();
+    };
+
     onLivesChangeRef.current(modifierEffects.startingLives);
     onScoreChangeRef.current(0);
     onSpawnIntervalChangeRef.current(INITIAL_SPAWN_INTERVAL);
-    syncTouchControls();
+    syncCanvasSettings();
 
     void audioManager.init();
     let destroyed = false;
@@ -274,6 +386,8 @@ function GameCanvasComponent({
     }
 
     const resumeAllAudioContexts = () => {
+      if (!audioManager.canPlayAudioNow()) return;
+
       audioManager.resume();
       const pixiAudioContext = sound.context?.audioContext;
       if (pixiAudioContext && pixiAudioContext.state === 'suspended') {
@@ -310,6 +424,7 @@ function GameCanvasComponent({
 
     const unlockAndPlayAudio = () => {
       if (state.gameOver) return;
+      audioManager.markUserInteraction();
       void audioManager.init();
       resumeAllAudioContexts();
       ensureBgmPlayback();
@@ -317,7 +432,11 @@ function GameCanvasComponent({
 
     const stopBgm = () => {
       if (sound.exists(PIXI_BGM_ALIAS)) {
-        sound.stop(PIXI_BGM_ALIAS);
+        try {
+          sound.stop(PIXI_BGM_ALIAS);
+        } catch (error) {
+          console.warn('Failed to stop BGM:', error);
+        }
       }
       audioManager.stopBGM();
     };
@@ -351,10 +470,11 @@ function GameCanvasComponent({
     };
 
     const clampPlayer = () => {
-      const maxX = state.playfield.right - PLAYER_SIZE / 2;
-      const maxY = state.playfield.bottom - PLAYER_SIZE / 2;
-      const minX = state.playfield.left + PLAYER_SIZE / 2;
-      const minY = state.playfield.top + PLAYER_SIZE / 2;
+      const halfSize = PLAYER_SIZE / 2;
+      const maxX = state.playfield.right - halfSize - PLAYER_BOUNDS_MARGIN;
+      const maxY = state.playfield.bottom - halfSize - PLAYER_BOUNDS_MARGIN;
+      const minX = state.playfield.left + halfSize + PLAYER_BOUNDS_MARGIN;
+      const minY = state.playfield.top + halfSize + PLAYER_BOUNDS_MARGIN;
       state.player.x = Math.max(minX, Math.min(maxX, state.player.x));
       state.player.y = Math.max(minY, Math.min(maxY, state.player.y));
     };
@@ -369,6 +489,7 @@ function GameCanvasComponent({
       state.viewportWidth = width;
       state.viewportHeight = height;
       state.playfield = createPlayfield(width, height, modifierEffects.playfieldScale);
+      state.spawnArea = createPlayfield(width, height, 1);
       drawBackground(width, height);
       clampPlayer();
     };
@@ -381,6 +502,7 @@ function GameCanvasComponent({
       bulletSprite.x = request.x;
       bulletSprite.y = request.y;
       stage.addChild(bulletSprite);
+      state.bulletsSpawned += 1;
 
       state.bullets.push({
         sprite: bulletSprite,
@@ -393,10 +515,11 @@ function GameCanvasComponent({
 
     const buildTrackingBulletRequest = (): SpawnRequest => {
       const margin = BULLET_RADIUS * 2;
-      const x = Math.random() * (state.playfield.width - margin * 2) + (state.playfield.left + margin);
+      const x =
+        Math.random() * (state.spawnArea.width - margin * 2) + (state.spawnArea.left + margin);
       const y = state.spawnFromTop
-        ? state.playfield.top + margin
-        : state.playfield.bottom - margin;
+        ? state.spawnArea.top + margin
+        : state.spawnArea.bottom - margin;
 
       const dx = state.player.x - x;
       const dy = state.player.y - y;
@@ -417,21 +540,23 @@ function GameCanvasComponent({
     const buildCriticalShotRequest = (): SpawnRequest => {
       const margin = BULLET_RADIUS * 2;
       const side = Math.floor(Math.random() * 4);
-      let x = state.playfield.left;
-      let y = state.playfield.top;
+      let x = state.spawnArea.left;
+      let y = state.spawnArea.top;
 
       if (side === 0) {
-        x = Math.random() * (state.playfield.width - margin * 2) + (state.playfield.left + margin);
-        y = state.playfield.top - BULLET_RADIUS;
+        x =
+          Math.random() * (state.spawnArea.width - margin * 2) + (state.spawnArea.left + margin);
+        y = state.spawnArea.top - BULLET_RADIUS;
       } else if (side === 1) {
-        x = Math.random() * (state.playfield.width - margin * 2) + (state.playfield.left + margin);
-        y = state.playfield.bottom + BULLET_RADIUS;
+        x =
+          Math.random() * (state.spawnArea.width - margin * 2) + (state.spawnArea.left + margin);
+        y = state.spawnArea.bottom + BULLET_RADIUS;
       } else if (side === 2) {
-        x = state.playfield.left - BULLET_RADIUS;
-        y = Math.random() * (state.playfield.height - margin * 2) + (state.playfield.top + margin);
+        x = state.spawnArea.left - BULLET_RADIUS;
+        y = Math.random() * (state.spawnArea.height - margin * 2) + (state.spawnArea.top + margin);
       } else {
-        x = state.playfield.right + BULLET_RADIUS;
-        y = Math.random() * (state.playfield.height - margin * 2) + (state.playfield.top + margin);
+        x = state.spawnArea.right + BULLET_RADIUS;
+        y = Math.random() * (state.spawnArea.height - margin * 2) + (state.spawnArea.top + margin);
       }
 
       const dx = state.player.x - x;
@@ -451,12 +576,12 @@ function GameCanvasComponent({
     const buildCrosslineRequests = (): SpawnRequest[] => {
       if (!modifierEffects.crosslineSpawn) return [];
 
-      const mapLeft = state.playfield.left;
-      const mapTop = state.playfield.top;
-      const mapRight = state.playfield.right;
-      const mapBottom = state.playfield.bottom;
-      const mapWidth = state.playfield.width;
-      const mapHeight = state.playfield.height;
+      const mapLeft = state.spawnArea.left;
+      const mapTop = state.spawnArea.top;
+      const mapRight = state.spawnArea.right;
+      const mapBottom = state.spawnArea.bottom;
+      const mapWidth = state.spawnArea.width;
+      const mapHeight = state.spawnArea.height;
 
       const lanePool = [...CROSSLINE_LANE_RATIOS];
       for (let i = lanePool.length - 1; i > 0; i -= 1) {
@@ -500,9 +625,107 @@ function GameCanvasComponent({
       appendBullet(buildCriticalShotRequest());
     };
 
-    const removeBulletAt = (index: number) => {
+    const resolveAiMovement = () => {
+      if (!isAiMode) {
+        return { x: 0, y: 0 };
+      }
+
+      const dangerLimitSq = AI_DANGER_DISTANCE * AI_DANGER_DISTANCE;
+      let steerX = 0;
+      let steerY = 0;
+      let threatCount = 0;
+      const centerX = (state.playfield.left + state.playfield.right) / 2;
+      const centerY = (state.playfield.top + state.playfield.bottom) / 2;
+      const playfieldWidth = state.playfield.right - state.playfield.left;
+      const playfieldHeight = state.playfield.bottom - state.playfield.top;
+      const centerPullX = ((centerX - state.player.x) / Math.max(1, playfieldWidth)) * AI_CENTER_PULL_STRENGTH;
+      const centerPullY = ((centerY - state.player.y) / Math.max(1, playfieldHeight)) * AI_CENTER_PULL_STRENGTH;
+
+      steerX += centerPullX;
+      steerY += centerPullY;
+
+      for (let i = 0; i < state.bullets.length; i += 1) {
+        const bullet = state.bullets[i];
+        const dx = state.player.x - bullet.x;
+        const dy = state.player.y - bullet.y;
+        const distanceSq = dx * dx + dy * dy;
+
+        if (distanceSq > dangerLimitSq) continue;
+
+        const distance = Math.sqrt(distanceSq) || 1;
+        const urgency = 1 - Math.min(1, distance / AI_DANGER_DISTANCE);
+        const avoidWeight = 0.25 + urgency * 1.0;
+        const awayX = dx / distance;
+        const awayY = dy / distance;
+
+        steerX += awayX * avoidWeight;
+        steerY += awayY * avoidWeight;
+
+        const perpX = -awayY;
+        const perpY = awayX;
+        const perpLen = Math.max(1, Math.hypot(perpX, perpY));
+        const sideSign = Math.sin(state.elapsedMs / AI_SIDE_SWITCH_MS) >= 0 ? 1 : -1;
+
+        steerX += (perpX / perpLen) * (0.35 + urgency * 0.8) * sideSign;
+        steerY += (perpY / perpLen) * (0.35 + urgency * 0.8) * sideSign;
+        threatCount += 1;
+      }
+
+      const leftWall = state.playfield.left + AI_WALL_EVASION_PADDING;
+      const rightWall = state.playfield.right - AI_WALL_EVASION_PADDING;
+      const topWall = state.playfield.top + AI_WALL_EVASION_PADDING;
+      const bottomWall = state.playfield.bottom - AI_WALL_EVASION_PADDING;
+      const wallRepelStrength = 0.95;
+      const wallRepelRange = AI_WALL_EVASION_PADDING * 1.35;
+
+      if (state.player.x < leftWall) {
+        const proximity = Math.min(1, (leftWall - state.player.x) / wallRepelRange);
+        steerX += wallRepelStrength * (0.2 + 0.8 * proximity);
+      }
+      if (state.player.x > rightWall) {
+        const proximity = Math.min(1, (state.player.x - rightWall) / wallRepelRange);
+        steerX -= wallRepelStrength * (0.2 + 0.8 * proximity);
+      }
+      if (state.player.y < topWall) {
+        const proximity = Math.min(1, (topWall - state.player.y) / wallRepelRange);
+        steerY += wallRepelStrength * (0.2 + 0.8 * proximity);
+      }
+      if (state.player.y > bottomWall) {
+        const proximity = Math.min(1, (state.player.y - bottomWall) / wallRepelRange);
+        steerY -= wallRepelStrength * (0.2 + 0.8 * proximity);
+      }
+
+      if (threatCount === 0) {
+        const angle = state.elapsedMs / 1400;
+        steerX += Math.cos(angle) * AI_IDLE_ORBIT_STRENGTH;
+        steerY += Math.sin(angle * 0.92) * AI_IDLE_ORBIT_STRENGTH;
+      }
+
+      const magnitude = Math.hypot(steerX, steerY);
+      if (magnitude > 0.0001) {
+        return {
+          x: steerX / magnitude,
+          y: steerY / magnitude,
+        };
+      }
+
+      return {
+        x: 1,
+        y: 0,
+      };
+    };
+
+    const removeBulletAt = (
+      index: number,
+      reason: 'hit' | 'dodged'
+    ) => {
       const [removed] = state.bullets.splice(index, 1);
       if (!removed) return;
+      if (reason === 'hit') {
+        state.bulletsHit += 1;
+      } else if (reason === 'dodged') {
+        state.bulletsDodged += 1;
+      }
       stage.removeChild(removed.sprite);
       removed.sprite.destroy();
     };
@@ -529,6 +752,10 @@ function GameCanvasComponent({
         onGameOverRef.current({
           scoreSeconds: elapsedSeconds,
           hitsTaken: state.hits,
+          bulletsSpawned: state.bulletsSpawned,
+          bulletsDodged: state.bulletsDodged,
+          bulletsHit: state.bulletsHit,
+          deaths: 1,
           firstHitSeconds: state.firstHitSeconds,
           ...scoreBreakdown,
           usedGimmicks: enabledModifiers.map((modifier) => ({
@@ -540,15 +767,57 @@ function GameCanvasComponent({
       }
     };
 
+    const updateCountdownSprite = () => {
+      const countdownValue = countdownRef.current;
+      if (countdownValue === null) {
+        countdownSprite.visible = false;
+        return;
+      }
+
+      const countdownTexture = countdownTextures[countdownValue];
+      if (!countdownTexture) {
+        countdownSprite.visible = false;
+        return;
+      }
+
+      const baseSize = Math.min(app.screen.width, app.screen.height) * 0.35;
+      const hasTextureDimensions =
+        countdownTexture.width > 0 && countdownTexture.height > 0;
+
+      if (hasTextureDimensions) {
+        const ratio = countdownTexture.height / countdownTexture.width;
+        countdownSprite.width = baseSize;
+        countdownSprite.height = baseSize * ratio;
+      } else {
+        countdownSprite.width = baseSize;
+        countdownSprite.height = baseSize;
+      }
+
+      countdownSprite.texture = countdownTexture;
+      countdownSprite.x = app.screen.width / 2;
+      countdownSprite.y = app.screen.height / 2;
+      countdownSprite.visible = true;
+    };
+
     const update = (deltaTimeSec: number) => {
       if (state.gameOver || isModalOpenRef.current) return;
+      if (countdownRef.current !== null) return;
 
       const deltaMs = deltaTimeSec * 1000;
       state.elapsedMs += deltaMs;
       state.hitFlashRemainingMs = Math.max(0, state.hitFlashRemainingMs - deltaMs);
 
       const moveDistance = PLAYER_SPEED * deltaTimeSec;
-      if (joystickVectorSourceRef.current) {
+      if (isAiMode) {
+        const aiMovement = resolveAiMovement();
+        const aiLength = Math.hypot(aiMovement.x, aiMovement.y);
+        if (aiLength > 0.0001) {
+          state.player.x +=
+            (aiMovement.x / aiLength) * moveDistance * AI_MOVE_SPEED_MULTIPLIER;
+          state.player.y +=
+            (aiMovement.y / aiLength) * moveDistance * AI_MOVE_SPEED_MULTIPLIER;
+        }
+      } else if (joystickVectorSourceRef.current) {
         const joystickVector = joystickVectorSourceRef.current.current;
         const targetX = joystickVector?.x ?? 0;
         const targetY = joystickVector?.y ?? 0;
@@ -583,20 +852,20 @@ function GameCanvasComponent({
 
         const distance = Math.hypot(state.player.x - bullet.x, state.player.y - bullet.y);
         if (distance < BULLET_RADIUS + PLAYER_SIZE / 2) {
-          removeBulletAt(i);
+          removeBulletAt(i, 'hit');
           triggerHit();
           if (state.gameOver) return;
           continue;
         }
 
         const outOfBounds =
-          bullet.x < state.playfield.left - BULLET_SIZE ||
-          bullet.x > state.playfield.right + BULLET_SIZE ||
-          bullet.y < state.playfield.top - BULLET_SIZE ||
-          bullet.y > state.playfield.bottom + BULLET_SIZE;
+          bullet.x < state.spawnArea.left - BULLET_SIZE ||
+          bullet.x > state.spawnArea.right + BULLET_SIZE ||
+          bullet.y < state.spawnArea.top - BULLET_SIZE ||
+          bullet.y > state.spawnArea.bottom + BULLET_SIZE;
 
         if (outOfBounds) {
-          removeBulletAt(i);
+          removeBulletAt(i, 'dodged');
         }
       }
 
@@ -682,15 +951,28 @@ function GameCanvasComponent({
 
     const ticker = () => {
       syncViewport();
-      const deltaTime = Math.min(app.ticker.deltaMS / 1000, 0.05);
-      update(deltaTime);
+      const clampedDeltaMs = Math.min(app.ticker.deltaMS, 50);
+      updateCountdownSprite();
+
+      if (fpsLimitRef.current > 0) {
+        frameAccumulatorRef.current += clampedDeltaMs;
+        const targetFrameMs = 1000 / fpsLimitRef.current;
+        if (frameAccumulatorRef.current < targetFrameMs) return;
+        frameAccumulatorRef.current -= targetFrameMs;
+        update(targetFrameMs / 1000);
+      } else {
+        frameAccumulatorRef.current = 0;
+        update(clampedDeltaMs / 1000);
+      }
       render();
     };
 
     drawBackground(state.viewportWidth, state.viewportHeight);
-    // GamePanel countdown ends before this component mounts, so mount-time attempt aligns BGM with game start.
-    resumeAllAudioContexts();
-    ensureBgmPlayback();
+    // Try auto-resume only if user interaction was already confirmed for audio playback.
+    if (audioManager.canPlayAudioNow()) {
+      resumeAllAudioContexts();
+      ensureBgmPlayback();
+    }
     app.ticker.add(ticker);
     view.addEventListener('pointerdown', handlePointerDown);
     window.addEventListener('pointerdown', unlockAndPlayAudio);
@@ -700,7 +982,7 @@ function GameCanvasComponent({
     view.addEventListener('keydown', handleKeyDown);
     view.addEventListener('keyup', handleKeyUp);
     view.addEventListener('blur', handleBlur);
-    window.addEventListener(SETTINGS_UPDATED_EVENT, syncTouchControls as EventListener);
+    window.addEventListener(SETTINGS_UPDATED_EVENT, syncCanvasSettings as EventListener);
 
     focusCanvas();
 
@@ -715,12 +997,12 @@ function GameCanvasComponent({
       view.removeEventListener('keydown', handleKeyDown);
       view.removeEventListener('keyup', handleKeyUp);
       view.removeEventListener('blur', handleBlur);
-      window.removeEventListener(SETTINGS_UPDATED_EVENT, syncTouchControls as EventListener);
+      window.removeEventListener(SETTINGS_UPDATED_EVENT, syncCanvasSettings as EventListener);
       state.bullets.forEach((bullet) => bullet.sprite.destroy());
       stopBgm();
       app.destroy(true, true);
     };
-  }, [activeModifiers, bulletImage, playerImage]);
+  }, [activeModifiers, bulletImage, playerImage, isAiMode]);
 
   const handleCanvasDoubleClick = (event: React.MouseEvent<HTMLDivElement>) => {
     event.preventDefault();
@@ -734,14 +1016,9 @@ function GameCanvasComponent({
   return (
     <div
       ref={containerRef}
-      className="w-full h-full min-h-[320px] sm:min-h-[422px] bg-zinc-900 border-2 border-zinc-800 rounded-xl overflow-hidden cursor-none select-none"
-      style={{
-        touchAction: 'manipulation',
-        WebkitTapHighlightColor: 'transparent',
-        userSelect: 'none',
-        WebkitUserSelect: 'none',
-        WebkitTouchCallout: 'none',
-      }}
+      className={`w-full h-auto max-h-full max-w-full bg-zinc-900 border-2 border-zinc-800 rounded-xl overflow-hidden cursor-none select-none touch-manipulation ${getCanvasAspectClass(
+        canvasAspectRatio
+      )} [-webkit-tap-highlight-color:transparent] [-webkit-user-select:none] [-webkit-touch-callout:none]`}
       onDoubleClick={handleCanvasDoubleClick}
       onContextMenu={handleCanvasContextMenu}
     />
@@ -753,6 +1030,8 @@ export default React.memo(GameCanvasComponent, (prevProps, nextProps) => {
     prevProps.playerImage === nextProps.playerImage &&
     prevProps.bulletImage === nextProps.bulletImage &&
     prevProps.isModalOpen === nextProps.isModalOpen &&
-    prevProps.joystickVectorRef === nextProps.joystickVectorRef
+    prevProps.isAiMode === nextProps.isAiMode &&
+    prevProps.joystickVectorRef === nextProps.joystickVectorRef &&
+    prevProps.countdown === nextProps.countdown
   );
 });

@@ -1,5 +1,5 @@
-import React, { useMemo, useState } from 'react';
-import NewGamePanel from '../../components/GamePanel';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import NewGamePanel from './components/GamePanel';
 import ScoreSubmitModal from './components/ScoreSubmitModal';
 import {
   applyAchievements,
@@ -12,6 +12,7 @@ import {
 } from '../../gameSystem';
 import { GameResult, GameplayModifierId, PlayerProfile } from '../../gameSystem/types';
 import { syncLocalProfileToCloud, UserIdentityProfile } from '../../services/userDataService';
+import { normalizeIntegerScore, SCORE_LIMITS } from '../../utils/validation';
 
 interface GameProps {
   profile: PlayerProfile;
@@ -21,10 +22,15 @@ interface GameProps {
   isSystemMenuOpen?: boolean;
   activeModifiers?: GameplayModifierId[];
   onDifficultyClick?: () => void;
+  isCompactGameLayout?: boolean;
   profileIdentity: UserIdentityProfile | null;
   isProfileSetupOpen: boolean;
   identityLoading: boolean;
   onRequestProfileSetup: () => void;
+  onAchievementsUnlocked?: (achievementIds: string[]) => void;
+  isAiMode?: boolean;
+  onAiModeChange?: (next: boolean) => void;
+  canUseAiMode?: boolean;
 }
 
 export default function Game({
@@ -35,11 +41,17 @@ export default function Game({
   isSystemMenuOpen = false,
   activeModifiers = [],
   onDifficultyClick,
+  isCompactGameLayout = false,
   profileIdentity,
   isProfileSetupOpen,
   identityLoading,
   onRequestProfileSetup,
+  onAchievementsUnlocked,
+  isAiMode = false,
+  onAiModeChange,
+  canUseAiMode = false,
 }: GameProps) {
+  const [isAiModeState, setIsAiModeState] = useState<boolean>(isAiMode);
   const [score, setScore] = useState(0);
   const [normalScore, setNormalScore] = useState(0);
   const [isNewHighScore, setIsNewHighScore] = useState(false);
@@ -55,14 +67,35 @@ export default function Game({
     [profile.selectedBulletSkinId]
   );
 
+  useEffect(() => {
+    if (onAiModeChange) return;
+    setIsAiModeState(isAiMode);
+  }, [isAiMode, onAiModeChange]);
+
+  const isAiModeValue = onAiModeChange ? isAiMode : isAiModeState;
+  const setAiMode = (next: boolean) => {
+    if (onAiModeChange) {
+      onAiModeChange(next);
+      return;
+    }
+    setIsAiModeState(next);
+  };
+
   const handleGameOver = (result: GameResult) => {
-    const finalRunScore = result.finalScore ?? result.scoreSeconds;
-    const baseRunScore = result.baseScore ?? result.scoreSeconds;
+    const finalRunScore = normalizeIntegerScore(result.finalScore ?? result.scoreSeconds, {
+      min: 0,
+      max: SCORE_LIMITS.maxScore,
+    });
+    const baseRunScore = normalizeIntegerScore(result.baseScore ?? result.scoreSeconds, {
+      min: 0,
+      max: SCORE_LIMITS.maxNormalScore,
+    });
     setScore(finalRunScore);
     setNormalScore(baseRunScore);
-    setIsNewHighScore(result.scoreSeconds > profile.bestScore);
+    setIsNewHighScore(finalRunScore > profile.bestScore);
 
     // 프로필 업데이트 (코인/통계/업적/데일리)
+    const beforeAchievementIds = new Set(Object.keys(profile.achievements));
     let next = ensureDailyChallenge(profile);
 
     const { profile: afterRun, runReward } = applyRunToProfile(next, result);
@@ -72,12 +105,18 @@ export default function Game({
     next = afterDaily;
 
     const coinsBeforeAchievementRewards = next.coins;
-    next = applyAchievements(next, result);
+    next = applyAchievements(next, result, coinsBeforeAchievementRewards);
+    const unlockedAchievementIds = Object.keys(next.achievements).filter(
+      (id) => !beforeAchievementIds.has(id)
+    );
     const achievementReward = Math.max(0, next.coins - coinsBeforeAchievementRewards);
+    if (unlockedAchievementIds.length > 0) {
+      onAchievementsUnlocked?.(unlockedAchievementIds);
+    }
 
     saveProfile(next);
     setProfile(next);
-    void syncLocalProfileToCloud(next);
+    void syncLocalProfileToCloud(next, { unlockedAchievementIds });
 
     const lines: string[] = [];
     lines.push(`+${runReward} coins`);
@@ -88,13 +127,23 @@ export default function Game({
     setShowScoreModal(true);
   };
 
-  const handleRestartGame = () => {
+  const handleRestartGame = useCallback(() => {
     setScore(0);
     setNormalScore(0);
     setIsNewHighScore(false);
     setShowScoreModal(false);
     setLastRunMessage([]);
-  };
+  }, []);
+
+  useEffect(() => {
+    if (!isAiModeValue || !showScoreModal) return;
+
+    const timerId = window.setTimeout(() => {
+      handleRestartGame();
+    }, 300);
+
+    return () => window.clearTimeout(timerId);
+  }, [handleRestartGame, isAiModeValue, showScoreModal]);
 
   return (
     <>
@@ -105,7 +154,11 @@ export default function Game({
         onGameOver={handleGameOver}
         isModalOpen={showScoreModal || isSystemMenuOpen}
         activeModifiers={activeModifiers}
+        isAiMode={isAiModeValue}
+        canUseAiMode={canUseAiMode}
+        onAiModeChange={setAiMode}
         onDifficultyClick={onDifficultyClick}
+        isCompactGameLayout={isCompactGameLayout}
       />
 
       <ScoreSubmitModal

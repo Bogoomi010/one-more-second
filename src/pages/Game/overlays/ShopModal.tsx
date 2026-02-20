@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useId, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   BULLET_SKINS,
@@ -9,6 +9,7 @@ import {
 } from '../../../gameSystem';
 import { BulletSkinId, PlayerProfile, PlayerSkinId } from '../../../gameSystem/types';
 import { syncLocalProfileToCloud } from '../../../services/userDataService';
+import { useModalAccessibility } from '../../../components/useModalAccessibility';
 
 type ShopSkinTab = 'player' | 'bullet';
 
@@ -29,6 +30,16 @@ function getShopPrice(priceCoins: number): number {
 export default function ShopModal({ isOpen, onClose, profile, setProfile }: ShopModalProps) {
   const { t } = useTranslation();
   const [shopSkinTab, setShopSkinTab] = useState<ShopSkinTab>('player');
+  const dialogRef = useRef<HTMLDivElement | null>(null);
+  const titleId = useId();
+  const subtitleId = useId();
+
+  useModalAccessibility({
+    isOpen,
+    dialogRef,
+    onClose,
+    autoFocusSelector: '[data-modal-autofocus="shop-close"]',
+  });
 
   const getSkinName = (id: string, fallbackName: string) =>
     t(`skins.${id}`, { defaultValue: fallbackName });
@@ -85,16 +96,35 @@ export default function ShopModal({ isOpen, onClose, profile, setProfile }: Shop
   }
 
   return (
-    <div className="fixed inset-0 z-[10001] bg-black/75 backdrop-blur-lg flex items-center justify-center p-4">
-      <div className="w-[min(920px,calc(100vw-24px))] h-[min(760px,calc(100vh-24px))] rounded-[24px] border border-border-primary bg-bg-primary shadow-[0_24px_70px_rgba(0,0,0,0.55)] px-6 py-6 sm:px-8 sm:py-8 flex flex-col overflow-hidden">
+    <div
+      className="fixed inset-0 z-[10001] bg-black/75 backdrop-blur-lg flex items-center justify-center p-4"
+      onClick={onClose}
+    >
+      <div
+        ref={dialogRef}
+        className="w-[min(920px,calc(100vw-24px))] h-[min(760px,calc(100vh-24px))] rounded-[24px] border border-border-primary bg-bg-primary shadow-[0_24px_70px_rgba(0,0,0,0.55)] px-6 py-6 sm:px-8 sm:py-8 flex flex-col overflow-hidden"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        aria-describedby={subtitleId}
+        onClick={(event) => event.stopPropagation()}
+      >
         <div className="flex items-center justify-between mb-5">
           <div>
-            <h2 className="m-0 text-[28px] font-bold font-primary text-accent-green tracking-[1px]">{t('systemMenu.shop')}</h2>
-            <p className="m-0 mt-1 text-[12px] text-text-secondary font-primary">{t('systemMenu.shopSubtitle', { defaultValue: 'Buy and equip skins.' })}</p>
+            <h2
+              id={titleId}
+              className="m-0 text-[28px] font-bold font-primary text-accent-green tracking-[1px]"
+            >
+              {t('systemMenu.shop')}
+            </h2>
+            <p id={subtitleId} className="m-0 mt-1 text-[12px] text-text-secondary font-primary">
+              {t('systemMenu.shopSubtitle', { defaultValue: 'Buy and equip skins.' })}
+            </p>
           </div>
           <button
             type="button"
             onClick={onClose}
+            data-modal-autofocus="shop-close"
             className="w-10 h-10 rounded-xl border border-border-secondary bg-bg-card text-text-primary hover:bg-bg-card-alt"
             aria-label={t('systemMenu.closeAria')}
           >
@@ -144,10 +174,17 @@ export default function ShopModal({ isOpen, onClose, profile, setProfile }: Shop
                   const canBuy = profile.coins >= shopPrice;
 
                   return (
-                    <div key={skin.id} className="rounded-2xl border border-border-secondary bg-bg-card p-4 flex items-center justify-between gap-3">
+                    <div
+                      key={skin.id}
+                      className="rounded-2xl border border-border-secondary bg-bg-card p-4 flex items-center justify-between gap-3"
+                    >
                       <div>
-                        <div className="text-[14px] text-text-primary font-semibold font-primary">{getSkinName(skin.id, skin.name)}</div>
-                        <div className="mt-1 text-[12px] text-text-secondary font-primary">{t('systemMenu.coinsAmount', { count: shopPrice })}</div>
+                        <div className="text-[14px] text-text-primary font-semibold font-primary">
+                          {getSkinName(skin.id, skin.name)}
+                        </div>
+                        <div className="mt-1 text-[12px] text-text-secondary font-primary">
+                          {t('systemMenu.coinsAmount', { count: shopPrice })}
+                        </div>
                         <img
                           src={skin.image}
                           alt={`${getSkinName(skin.id, skin.name)} ${t('systemMenu.playerSkin')}`}
@@ -196,10 +233,17 @@ export default function ShopModal({ isOpen, onClose, profile, setProfile }: Shop
                   const canBuy = profile.coins >= shopPrice;
 
                   return (
-                    <div key={skin.id} className="rounded-2xl border border-border-secondary bg-bg-card p-4 flex items-center justify-between gap-3">
+                    <div
+                      key={skin.id}
+                      className="rounded-2xl border border-border-secondary bg-bg-card p-4 flex items-center justify-between gap-3"
+                    >
                       <div>
-                        <div className="text-[14px] text-text-primary font-semibold font-primary">{getSkinName(skin.id, skin.name)}</div>
-                        <div className="mt-1 text-[12px] text-text-secondary font-primary">{t('systemMenu.coinsAmount', { count: shopPrice })}</div>
+                        <div className="text-[14px] text-text-primary font-semibold font-primary">
+                          {getSkinName(skin.id, skin.name)}
+                        </div>
+                        <div className="mt-1 text-[12px] text-text-secondary font-primary">
+                          {t('systemMenu.coinsAmount', { count: shopPrice })}
+                        </div>
                         <img
                           src={skin.image}
                           alt={`${getSkinName(skin.id, skin.name)} ${t('systemMenu.bulletSkin')}`}

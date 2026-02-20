@@ -4,12 +4,22 @@ import Layout from './components/Layout';
 import DifficultyModal from './components/DifficultyModal';
 import ProfileSetupModal from './components/ProfileSetupModal';
 import Toast from './components/Toast';
+import AchievementCelebrationModal from './components/AchievementCelebrationModal';
+import AchievementConfetti from './components/AchievementConfetti';
 import ConfirmModal from './components/ConfirmModal';
 import GamePage from './pages/Game';
-import { audioManager, ensureDailyChallenge, loadProfile, loadSettings, saveSettings } from './gameSystem';
-import SystemMenuModal from './pages/Game/components/SystemMenuModal';
-import ShopModal from './pages/Game/components/ShopModal';
-import AchievementsModal from './pages/Game/components/AchievementsModal';
+import {
+  audioManager,
+  ensureDailyChallenge,
+  defaultProfile,
+  loadProfile,
+  loadSettings,
+  resetProfile,
+  saveSettings,
+} from './gameSystem';
+import SystemMenuModal from './pages/Game/overlays/SystemMenuModal';
+import ShopModal from './pages/Game/overlays/ShopModal';
+import AchievementsModal from './pages/Game/overlays/AchievementsModal';
 import { useAuth } from './context/AuthContext';
 import i18n from './i18n';
 import { getFirebaseAuthErrorMessage } from './utils/firebaseAuthError';
@@ -23,9 +33,17 @@ import {
 
 type ToastVariant = 'info' | 'success' | 'error';
 
+const ALLOWED_AI_ACCOUNT_EMAILS = new Set(['kbkboldmolt@gmail.com']);
+
 function App() {
-  const { user, signInWithGoogle, signOut } = useAuth();
-  const [profile, setProfile] = useState(() => ensureDailyChallenge(loadProfile()));
+  const {
+    firebaseEnabled,
+    user,
+    signInWithGoogle,
+    signOut,
+    loading: authLoading,
+  } = useAuth();
+  const [profile, setProfile] = useState(() => ensureDailyChallenge(defaultProfile()));
   const [userCountry, setUserCountry] = useState<string>('KR');
   const [userIdentity, setUserIdentity] = useState<UserIdentityProfile | null>(null);
   const [identityLoading, setIdentityLoading] = useState(false);
@@ -47,6 +65,16 @@ function App() {
   const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [toastVariant, setToastVariant] = useState<ToastVariant>('info');
+  const [compactPanelMode, setCompactPanelMode] = useState(false);
+  const [achievementPopupIds, setAchievementPopupIds] = useState<string[]>([]);
+  const [isAiMode, setIsAiMode] = useState(false);
+  const canUseAiMode = Boolean(user?.email && ALLOWED_AI_ACCOUNT_EMAILS.has(user.email.toLowerCase()));
+
+  useEffect(() => {
+    if (!canUseAiMode && isAiMode) {
+      setIsAiMode(false);
+    }
+  }, [canUseAiMode, isAiMode]);
 
   const showToast = (message: string, variant: ToastVariant = 'info') => {
     setToastVariant(variant);
@@ -81,6 +109,30 @@ function App() {
     const timer = window.setTimeout(() => setToastMessage(null), 1800);
     return () => window.clearTimeout(timer);
   }, [toastMessage]);
+
+  useEffect(() => {
+    if (achievementPopupIds.length === 0) return;
+    const timer = window.setTimeout(() => setAchievementPopupIds([]), 5200);
+    return () => window.clearTimeout(timer);
+  }, [achievementPopupIds]);
+
+  useEffect(() => {
+    if (!isAiMode) return;
+    if (achievementPopupIds.length === 0) return;
+    setAchievementPopupIds([]);
+  }, [isAiMode, achievementPopupIds]);
+
+  useEffect(() => {
+    if (authLoading) return;
+    if (user) {
+      setProfile(ensureDailyChallenge(loadProfile()));
+      return;
+    }
+
+    setProfile(resetProfile());
+    setUserCountry('KR');
+    setAchievementPopupIds([]);
+  }, [authLoading, user]);
 
   useEffect(() => {
     let cancelled = false;
@@ -128,6 +180,11 @@ function App() {
   }, [pendingProfileSetupCheck, user]);
 
   const handleLoginClick = async () => {
+    if (!firebaseEnabled) {
+      showToast('Firebase 인증이 설정되지 않았습니다. FIREBASE 환경변수를 확인하세요.', 'error');
+      return;
+    }
+
     try {
       await signInWithGoogle();
       setPendingProfileSetupCheck(true);
@@ -144,6 +201,8 @@ function App() {
   const handleConfirmLogout = async () => {
     try {
       await signOut();
+      setProfile(resetProfile());
+      setAchievementPopupIds([]);
       setLogoutConfirmOpen(false);
       setUserIdentity(null);
       setIdentityLoading(false);
@@ -179,6 +238,8 @@ function App() {
         profile={profile}
         userCountry={userCountry}
         rankingRefreshTrigger={rankingRefreshTrigger}
+        compactPanelModeOverride={compactPanelMode}
+        onCompactPanelModeChange={setCompactPanelMode}
         onAchievementsClick={() => {
           setSystemMenuOpen(false);
           setProfileMenuOpen(false);
@@ -203,6 +264,7 @@ function App() {
         onLogoutClick={handleLogoutClick}
         isLoggedIn={Boolean(user)}
         userDisplayName={userIdentity?.nickname ?? user?.displayName ?? undefined}
+        userPhotoUrl={user?.photoURL ?? undefined}
         userInitial={userInitial}
       >
         <GamePage
@@ -219,10 +281,21 @@ function App() {
           }
           activeModifiers={activeModifiers}
           onDifficultyClick={() => setDifficultyModalOpen(true)}
+          isCompactGameLayout={compactPanelMode}
           profileIdentity={userIdentity}
           isProfileSetupOpen={profileSetupOpen}
           identityLoading={identityLoading}
           onRequestProfileSetup={() => setProfileSetupOpen(true)}
+          isAiMode={isAiMode}
+          canUseAiMode={canUseAiMode}
+          onAiModeChange={setIsAiMode}
+          onAchievementsUnlocked={(ids) => {
+            if (isAiMode) return;
+            const uniqueIds = Array.from(new Set(ids));
+            if (uniqueIds.length > 0) {
+              setAchievementPopupIds(uniqueIds);
+            }
+          }}
         />
       </Layout>
 
@@ -303,6 +376,12 @@ function App() {
       />
 
       <Toast message={toastMessage} visible={Boolean(toastMessage)} variant={toastVariant} />
+      <AchievementConfetti isActive={achievementPopupIds.length > 0} achievementCount={achievementPopupIds.length} />
+      <AchievementCelebrationModal
+        isOpen={achievementPopupIds.length > 0}
+        onClose={() => setAchievementPopupIds([])}
+        achievementIds={achievementPopupIds}
+      />
     </>
   );
 }

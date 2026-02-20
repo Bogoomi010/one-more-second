@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { getName } from 'country-list';
 import 'flag-icons/css/flag-icons.min.css';
 import { RankingEntry } from '../gameSystem/ranking';
@@ -16,11 +16,18 @@ interface NewRankingPanelProps {
   refreshTrigger?: number;
 }
 
-const COUNTRY_OPTIONS = ['KR', 'US', 'JP', 'CN', 'GB', 'DE', 'FR'] as const;
+const COUNTRY_OPTIONS: string[] = ['KR', 'US', 'JP', 'CN', 'GB', 'DE', 'FR'];
+const FALLBACK_COUNTRY = 'KR';
 
 interface CountryFlagProps {
   countryCode: string;
   className?: string;
+}
+
+function normalizeCountryCode(countryCode?: string): string {
+  const normalized = (countryCode ?? '').toUpperCase().replace(/[^A-Z]/g, '');
+  if (!/^[A-Z]{2}$/.test(normalized)) return '';
+  return normalized;
 }
 
 function CountryFlag({ countryCode, className = '' }: CountryFlagProps) {
@@ -36,7 +43,25 @@ function CountryFlag({ countryCode, className = '' }: CountryFlagProps) {
 export default function NewRankingPanel({ userCountry, refreshTrigger = 0 }: NewRankingPanelProps) {
   const [rankingType, setRankingType] = useState<RankingType>('global');
   const [rankings, setRankings] = useState<RankingEntry[]>([]);
-  const [selectedCountry, setSelectedCountry] = useState<string>(userCountry ?? 'KR');
+  const [selectedCountry, setSelectedCountry] = useState<string>(
+    normalizeCountryCode(userCountry) || FALLBACK_COUNTRY
+  );
+  const countryOptions = useMemo(() => {
+    const normalizedUserCountry = normalizeCountryCode(userCountry);
+    const options = [...COUNTRY_OPTIONS];
+    if (normalizedUserCountry && !options.includes(normalizedUserCountry)) {
+      options.push(normalizedUserCountry);
+    }
+    if (!options.includes(FALLBACK_COUNTRY)) {
+      options.push(FALLBACK_COUNTRY);
+    }
+    return options;
+  }, [userCountry]);
+
+  useEffect(() => {
+    const next = normalizeCountryCode(userCountry) || FALLBACK_COUNTRY;
+    setSelectedCountry(next);
+  }, [userCountry]);
 
   const loadRankings = React.useCallback(async (): Promise<RankingEntry[]> => {
     switch (rankingType) {
@@ -68,11 +93,35 @@ export default function NewRankingPanel({ userCountry, refreshTrigger = 0 }: New
     return `${mins}m ${secs}s`;
   };
 
-  const getRankColor = (rank: number): string => {
-    if (rank === 1) return '#FFD700';
-    if (rank === 2) return '#C0C0C0';
-    if (rank === 3) return '#CD7F32';
-    return '#e0e0e0';
+  const formatScore = (score: number): string => score.toLocaleString();
+
+  const getRankVisuals = (rank: number) => {
+    if (rank === 1) {
+      return {
+        borderClass: 'border-[#FFD70040]',
+        circleClass: 'text-black bg-[#FFD700]',
+        scoreClass: 'text-[#FFD700]',
+      };
+    }
+    if (rank === 2) {
+      return {
+        borderClass: 'border-[#C0C0C040]',
+        circleClass: 'text-black bg-[#C0C0C0]',
+        scoreClass: 'text-[#C0C0C0]',
+      };
+    }
+    if (rank === 3) {
+      return {
+        borderClass: 'border-[#CD7F3240]',
+        circleClass: 'text-black bg-[#CD7F32]',
+        scoreClass: 'text-[#CD7F32]',
+      };
+    }
+    return {
+      borderClass: 'border-[#ffffff0a]',
+      circleClass: 'text-white bg-bg-card-alt',
+      scoreClass: 'text-[#94a3b8]',
+    };
   };
 
   const getTabLabel = (type: RankingType): string => {
@@ -138,7 +187,7 @@ export default function NewRankingPanel({ userCountry, refreshTrigger = 0 }: New
               onChange={(e) => setSelectedCountry(e.target.value)}
               className="w-full py-2.5 pl-9 pr-3 bg-bg-card text-white border border-border-primary rounded-xl text-[13px] cursor-pointer font-primary"
             >
-              {COUNTRY_OPTIONS.map((countryCode) => {
+              {countryOptions.map((countryCode) => {
                 const countryName = getName(countryCode) ?? countryCode;
                 return (
                   <option key={countryCode} value={countryCode}>
@@ -170,29 +219,25 @@ export default function NewRankingPanel({ userCountry, refreshTrigger = 0 }: New
           </div>
         ) : (
           <div className="flex flex-col gap-2 h-full overflow-y-auto pr-1">
-            {rankings.map((entry, index) => {
-              const rank = index + 1;
-              const isTopThree = rank <= 3;
-              const rankColor = getRankColor(rank);
+                {rankings.map((entry, index) => {
+                  const rank = index + 1;
+                  const isTopThree = rank <= 3;
+                  const rankVisuals = getRankVisuals(rank);
+                  const finalScore = entry.finalScore ?? entry.score;
+                  const survivedTime = entry.normalScore ?? entry.score;
 
-              return (
-                <div
-                  key={entry.id}
-                  className={`flex items-center gap-3 p-3 rounded-xl border transition-all duration-200 ${
-                    isTopThree ? 'bg-white/[0.07]' : 'bg-white/[0.03]'
-                  }`}
-                  style={{
-                    borderColor: isTopThree ? `${rankColor}40` : '#ffffff0a'
-                  }}
-                >
-                  <div
-                    className={`w-8 h-8 flex items-center justify-center rounded-full font-bold text-[13px] flex-shrink-0 font-primary ${
-                      isTopThree ? 'text-black' : 'text-white bg-bg-card-alt'
-                    }`}
-                    style={isTopThree ? { background: rankColor } : {}}
-                  >
-                    {rank}
-                  </div>
+                  return (
+                    <div
+                      key={entry.id}
+                      className={`flex items-center gap-3 p-3 rounded-xl border transition-all duration-200 ${
+                        isTopThree ? 'bg-white/[0.07]' : 'bg-white/[0.03]'
+                      } ${rankVisuals.borderClass}`}
+                    >
+                      <div
+                        className={`w-8 h-8 flex items-center justify-center rounded-full font-bold text-[13px] flex-shrink-0 font-primary ${rankVisuals.circleClass}`}
+                      >
+                        {rank}
+                      </div>
 
                   <div className="flex-shrink-0">
                     <CountryFlag countryCode={entry.country} className="rounded-[2px]" />
@@ -206,11 +251,15 @@ export default function NewRankingPanel({ userCountry, refreshTrigger = 0 }: New
                     {entry.nickname}
                   </div>
 
-                  <div
-                    className="text-[14px] font-bold flex-shrink-0 font-secondary"
-                    style={{ color: isTopThree ? rankColor : '#94a3b8' }}
-                  >
-                    {formatTime(entry.score)}
+                      <div className="flex flex-col items-end justify-center gap-0.5 leading-none flex-shrink-0">
+                        <div
+                          className={`text-[14px] font-bold font-secondary ${rankVisuals.scoreClass}`}
+                        >
+                          {formatScore(finalScore)}
+                        </div>
+                    <div className="text-[10px] font-medium text-text-placeholder font-secondary">
+                      {formatTime(survivedTime)}
+                    </div>
                   </div>
                 </div>
               );
