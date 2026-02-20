@@ -24,6 +24,7 @@ const app = hasRequiredConfig ? initializeApp(firebaseConfig) : null;
 const appCheckSiteKey = process.env.REACT_APP_FIREBASE_APPCHECK_SITE_KEY;
 const appCheckDebugToken = process.env.REACT_APP_FIREBASE_APPCHECK_DEBUG_TOKEN;
 const functionsRegion = process.env.REACT_APP_FIREBASE_FUNCTIONS_REGION;
+const defaultFunctionsRegion = 'asia-northeast3';
 
 if (app && typeof window !== 'undefined') {
   if (appCheckDebugToken && process.env.NODE_ENV !== 'production') {
@@ -49,5 +50,5 @@ export const firebaseEnabled = hasRequiredConfig;
 export const firebaseAuth = app ? getAuth(app) : null;
 export const firebaseDb = app ? getFirestore(app) : null;
 export const firebaseFunctions = app
-  ? getFunctions(app, functionsRegion || undefined)
+  ? getFunctions(app, functionsRegion || defaultFunctionsRegion)
   : null;

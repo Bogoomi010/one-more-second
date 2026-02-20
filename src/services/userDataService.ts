@@ -37,10 +37,19 @@ export interface UserIdentityProfile {
 }
 
 const SCORE_SUBMIT_FUNCTION_NAME = 'submitScore';
+const DISABLE_SCORE_FUNCTION_CALL = process.env.REACT_APP_DISABLE_SCORE_FUNCTION_CALL === 'true';
 
 type SupportedLanguage = 'ko' | 'en' | 'ja' | 'zh-CN';
 const LANGUAGE_STORAGE_KEY = 'oms.language';
 const USER_PUBLIC_PROFILES_COLLECTION = 'userPublicProfiles';
+
+let canUseCallableScoreSubmit = !DISABLE_SCORE_FUNCTION_CALL;
+
+function disableCallableScoreSubmitForSession(error: unknown): void {
+  if (!canUseCallableScoreSubmit) return;
+  console.warn('Cloud Function score submit is disabled for this session and will use Firestore fallback.', error);
+  canUseCallableScoreSubmit = false;
+}
 
 function normalizeLanguage(language?: string | null): SupportedLanguage {
   if (!language) return 'en';
@@ -275,13 +284,23 @@ export async function submitScoreToCloudIfSignedIn(
       country: identity.country,
     };
 
-    try {
-      const functionResult = await submitScoreViaCallable(sanitizedPayload);
-      if (functionResult?.success) {
-        return functionResult;
+    if (canUseCallableScoreSubmit) {
+      try {
+        const functionResult = await submitScoreViaCallable(sanitizedPayload);
+        if (functionResult?.success) {
+          if (functionResult.cloudSynced === false) {
+            console.warn(
+              'Cloud Function reported success without syncing leaderboard data:',
+              functionResult
+            );
+          } else {
+            return functionResult;
+          }
+        }
+      } catch (callableError) {
+        console.warn('Cloud Function score submit failed, fallback to direct writes.', callableError);
+        disableCallableScoreSubmitForSession(callableError);
       }
-    } catch (callableError) {
-      console.warn('Cloud Function score submit failed, fallback to direct writes.', callableError);
     }
 
     await submitScoreViaLegacyWrites(user, sanitizedPayload);

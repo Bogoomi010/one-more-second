@@ -19,7 +19,7 @@ import { firebaseDb, firebaseEnabled } from '../lib/firebase';
 
 const FETCH_MULTIPLIER = 5;
 const MAX_FETCH_LIMIT = 500;
-const USERS_IN_QUERY_LIMIT = 30;
+const USERS_IN_QUERY_LIMIT = 10;
 const USER_PUBLIC_PROFILES_COLLECTION = 'userPublicProfiles';
 
 interface CloudRankingEntry extends RankingEntry {
