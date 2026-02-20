@@ -30,6 +30,12 @@ const INITIAL_SPAWN_INTERVAL = 500;
 const INTERVAL_DECREASE = 50;
 const MIN_SPAWN_INTERVAL = 100;
 const DIFFICULTY_INTERVAL = 3000;
+const AI_DANGER_DISTANCE = 220;
+const AI_MOVE_SPEED_MULTIPLIER = 0.82;
+const AI_SIDE_SWITCH_MS = 920;
+const AI_WALL_EVASION_PADDING = 26;
+const AI_CENTER_PULL_STRENGTH = 0.62;
+const AI_IDLE_ORBIT_STRENGTH = 0.18;
 const PIXI_BGM_ALIAS = 'oms-main-bgm';
 const DESKTOP_CANVAS_ASPECT_RATIO = 1;
 const MOBILE_CANVAS_BREAKPOINT_PX = 768;
@@ -81,6 +87,7 @@ interface GameCanvasProps {
   joystickVectorRef?: React.MutableRefObject<{ x: number; y: number }>;
   activeModifiers?: GameplayModifierId[];
   countdown?: number | null;
+  isAiMode?: boolean;
 }
 
 type Bullet = {
@@ -203,6 +210,7 @@ function GameCanvasComponent({
   joystickVectorRef,
   activeModifiers = [],
   countdown = null,
+  isAiMode = false,
 }: GameCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const onGameOverRef = useRef(onGameOver);
@@ -424,7 +432,11 @@ function GameCanvasComponent({
 
     const stopBgm = () => {
       if (sound.exists(PIXI_BGM_ALIAS)) {
-        sound.stop(PIXI_BGM_ALIAS);
+        try {
+          sound.stop(PIXI_BGM_ALIAS);
+        } catch (error) {
+          console.warn('Failed to stop BGM:', error);
+        }
       }
       audioManager.stopBGM();
     };
@@ -613,6 +625,96 @@ function GameCanvasComponent({
       appendBullet(buildCriticalShotRequest());
     };
 
+    const resolveAiMovement = () => {
+      if (!isAiMode) {
+        return { x: 0, y: 0 };
+      }
+
+      const dangerLimitSq = AI_DANGER_DISTANCE * AI_DANGER_DISTANCE;
+      let steerX = 0;
+      let steerY = 0;
+      let threatCount = 0;
+      const centerX = (state.playfield.left + state.playfield.right) / 2;
+      const centerY = (state.playfield.top + state.playfield.bottom) / 2;
+      const playfieldWidth = state.playfield.right - state.playfield.left;
+      const playfieldHeight = state.playfield.bottom - state.playfield.top;
+      const centerPullX = ((centerX - state.player.x) / Math.max(1, playfieldWidth)) * AI_CENTER_PULL_STRENGTH;
+      const centerPullY = ((centerY - state.player.y) / Math.max(1, playfieldHeight)) * AI_CENTER_PULL_STRENGTH;
+
+      steerX += centerPullX;
+      steerY += centerPullY;
+
+      for (let i = 0; i < state.bullets.length; i += 1) {
+        const bullet = state.bullets[i];
+        const dx = state.player.x - bullet.x;
+        const dy = state.player.y - bullet.y;
+        const distanceSq = dx * dx + dy * dy;
+
+        if (distanceSq > dangerLimitSq) continue;
+
+        const distance = Math.sqrt(distanceSq) || 1;
+        const urgency = 1 - Math.min(1, distance / AI_DANGER_DISTANCE);
+        const avoidWeight = 0.25 + urgency * 1.0;
+        const awayX = dx / distance;
+        const awayY = dy / distance;
+
+        steerX += awayX * avoidWeight;
+        steerY += awayY * avoidWeight;
+
+        const perpX = -awayY;
+        const perpY = awayX;
+        const perpLen = Math.max(1, Math.hypot(perpX, perpY));
+        const sideSign = Math.sin(state.elapsedMs / AI_SIDE_SWITCH_MS) >= 0 ? 1 : -1;
+
+        steerX += (perpX / perpLen) * (0.35 + urgency * 0.8) * sideSign;
+        steerY += (perpY / perpLen) * (0.35 + urgency * 0.8) * sideSign;
+        threatCount += 1;
+      }
+
+      const leftWall = state.playfield.left + AI_WALL_EVASION_PADDING;
+      const rightWall = state.playfield.right - AI_WALL_EVASION_PADDING;
+      const topWall = state.playfield.top + AI_WALL_EVASION_PADDING;
+      const bottomWall = state.playfield.bottom - AI_WALL_EVASION_PADDING;
+      const wallRepelStrength = 0.95;
+      const wallRepelRange = AI_WALL_EVASION_PADDING * 1.35;
+
+      if (state.player.x < leftWall) {
+        const proximity = Math.min(1, (leftWall - state.player.x) / wallRepelRange);
+        steerX += wallRepelStrength * (0.2 + 0.8 * proximity);
+      }
+      if (state.player.x > rightWall) {
+        const proximity = Math.min(1, (state.player.x - rightWall) / wallRepelRange);
+        steerX -= wallRepelStrength * (0.2 + 0.8 * proximity);
+      }
+      if (state.player.y < topWall) {
+        const proximity = Math.min(1, (topWall - state.player.y) / wallRepelRange);
+        steerY += wallRepelStrength * (0.2 + 0.8 * proximity);
+      }
+      if (state.player.y > bottomWall) {
+        const proximity = Math.min(1, (state.player.y - bottomWall) / wallRepelRange);
+        steerY -= wallRepelStrength * (0.2 + 0.8 * proximity);
+      }
+
+      if (threatCount === 0) {
+        const angle = state.elapsedMs / 1400;
+        steerX += Math.cos(angle) * AI_IDLE_ORBIT_STRENGTH;
+        steerY += Math.sin(angle * 0.92) * AI_IDLE_ORBIT_STRENGTH;
+      }
+
+      const magnitude = Math.hypot(steerX, steerY);
+      if (magnitude > 0.0001) {
+        return {
+          x: steerX / magnitude,
+          y: steerY / magnitude,
+        };
+      }
+
+      return {
+        x: 1,
+        y: 0,
+      };
+    };
+
     const removeBulletAt = (
       index: number,
       reason: 'hit' | 'dodged'
@@ -706,7 +808,16 @@ function GameCanvasComponent({
       state.hitFlashRemainingMs = Math.max(0, state.hitFlashRemainingMs - deltaMs);
 
       const moveDistance = PLAYER_SPEED * deltaTimeSec;
-      if (joystickVectorSourceRef.current) {
+      if (isAiMode) {
+        const aiMovement = resolveAiMovement();
+        const aiLength = Math.hypot(aiMovement.x, aiMovement.y);
+        if (aiLength > 0.0001) {
+          state.player.x +=
+            (aiMovement.x / aiLength) * moveDistance * AI_MOVE_SPEED_MULTIPLIER;
+          state.player.y +=
+            (aiMovement.y / aiLength) * moveDistance * AI_MOVE_SPEED_MULTIPLIER;
+        }
+      } else if (joystickVectorSourceRef.current) {
         const joystickVector = joystickVectorSourceRef.current.current;
         const targetX = joystickVector?.x ?? 0;
         const targetY = joystickVector?.y ?? 0;
@@ -891,7 +1002,7 @@ function GameCanvasComponent({
       stopBgm();
       app.destroy(true, true);
     };
-  }, [activeModifiers, bulletImage, playerImage]);
+  }, [activeModifiers, bulletImage, playerImage, isAiMode]);
 
   const handleCanvasDoubleClick = (event: React.MouseEvent<HTMLDivElement>) => {
     event.preventDefault();
@@ -919,6 +1030,7 @@ export default React.memo(GameCanvasComponent, (prevProps, nextProps) => {
     prevProps.playerImage === nextProps.playerImage &&
     prevProps.bulletImage === nextProps.bulletImage &&
     prevProps.isModalOpen === nextProps.isModalOpen &&
+    prevProps.isAiMode === nextProps.isAiMode &&
     prevProps.joystickVectorRef === nextProps.joystickVectorRef &&
     prevProps.countdown === nextProps.countdown
   );

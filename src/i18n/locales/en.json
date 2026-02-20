@@ -141,7 +141,9 @@
   },
   "settings": {
     "graphics": "Graphics",
+    "gameplay": "Gameplay",
     "particles": "Particle Effects",
+    "countdownEnabled": "Show countdown before start",
     "hitFlash": "Hit Flash Intensity: {{intensity}}%",
     "fpsLimit": "FPS Limit",
     "fps30": "30 FPS",

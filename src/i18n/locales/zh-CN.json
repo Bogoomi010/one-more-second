@@ -138,7 +138,9 @@
   },
   "settings": {
     "graphics": "图形",
+    "gameplay": "游戏玩法",
     "particles": "粒子效果",
+    "countdownEnabled": "开始前显示倒计时",
     "hitFlash": "受击闪光强度: {{intensity}}%",
     "fpsLimit": "FPS 限制",
     "fps30": "30 FPS",

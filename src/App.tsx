@@ -33,6 +33,8 @@ import {
 
 type ToastVariant = 'info' | 'success' | 'error';
 
+const ALLOWED_AI_ACCOUNT_EMAILS = new Set(['kbkboldmolt@gmail.com']);
+
 function App() {
   const {
     firebaseEnabled,
@@ -65,6 +67,14 @@ function App() {
   const [toastVariant, setToastVariant] = useState<ToastVariant>('info');
   const [compactPanelMode, setCompactPanelMode] = useState(false);
   const [achievementPopupIds, setAchievementPopupIds] = useState<string[]>([]);
+  const [isAiMode, setIsAiMode] = useState(false);
+  const canUseAiMode = Boolean(user?.email && ALLOWED_AI_ACCOUNT_EMAILS.has(user.email.toLowerCase()));
+
+  useEffect(() => {
+    if (!canUseAiMode && isAiMode) {
+      setIsAiMode(false);
+    }
+  }, [canUseAiMode, isAiMode]);
 
   const showToast = (message: string, variant: ToastVariant = 'info') => {
     setToastVariant(variant);
@@ -105,6 +115,12 @@ function App() {
     const timer = window.setTimeout(() => setAchievementPopupIds([]), 5200);
     return () => window.clearTimeout(timer);
   }, [achievementPopupIds]);
+
+  useEffect(() => {
+    if (!isAiMode) return;
+    if (achievementPopupIds.length === 0) return;
+    setAchievementPopupIds([]);
+  }, [isAiMode, achievementPopupIds]);
 
   useEffect(() => {
     if (authLoading) return;
@@ -269,7 +285,11 @@ function App() {
           isProfileSetupOpen={profileSetupOpen}
           identityLoading={identityLoading}
           onRequestProfileSetup={() => setProfileSetupOpen(true)}
+          isAiMode={isAiMode}
+          canUseAiMode={canUseAiMode}
+          onAiModeChange={setIsAiMode}
           onAchievementsUnlocked={(ids) => {
+            if (isAiMode) return;
             const uniqueIds = Array.from(new Set(ids));
             if (uniqueIds.length > 0) {
               setAchievementPopupIds(uniqueIds);

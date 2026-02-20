@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import NewGamePanel from './components/GamePanel';
 import ScoreSubmitModal from './components/ScoreSubmitModal';
 import {
@@ -28,6 +28,9 @@ interface GameProps {
   identityLoading: boolean;
   onRequestProfileSetup: () => void;
   onAchievementsUnlocked?: (achievementIds: string[]) => void;
+  isAiMode?: boolean;
+  onAiModeChange?: (next: boolean) => void;
+  canUseAiMode?: boolean;
 }
 
 export default function Game({
@@ -44,7 +47,11 @@ export default function Game({
   identityLoading,
   onRequestProfileSetup,
   onAchievementsUnlocked,
+  isAiMode = false,
+  onAiModeChange,
+  canUseAiMode = false,
 }: GameProps) {
+  const [isAiModeState, setIsAiModeState] = useState<boolean>(isAiMode);
   const [score, setScore] = useState(0);
   const [normalScore, setNormalScore] = useState(0);
   const [isNewHighScore, setIsNewHighScore] = useState(false);
@@ -59,6 +66,20 @@ export default function Game({
     () => getBulletSkin(profile.selectedBulletSkinId),
     [profile.selectedBulletSkinId]
   );
+
+  useEffect(() => {
+    if (onAiModeChange) return;
+    setIsAiModeState(isAiMode);
+  }, [isAiMode, onAiModeChange]);
+
+  const isAiModeValue = onAiModeChange ? isAiMode : isAiModeState;
+  const setAiMode = (next: boolean) => {
+    if (onAiModeChange) {
+      onAiModeChange(next);
+      return;
+    }
+    setIsAiModeState(next);
+  };
 
   const handleGameOver = (result: GameResult) => {
     const finalRunScore = normalizeIntegerScore(result.finalScore ?? result.scoreSeconds, {
@@ -114,6 +135,16 @@ export default function Game({
     setLastRunMessage([]);
   };
 
+  useEffect(() => {
+    if (!isAiModeValue || !showScoreModal) return;
+
+    const timerId = window.setTimeout(() => {
+      handleRestartGame();
+    }, 300);
+
+    return () => window.clearTimeout(timerId);
+  }, [handleRestartGame, isAiModeValue, showScoreModal]);
+
   return (
     <>
       <NewGamePanel
@@ -123,6 +154,9 @@ export default function Game({
         onGameOver={handleGameOver}
         isModalOpen={showScoreModal || isSystemMenuOpen}
         activeModifiers={activeModifiers}
+        isAiMode={isAiModeValue}
+        canUseAiMode={canUseAiMode}
+        onAiModeChange={setAiMode}
         onDifficultyClick={onDifficultyClick}
         isCompactGameLayout={isCompactGameLayout}
       />

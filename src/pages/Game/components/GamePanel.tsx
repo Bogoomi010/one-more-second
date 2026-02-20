@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import GameCanvas from './GameCanvas';
 import MobileJoystick from './MobileJoystick';
 import { audioManager } from '../../../gameSystem/audio';
+import { loadSettings } from '../../../gameSystem/settings';
 import { GameResult, GameplayModifierId, PlayerProfile } from '../../../gameSystem/types';
 import lifeIcon from '../../../assets/icon_life.png';
 
@@ -16,6 +17,9 @@ interface NewGamePanelProps {
   activeModifiers?: GameplayModifierId[];
   onDifficultyClick?: () => void;
   isCompactGameLayout?: boolean;
+  isAiMode?: boolean;
+  onAiModeChange?: (next: boolean) => void;
+  canUseAiMode?: boolean;
 }
 
 function resolveJoystickSize(viewportWidth: number, isTouchInput: boolean): number {
@@ -69,6 +73,9 @@ export default function NewGamePanel({
   activeModifiers = [],
   onDifficultyClick,
   isCompactGameLayout = false,
+  isAiMode = false,
+  onAiModeChange = () => {},
+  canUseAiMode = false,
 }: NewGamePanelProps) {
   const { t } = useTranslation();
   const startPromptText = 'PRESS';
@@ -91,8 +98,35 @@ export default function NewGamePanel({
     if (gameStarted || isModalOpen || isCountingDown) return;
     joystickVectorRef.current = { x: 0, y: 0 };
     primeAudioContexts();
-    setCountdown(COUNTDOWN_SECONDS);
+    const settings = loadSettings();
+    if (settings.gameplay.countdownEnabled) {
+      setCountdown(COUNTDOWN_SECONDS);
+      return;
+    }
+
+    setGameStarted(true);
   }, [gameStarted, isCountingDown, isModalOpen]);
+
+  useEffect(() => {
+    if (!isAiMode) return;
+    if (gameStarted || isCountingDown || isModalOpen) return;
+
+    const timerId = window.setTimeout(handleStartRequest, 250);
+    return () => window.clearTimeout(timerId);
+  }, [gameStarted, handleStartRequest, isAiMode, isCountingDown, isModalOpen]);
+
+  const handleAiModeChange = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      onAiModeChange(event.target.checked);
+    },
+    [onAiModeChange]
+  );
+
+  useEffect(() => {
+    if (!canUseAiMode && isAiMode) {
+      onAiModeChange(false);
+    }
+  }, [canUseAiMode, isAiMode, onAiModeChange]);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -271,6 +305,20 @@ export default function NewGamePanel({
                 {t('game.toStart')}
               </div>
 
+              {canUseAiMode && (
+                <label className="flex items-center gap-2 cursor-pointer mt-[-2px]">
+                <input
+                  type="checkbox"
+                  checked={isAiMode}
+                  onChange={handleAiModeChange}
+                  className="w-4 h-4"
+                />
+                <span className="text-text-primary font-secondary text-[12px] sm:text-ui-body font-bold tracking-[1px]">
+                  AI 자동 모드
+                </span>
+                </label>
+              )}
+
               {onDifficultyClick && (
                   <button
                   type="button"
@@ -337,6 +385,7 @@ export default function NewGamePanel({
                 isModalOpen={isModalOpen}
                 joystickVectorRef={isTouchInput ? joystickVectorRef : undefined}
                 activeModifiers={activeModifiers}
+                isAiMode={isAiMode}
                 countdown={isCountingDown ? countdown : null}
               />
             {isTouchInput && gameStarted && (

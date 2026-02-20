@@ -141,7 +141,9 @@
   },
   "settings": {
     "graphics": "그래픽",
+    "gameplay": "게임플레이",
     "particles": "파티클 효과",
+    "countdownEnabled": "카운트다운 후 시작",
     "hitFlash": "피격 플래시 강도: {{intensity}}%",
     "fpsLimit": "프레임 제한",
     "fps30": "30 FPS",

@@ -287,6 +287,22 @@ export default function SystemMenuModal({
               </div>
 
               <div className="rounded-2xl border border-border-secondary bg-bg-card p-4">
+                <h3 className="m-0 mb-3 text-[14px] text-text-primary font-primary">
+                  {t('settings.gameplay')}
+                </h3>
+                <div className="space-y-3 text-[12px] text-text-secondary font-primary">
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={settings.gameplay.countdownEnabled}
+                      onChange={(e) => updateSetting('gameplay', 'countdownEnabled', e.target.checked)}
+                    />
+                    {t('settings.countdownEnabled')}
+                  </label>
+                </div>
+              </div>
+
+              <div className="rounded-2xl border border-border-secondary bg-bg-card p-4">
                 <h3 className="m-0 mb-3 text-[14px] text-text-primary font-primary">{t('settings.audio')}</h3>
                 <div className="space-y-3 text-[12px] text-text-secondary font-primary">
                   <label className="flex items-center gap-2">
