@@ -7,6 +7,7 @@ import { audioManager } from '../../../gameSystem/audio';
 import { loadSettings } from '../../../gameSystem/settings';
 import { GameResult, GameplayModifierId, PlayerProfile } from '../../../gameSystem/types';
 import lifeIcon from '../../../assets/icon_life.png';
+import { PIXI_BGM_ALIAS } from './GameCanvas';
 
 interface NewGamePanelProps {
   profile: PlayerProfile;
@@ -94,6 +95,17 @@ export default function NewGamePanel({
   const lastTouchEndAtRef = useRef(0);
   const isCountingDown = countdown !== null;
 
+  const stopBgmPlayback = () => {
+    if (sound.exists(PIXI_BGM_ALIAS)) {
+      try {
+        sound.stop(PIXI_BGM_ALIAS);
+      } catch (error) {
+        console.warn('Failed to stop BGM on game over:', error);
+      }
+    }
+    audioManager.stopBGM();
+  };
+
   const handleStartRequest = useCallback(() => {
     if (gameStarted || isModalOpen || isCountingDown) return;
     joystickVectorRef.current = { x: 0, y: 0 };
@@ -173,6 +185,7 @@ export default function NewGamePanel({
   const joystickInset = viewportWidth <= 400 ? 8 : 12;
 
   const handleGameOver = (result: GameResult) => {
+    stopBgmPlayback();
     setGameStarted(false);
     setCountdown(null);
     setScore(0);
