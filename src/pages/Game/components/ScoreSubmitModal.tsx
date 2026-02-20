@@ -124,7 +124,12 @@ const ScoreSubmitModal: React.FC<ScoreSubmitModalProps> = ({
         onClose();
       }
     } else {
-      setError(response.message || t('scoreSubmit.submitFailed'));
+      const errorMessage = response.message || t('scoreSubmit.submitFailed');
+      console.warn('Score submit failed:', {
+        scoreData,
+        errorMessage,
+      });
+      setError(errorMessage);
     }
   }, [onClose, onCountrySelect, onRankingUpdate, profileIdentity, score, t, timePlayed, user]);
 

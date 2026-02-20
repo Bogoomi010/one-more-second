@@ -51,6 +51,32 @@ function disableCallableScoreSubmitForSession(error: unknown): void {
   canUseCallableScoreSubmit = false;
 }
 
+function getFirebaseErrorMessage(error: unknown): string {
+  if (error && typeof error === 'object' && 'message' in error) {
+    const message = (error as { message?: unknown }).message;
+    if (typeof message === 'string' && message.trim()) {
+      return message;
+    }
+  }
+  return 'Unknown error';
+}
+
+function getFirebaseErrorCode(error: unknown): string | undefined {
+  if (error && typeof error === 'object' && 'code' in error) {
+    const code = (error as { code?: unknown }).code;
+    if (typeof code === 'string' && code.trim()) {
+      return code;
+    }
+  }
+  return undefined;
+}
+
+function formatScoreSubmitError(error: unknown): string {
+  const code = getFirebaseErrorCode(error);
+  const message = getFirebaseErrorMessage(error);
+  return code ? `${code}: ${message}` : message;
+}
+
 function normalizeLanguage(language?: string | null): SupportedLanguage {
   if (!language) return 'en';
   if (language.startsWith('zh')) return 'zh-CN';
@@ -284,6 +310,7 @@ export async function submitScoreToCloudIfSignedIn(
       country: identity.country,
     };
 
+    let functionError: unknown;
     if (canUseCallableScoreSubmit) {
       try {
         const functionResult = await submitScoreViaCallable(sanitizedPayload);
@@ -298,12 +325,27 @@ export async function submitScoreToCloudIfSignedIn(
           }
         }
       } catch (callableError) {
+        functionError = callableError;
         console.warn('Cloud Function score submit failed, fallback to direct writes.', callableError);
         disableCallableScoreSubmitForSession(callableError);
       }
     }
 
-    await submitScoreViaLegacyWrites(user, sanitizedPayload);
+    try {
+      await submitScoreViaLegacyWrites(user, sanitizedPayload);
+    } catch (legacyError) {
+      console.error('Legacy score submit failed:', legacyError);
+      const functionFailureMessage =
+        functionError != null
+          ? ` | Cloud Function failed: ${formatScoreSubmitError(functionError)}`
+          : '';
+
+      return {
+        success: false,
+        cloudSynced: false,
+        message: `Firestore fallback failed: ${formatScoreSubmitError(legacyError)}${functionFailureMessage}`,
+      };
+    }
 
     return {
       success: true,
@@ -315,7 +357,7 @@ export async function submitScoreToCloudIfSignedIn(
     return {
       success: false,
       cloudSynced: false,
-      message: 'Cloud leaderboard sync failed.',
+      message: `Score sync failed: ${formatScoreSubmitError(error)}`,
     };
   }
 }

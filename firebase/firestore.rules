@@ -18,7 +18,7 @@ service cloud.firestore {
     }
 
     function isNickname(value) {
-      return value is string && value.size() >= 1 && value.size() <= 20 && value.matches('^[A-Za-z0-9 _-]{1,20}$');
+        return value is string && value.size() >= 1 && value.size() <= 20;
     }
 
     function isDateKey(value) {

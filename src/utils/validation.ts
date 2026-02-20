@@ -7,7 +7,7 @@ export const SCORE_LIMITS = {
 } as const;
 
 const MAX_NICKNAME_LENGTH = 20;
-const NICKNAME_REGEX = /^[A-Za-z0-9 _-]+$/;
+const NICKNAME_REGEX = /^[A-Za-z0-9가-힣 _-]+$/;
 const COUNTRY_CODE_REGEX = /^[A-Z]{2}$/;
 
 export function normalizeNickname(value: unknown): string {
