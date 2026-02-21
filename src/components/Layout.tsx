@@ -363,30 +363,6 @@ export default function Layout({
                   >
                     {t('layout.navBrandStory')}
                   </button>
-                  {onSettingsClick && (
-                    <button
-                      type="button"
-                      className="w-full px-3 py-2 rounded-lg text-left text-[13px] font-primary text-text-primary hover:bg-bg-card-alt"
-                      onClick={() => {
-                        onSettingsClick();
-                        setIsHeaderMenuOpen(false);
-                      }}
-                    >
-                      {t('layout.systemMenu')}
-                    </button>
-                  )}
-                  {onToggleMute && (
-                    <button
-                      type="button"
-                      className="w-full px-3 py-2 rounded-lg text-left text-[13px] font-primary text-text-primary hover:bg-bg-card-alt"
-                      onClick={() => {
-                        onToggleMute();
-                        setIsHeaderMenuOpen(false);
-                      }}
-                    >
-                      {isMuted ? t('layout.unmute') : t('layout.mute')}
-                    </button>
-                  )}
                 </div>
               )}
             </div>
