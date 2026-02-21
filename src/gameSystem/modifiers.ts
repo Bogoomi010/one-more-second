@@ -23,7 +23,7 @@ export const GAMEPLAY_MODIFIERS: GameplayModifierDefinition[] = [
     name: '바둑판 난사',
     description:
       '정사각형 맵 가장자리(상/하/좌/우)에서 안쪽 직선 탄환이 발사되며, 최대 2개 십자 레인이 동시에 생성됩니다.',
-    weight: 0.12,
+    weight: 0.15,
     bulletSkin: gimmickBulletSkin,
     effects: {
       crosslineSpawn: true,
@@ -33,7 +33,7 @@ export const GAMEPLAY_MODIFIERS: GameplayModifierDefinition[] = [
     id: 'shrink-field-80',
     name: 'Shrink Field',
     description: '플레이 가능한 맵이 80%로 축소됩니다.',
-    weight: 0.1,
+    weight: 0.25,
     bulletSkin: gimmickBulletSkin,
     effects: {
       playfieldScale: 0.8,
@@ -43,7 +43,7 @@ export const GAMEPLAY_MODIFIERS: GameplayModifierDefinition[] = [
     id: 'haste-bullets-110',
     name: '스피드 포화',
     description: '기본 추적 탄환의 속도가 120%로 증가합니다.',
-    weight: 0.08,
+    weight: 0.25,
     bulletSkin: gimmickBulletSkin,
     effects: {
       trackingSpeedMultiplier: 1.2,
@@ -53,7 +53,7 @@ export const GAMEPLAY_MODIFIERS: GameplayModifierDefinition[] = [
     id: 'one-life',
     name: '인생은 한 방!',
     description: '목숨이 3개에서 1개로 줄어듭니다.',
-    weight: 0.2,
+    weight: 0.3,
     bulletSkin: gimmickBulletSkin,
     effects: {
       startingLives: 1,
@@ -63,7 +63,7 @@ export const GAMEPLAY_MODIFIERS: GameplayModifierDefinition[] = [
     id: 'critical-shot',
     name: '회심의 한 발',
     description: '주기적으로 플레이어를 정조준하는 200% 속도 회심 탄환이 추가로 발사됩니다.',
-    weight: 0.1,
+    weight: 0.15,
     bulletSkin: gimmickBulletSkin,
     effects: {
       criticalShotSpawn: true,

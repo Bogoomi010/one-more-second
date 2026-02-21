@@ -210,11 +210,11 @@ describe('Achievements System', () => {
       hitsTaken: 2,
       firstHitSeconds: 12,
       usedGimmicks: [
-        { id: 'crossline-40-80', name: 'Crossline', weight: 0.12 },
-        { id: 'shrink-field-80', name: 'Shrink Field', weight: 0.1 },
-        { id: 'haste-bullets-110', name: 'Haste Bullets', weight: 0.08 },
-        { id: 'one-life', name: 'One Life', weight: 0.2 },
-        { id: 'critical-shot', name: 'Critical Shot', weight: 0.1 },
+        { id: 'crossline-40-80', name: 'Crossline', weight: 0.15 },
+        { id: 'shrink-field-80', name: 'Shrink Field', weight: 0.25 },
+        { id: 'haste-bullets-110', name: 'Haste Bullets', weight: 0.25 },
+        { id: 'one-life', name: 'One Life', weight: 0.3 },
+        { id: 'critical-shot', name: 'Critical Shot', weight: 0.15 },
       ],
     };
 
