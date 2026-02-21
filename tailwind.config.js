@@ -14,6 +14,10 @@ module.exports = {
 
       // Font Sizes
       fontSize: {
+        'brand-title': ['18px', { lineHeight: '1' }],
+        'brand-title-lg': ['26px', { lineHeight: '1' }],
+        'brand-subtitle': ['9px', { lineHeight: '1.2' }],
+        'brand-subtitle-lg': ['10px', { lineHeight: '1.2' }],
         'ui-label': ['9px', { lineHeight: '1.2', letterSpacing: '0.04em' }],
         'ui-meta': ['10px', { lineHeight: '1.2', letterSpacing: '0.04em' }],
         'ui-tab': ['12px', { lineHeight: '1.2' }],

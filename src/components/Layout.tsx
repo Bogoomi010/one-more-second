@@ -229,17 +229,17 @@ export default function Layout({
               className="inline-flex items-baseline gap-1 font-primary bg-transparent border-none p-0 cursor-pointer leading-none"
               aria-label={t('layout.goHome')}
             >
-              <span className="text-[18px] sm:text-[26px] leading-none italic font-bold text-text-primary">
+              <span className="text-brand-title sm:text-brand-title-lg leading-none italic font-bold text-text-primary">
                 ONE
               </span>
-              <span className="text-[18px] sm:text-[26px] leading-none italic font-bold text-accent-green">
+              <span className="text-brand-title sm:text-brand-title-lg leading-none italic font-bold text-accent-green">
                 MORE
               </span>
-              <span className="hidden sm:inline text-[26px] leading-none italic font-bold text-text-primary">
+              <span className="hidden sm:inline text-brand-title-lg leading-none italic font-bold text-text-primary">
                 SECOND
               </span>
             </button>
-            <span className="text-[9px] sm:text-[10px] leading-none text-text-muted font-primary">
+            <span className="text-brand-subtitle sm:text-brand-subtitle-lg leading-none text-text-muted font-primary">
               dodge game
             </span>
           </div>
