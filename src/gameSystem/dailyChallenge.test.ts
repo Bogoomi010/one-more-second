@@ -1,5 +1,6 @@
 import { ensureDailyChallenge, applyDailyChallengeResult } from './dailyChallenge';
 import { defaultProfile } from './storage';
+import { PlayerProfile } from './types';
 
 const FIXED_DAY = new Date('2026-02-01');
 
@@ -45,7 +46,7 @@ describe('Daily Challenge System', () => {
     });
 
     it('should reset completion status for new day', () => {
-      const profile = {
+      const profile: PlayerProfile = {
         ...defaultProfile(),
         dailyChallenge: {
           ...defaultProfile().dailyChallenge,
@@ -66,7 +67,7 @@ describe('Daily Challenge System', () => {
 
   describe('applyDailyChallengeResult', () => {
     it('should reward coins when survival target is met', () => {
-      const profile = {
+      const profile: PlayerProfile = {
         ...defaultProfile(),
         coins: 100,
         dailyChallenge: {
@@ -87,7 +88,7 @@ describe('Daily Challenge System', () => {
     });
 
     it('should reward coins for no-hit challenge when hits are 0', () => {
-      const profile = {
+      const profile: PlayerProfile = {
         ...defaultProfile(),
         coins: 100,
         dailyChallenge: {
@@ -109,7 +110,7 @@ describe('Daily Challenge System', () => {
     });
 
     it('should not reward no-hit challenge when hits are taken', () => {
-      const profile = {
+      const profile: PlayerProfile = {
         ...defaultProfile(),
         coins: 100,
         dailyChallenge: {
@@ -131,7 +132,7 @@ describe('Daily Challenge System', () => {
     });
 
     it('should reward coins for limited-hits challenge', () => {
-      const profile = {
+      const profile: PlayerProfile = {
         ...defaultProfile(),
         coins: 100,
         dailyChallenge: {
@@ -153,7 +154,7 @@ describe('Daily Challenge System', () => {
     });
 
     it('should not reward if already completed', () => {
-      const profile = {
+      const profile: PlayerProfile = {
         ...defaultProfile(),
         coins: 100,
         dailyChallenge: {

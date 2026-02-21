@@ -2,6 +2,7 @@ import React from 'react';
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import Game from './index';
 import { defaultProfile } from '../../gameSystem/storage';
+import { PlayerProfile } from '../../gameSystem/types';
 
 jest.mock('react-i18next', () => ({
   useTranslation: () => ({
@@ -116,7 +117,7 @@ describe('Game Page Integration', () => {
   });
 
   it('should apply daily challenge reward', async () => {
-    const profile = {
+    const profile: PlayerProfile = {
       ...defaultProfile(),
       dailyChallenge: {
         ...defaultProfile().dailyChallenge,
