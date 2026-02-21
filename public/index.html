@@ -24,13 +24,13 @@
       content="A fast-paced survival game with rankings, daily challenges, and collectible rewards. Play instantly in your browser."
     />
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="%PUBLIC_URL%/" />
+    <meta property="og:url" content="%PUBLIC_URL%" />
     <meta property="og:image" content="%PUBLIC_URL%/logo512.png" />
     <meta property="og:site_name" content="ONE MORE SECOND" />
     <meta property="og:locale" content="en_US" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:image:alt" content="ONE MORE SECOND gameplay preview image" />
-    <meta name="twitter:url" content="%PUBLIC_URL%/" />
+    <meta name="twitter:url" content="%PUBLIC_URL%" />
     <meta name="twitter:title" content="ONE MORE SECOND" />
     <meta
       name="twitter:description"
@@ -38,8 +38,6 @@
     />
     <meta name="twitter:image" content="%PUBLIC_URL%/logo512.png" />
     <link rel="canonical" href="%PUBLIC_URL%/" />
-    <link rel="preload" href="%PUBLIC_URL%/logo192.png" as="image" type="image/png" />
-    <link rel="preload" href="%PUBLIC_URL%/logo512.png" as="image" type="image/png" />
     <link rel="preconnect" href="https://firestore.googleapis.com" crossorigin />
     <link rel="preconnect" href="https://identitytoolkit.googleapis.com" crossorigin />
     <link rel="preconnect" href="https://securetoken.googleapis.com" crossorigin />
@@ -51,7 +49,11 @@
       href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Quicksand:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="alternate" href="/?lang=en" hreflang="en" />
+    <link rel="alternate" href="/en" hreflang="en" />
+    <link rel="alternate" href="/ko" hreflang="ko" />
+    <link rel="alternate" href="/ja" hreflang="ja" />
+    <link rel="alternate" href="/zh-CN" hreflang="zh-CN" />
+    <link rel="alternate" href="/en" hreflang="x-default" />
     <script id="ld-json" type="application/ld+json">
       {
         "@context": "https://schema.org",
@@ -71,8 +73,24 @@
     <script>
       (function () {
         var origin = window.location.origin;
-        var canonicalUrl = origin + '/';
+        var path = window.location.pathname || '/';
+        var supportedLanguageCodes = ['en', 'ko', 'ja', 'zh-CN'];
+        var pathSegments = path.split('/').filter(Boolean);
+        var languageSegment = pathSegments.length > 0 ? pathSegments[0] : '';
+        var language = supportedLanguageCodes.indexOf(languageSegment) >= 0 ? languageSegment : 'en';
+        var canonicalPath = path;
+        var canonicalUrl = origin + canonicalPath;
         var logoUrl = origin + '/logo512.png';
+        var htmlLang = language === 'zh-CN' ? 'zh-CN' : language;
+        var ogLocale = language === 'zh-CN' ? 'zh_CN' : language + '_' + language.toUpperCase();
+
+        if (supportedLanguageCodes.indexOf(languageSegment) < 0) {
+          canonicalPath = '/' + language;
+          canonicalUrl = origin + canonicalPath;
+        } else if (canonicalPath.length > 1) {
+          canonicalPath = canonicalPath.replace(/\/+$/, '');
+          canonicalUrl = origin + canonicalPath;
+        }
 
         var setAttr = function (selector, attribute, value) {
           var node = document.querySelector(selector);
@@ -84,8 +102,10 @@
         setAttr('link[rel="canonical"]', 'href', canonicalUrl);
         setAttr('meta[property="og:url"]', 'content', canonicalUrl);
         setAttr('meta[property="og:image"]', 'content', logoUrl);
+        setAttr('meta[property="og:locale"]', 'content', ogLocale);
         setAttr('meta[name="twitter:url"]', 'content', canonicalUrl);
         setAttr('meta[name="twitter:image"]', 'content', logoUrl);
+        document.documentElement.setAttribute('lang', htmlLang);
 
         var ldJson = document.getElementById('ld-json');
         if (ldJson) {
@@ -93,6 +113,7 @@
             var data = JSON.parse(ldJson.textContent || '{}');
             data.url = canonicalUrl;
             data.image = logoUrl;
+            data.inLanguage = [htmlLang];
             ldJson.textContent = JSON.stringify(data);
           } catch (error) {
             // no-op

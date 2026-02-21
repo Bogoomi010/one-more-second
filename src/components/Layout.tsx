@@ -8,7 +8,7 @@ import RankingPanel from './RankingPanel';
 import StatsPanel from './StatsPanel';
 import GameBottomBar from './GameBottomBar';
 import { LeftColumn, MainColumn, RightColumn } from './ColumnSlots';
-import { SUPPORTED_LANGUAGES, getLanguagePath, normalizeLanguage, type SupportedLanguage } from '../i18n';
+import { SUPPORTED_LANGUAGES, getLanguagePath, normalizeLanguage, type SupportedLanguage } from '../i18n/index';
 const LANGUAGE_NAMES: Record<SupportedLanguage, string> = {
   ko: '한국어',
   en: 'English',

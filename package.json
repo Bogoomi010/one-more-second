@@ -7,7 +7,6 @@
     "@flaticon/flaticon-uicons": "^3.3.1",
     "@pixi/assets": "^7.4.3",
     "@pixi/core": "^7.4.3",
-    "@pixi/sound": "5.2.3",
     "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.1.0",

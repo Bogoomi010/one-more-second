@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Application, Graphics, Rectangle, Sprite, Texture } from 'pixi.js';
-import { sound } from '@pixi/sound';
 import { GameResult, GameplayModifierId } from '../../../gameSystem/types';
 import { loadSettings, SETTINGS_UPDATED_EVENT } from '../../../gameSystem/settings';
 import { audioManager } from '../../../gameSystem/audio';
@@ -14,8 +13,6 @@ import {
   normalizeGameplayModifierIds,
   resolveModifierEffects,
 } from '../../../gameSystem/modifiers';
-import bgmFile from '../../../Sound/Sound_main.mp3';
-
 const PLAYER_SPEED = 240;
 const PLAYER_SIZE = 28;
 const BULLET_SIZE = 12;
@@ -36,7 +33,6 @@ const AI_SIDE_SWITCH_MS = 920;
 const AI_WALL_EVASION_PADDING = 26;
 const AI_CENTER_PULL_STRENGTH = 0.62;
 const AI_IDLE_ORBIT_STRENGTH = 0.18;
-export const PIXI_BGM_ALIAS = 'oms-main-bgm';
 const DESKTOP_CANVAS_ASPECT_RATIO = 1;
 const MOBILE_CANVAS_BREAKPOINT_PX = 768;
 const MOVEMENT_CODES = new Set([
@@ -141,12 +137,6 @@ type GameState = {
   spawnArea: Playfield;
 };
 
-function resolveBgmVolume(): number {
-  const settings = loadSettings();
-  if (!settings.audio.bgmEnabled) return 0;
-  return (settings.audio.bgmVolume / 100) * 0.4;
-}
-
 function resolveTouchControls() {
   const settings = loadSettings();
   const speedMultiplier = settings.graphics.touchMoveSpeed / 100;
@@ -174,10 +164,6 @@ function resolveCanvasAspectRatio(): number {
   const height = Math.max(1, window.innerHeight);
   const viewportRatio = width / height;
   return Math.max(0.6, Math.min(2.2, viewportRatio));
-}
-
-function isPromise<T>(value: T | Promise<T>): value is Promise<T> {
-  return Boolean(value && typeof (value as Promise<T>).then === 'function');
 }
 
 function createPlayfield(width: number, height: number, scale: number): Playfield {
@@ -222,7 +208,6 @@ function GameCanvasComponent({
   const fpsLimitRef = useRef<number>(0);
   const frameAccumulatorRef = useRef(0);
   const countdownRef = useRef<number | null>(null);
-  const bgmPlaybackSessionRef = useRef(0);
   const [canvasAspectRatio, setCanvasAspectRatio] = useState(resolveCanvasAspectRatio);
 
   useEffect(() => {
@@ -373,102 +358,33 @@ function GameCanvasComponent({
     onSpawnIntervalChangeRef.current(INITIAL_SPAWN_INTERVAL);
     syncCanvasSettings();
 
-    void audioManager.init();
     let destroyed = false;
 
-    if (!sound.exists(PIXI_BGM_ALIAS)) {
-      sound.add(PIXI_BGM_ALIAS, {
-        url: bgmFile,
-        loop: true,
-        volume: resolveBgmVolume(),
-      });
-    } else {
-      sound.volume(PIXI_BGM_ALIAS, resolveBgmVolume());
-    }
-
-    const resumeAllAudioContexts = () => {
-      if (!audioManager.canPlayAudioNow()) return;
-
-      audioManager.resume();
-      const pixiAudioContext = sound.context?.audioContext;
-      if (pixiAudioContext && pixiAudioContext.state === 'suspended') {
-        void pixiAudioContext.resume().catch(() => {
-          // Browser can reject before user activation.
-        });
-      }
-      sound.resumeAll();
-    };
-
     const stopBgm = () => {
-      bgmPlaybackSessionRef.current += 1;
-      if (sound.exists(PIXI_BGM_ALIAS)) {
-        try {
-          sound.stop(PIXI_BGM_ALIAS);
-        } catch (error) {
-          console.warn('Failed to stop BGM:', error);
-        }
-      }
       audioManager.stopBGM();
     };
 
     const stopBgmAndCleanup = () => {
       stopBgm();
-      if (sound.exists(PIXI_BGM_ALIAS)) {
-        try {
-          sound.remove(PIXI_BGM_ALIAS);
-        } catch (error) {
-          console.warn('Failed to remove BGM alias:', error);
-        }
-      }
     };
 
     const ensureBgmPlayback = () => {
       if (destroyed || state.gameOver) return;
       const settings = loadSettings();
       if (!settings.audio.bgmEnabled) return;
-      if (!sound.exists(PIXI_BGM_ALIAS)) return;
-      if (sound.find(PIXI_BGM_ALIAS).isPlaying) return;
-      const playbackSession = bgmPlaybackSessionRef.current;
+      if (!audioManager.canPlayAudioNow()) return;
 
-      try {
-        const playback = sound.play(PIXI_BGM_ALIAS, {
-          loop: true,
-          singleInstance: true,
-          volume: resolveBgmVolume(),
-        });
-
-        if (isPromise(playback)) {
-          void playback
-            .then(() => {
-              if (
-                destroyed ||
-                state.gameOver ||
-                playbackSession !== bgmPlaybackSessionRef.current
-              ) {
-                stopBgm();
-              }
-            })
-            .catch(() => {
-              // Autoplay lock can reject; retry on next gesture.
-            });
-        } else if (
-          destroyed ||
-          state.gameOver ||
-          playbackSession !== bgmPlaybackSessionRef.current
-        ) {
-          stopBgm();
-        }
-      } catch {
-        // Autoplay lock can throw; retry on next gesture.
-      }
+      audioManager.resume();
+      audioManager.playBGM();
     };
 
     const unlockAndPlayAudio = () => {
       if (state.gameOver) return;
       audioManager.markUserInteraction();
-      void audioManager.init();
-      resumeAllAudioContexts();
-      ensureBgmPlayback();
+      const initPromise = audioManager.init();
+      void initPromise.finally(() => {
+        ensureBgmPlayback();
+      });
     };
 
     const drawBackground = (width: number, height: number) => {
@@ -1000,7 +916,7 @@ function GameCanvasComponent({
     drawBackground(state.viewportWidth, state.viewportHeight);
     // Try auto-resume only if user interaction was already confirmed for audio playback.
     if (audioManager.canPlayAudioNow()) {
-      resumeAllAudioContexts();
+      audioManager.resume();
       ensureBgmPlayback();
     }
     app.ticker.add(ticker);

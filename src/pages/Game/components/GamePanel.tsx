@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { sound } from '@pixi/sound';
 import { useTranslation } from 'react-i18next';
 import GameCanvas from './GameCanvas';
 import MobileJoystick from './MobileJoystick';
@@ -7,7 +6,6 @@ import { audioManager } from '../../../gameSystem/audio';
 import { loadSettings } from '../../../gameSystem/settings';
 import { GameResult, GameplayModifierId, PlayerProfile } from '../../../gameSystem/types';
 import lifeIcon from '../../../assets/icon_life.png';
-import { PIXI_BGM_ALIAS } from './GameCanvas';
 
 interface NewGamePanelProps {
   profile: PlayerProfile;
@@ -37,25 +35,11 @@ const COUNTDOWN_SECONDS = 3;
 const COUNTDOWN_STEP_MS = 1000;
 
 function primeAudioContexts() {
-  const hasWebAudioSupport =
-    typeof window !== 'undefined' &&
-    (typeof window.AudioContext === 'function' ||
-      typeof (window as Window & { webkitAudioContext?: typeof AudioContext })
-        .webkitAudioContext === 'function');
-  if (!hasWebAudioSupport || sound.useLegacy) {
-    sound.resumeAll();
-    return;
-  }
-
   void audioManager.init();
   audioManager.markUserInteraction();
-  const pixiAudioContext = sound.context?.audioContext;
-  if (pixiAudioContext && pixiAudioContext.state === 'suspended') {
-    void pixiAudioContext.resume().catch(() => {
-      // Browser can reject before a valid user gesture.
-    });
+  if (audioManager.canPlayAudioNow()) {
+    audioManager.resume();
   }
-  sound.resumeAll();
 }
 
 const formatTime = (seconds: number): string => {
@@ -96,13 +80,6 @@ export default function NewGamePanel({
   const isCountingDown = countdown !== null;
 
   const stopBgmPlayback = () => {
-    if (sound.exists(PIXI_BGM_ALIAS)) {
-      try {
-        sound.stop(PIXI_BGM_ALIAS);
-      } catch (error) {
-        console.warn('Failed to stop BGM on game over:', error);
-      }
-    }
     audioManager.stopBGM();
   };
 

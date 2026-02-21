@@ -103,8 +103,15 @@ export default function ProfileSetupModal({
   };
 
   const handleConfirm = async () => {
+    console.debug('[ProfileSetupModal] handleConfirm start', {
+      uid: user?.uid,
+      rawNickname: nickname,
+      rawCountry: country,
+    });
+
     const validationError = validateNickname(nickname);
     if (validationError) {
+      console.debug('[ProfileSetupModal] validation failed', validationError);
       setError(validationError);
       return;
     }
@@ -115,15 +122,23 @@ export default function ProfileSetupModal({
       normalizedNickname = normalizeNickname(nickname);
       normalizedCountry = normalizeCountryCode(country);
     } catch (error) {
+      console.debug('[ProfileSetupModal] normalization failed', error);
       setError(error instanceof Error ? error.message : t('profileSetup.errorInvalidNickname'));
       return;
     }
 
     setIsSubmitting(true);
     setError(null);
+    console.debug('[ProfileSetupModal] normalized identity', {
+      normalizedNickname,
+      normalizedCountry,
+      uid: user?.uid,
+    });
 
     try {
+      console.debug('[ProfileSetupModal] checking nickname availability', normalizedNickname);
       const isAvailable = await isNicknameAvailable(normalizedNickname, user?.uid);
+      console.debug('[ProfileSetupModal] isNicknameAvailable result', isAvailable);
       if (!isAvailable) {
         setError(t('profileSetup.errorNicknameTaken'));
         setIsSubmitting(false);
@@ -134,8 +149,10 @@ export default function ProfileSetupModal({
         nickname: normalizedNickname,
         country: normalizedCountry,
       });
+      console.debug('[ProfileSetupModal] onConfirm resolved, closing modal');
       onClose();
     } catch (e) {
+      console.warn('[ProfileSetupModal] handleConfirm failed', e);
       setError(e instanceof Error ? e.message : t('profileSetup.errorSaveFailed'));
     } finally {
       setIsSubmitting(false);

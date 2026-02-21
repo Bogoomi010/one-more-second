@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { sound } from '@pixi/sound';
+import { Navigate, Route, Routes, useLocation, useNavigate, useParams } from 'react-router-dom';
 import Layout from './components/Layout';
 import DifficultyModal from './components/DifficultyModal';
 import ProfileSetupModal from './components/ProfileSetupModal';
@@ -22,6 +22,13 @@ import ShopModal from './pages/Game/overlays/ShopModal';
 import AchievementsModal from './pages/Game/overlays/AchievementsModal';
 import { useAuth } from './context/AuthContext';
 import i18n from './i18n';
+import {
+  getLanguageFromPath,
+  getLanguagePath,
+  normalizeLanguage,
+  SUPPORTED_LANGUAGES,
+  type SupportedLanguage,
+} from './i18n/index';
 import { getFirebaseAuthErrorMessage } from './utils/firebaseAuthError';
 import { GameplayModifierId } from './gameSystem/types';
 import {
@@ -35,7 +42,9 @@ type ToastVariant = 'info' | 'success' | 'error';
 
 const ALLOWED_AI_ACCOUNT_EMAILS = new Set(['kbkboldmolt@gmail.com']);
 
-function App() {
+function AppShell() {
+  const location = useLocation();
+
   const {
     firebaseEnabled,
     user,
@@ -71,6 +80,16 @@ function App() {
   const canUseAiMode = Boolean(user?.email && ALLOWED_AI_ACCOUNT_EMAILS.has(user.email.toLowerCase()));
 
   useEffect(() => {
+    const pathLanguage = getLanguageFromPath(location.pathname);
+    if (!pathLanguage) return;
+
+    if ((i18n.resolvedLanguage ?? i18n.language) !== pathLanguage) {
+      void i18n.changeLanguage(pathLanguage);
+    }
+    document.documentElement.setAttribute('lang', pathLanguage === 'zh-CN' ? 'zh-CN' : pathLanguage);
+  }, [location.pathname]);
+
+  useEffect(() => {
     if (!canUseAiMode && isAiMode) {
       setIsAiMode(false);
     }
@@ -98,7 +117,7 @@ function App() {
     audioManager.updateVolumes();
 
     if (!currentlyMuted) {
-      sound.stopAll();
+      audioManager.stopBGM();
     }
 
     setIsAudioMuted(!next.audio.bgmEnabled && !next.audio.sfxEnabled);
@@ -148,7 +167,8 @@ function App() {
 
       if (cancelled) return;
 
-      if (language) {
+      const pathLanguage = getLanguageFromPath(location.pathname);
+      if (language && !pathLanguage) {
         await i18n.changeLanguage(language);
       }
 
@@ -223,11 +243,27 @@ function App() {
   };
 
   const handleIdentityConfirm = async (identity: UserIdentityProfile) => {
-    if (!user) return;
-    await upsertUserIdentityProfile(user.uid, identity);
-    setUserIdentity(identity);
-    setUserCountry(identity.country);
-    setRankingRefreshTrigger((prev) => prev + 1);
+    if (!user) {
+      console.warn('[App] handleIdentityConfirm blocked: no user');
+      return;
+    }
+
+    console.debug('[App] handleIdentityConfirm start', {
+      uid: user.uid,
+      identity,
+    });
+
+    try {
+      await upsertUserIdentityProfile(user.uid, identity);
+      setUserIdentity(identity);
+      setUserCountry(identity.country);
+      setRankingRefreshTrigger((prev) => prev + 1);
+      console.debug('[App] handleIdentityConfirm success', {
+        uid: user.uid,
+      });
+    } catch (error) {
+      console.error('[App] handleIdentityConfirm failed', error);
+    }
   };
 
   const userInitial = user?.displayName?.trim()?.charAt(0)?.toUpperCase();
@@ -383,6 +419,42 @@ function App() {
         achievementIds={achievementPopupIds}
       />
     </>
+  );
+}
+
+function AppLanguageRoute() {
+  const { lang } = useParams<{ lang: string }>();
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const normalizedLanguage = normalizeLanguage(lang);
+  const isSupportedLanguage = Boolean(lang && SUPPORTED_LANGUAGES.includes(lang as SupportedLanguage));
+
+  useEffect(() => {
+    if (isSupportedLanguage) return;
+
+    const segments = location.pathname.split('/').filter(Boolean);
+    const remainingSegments = segments.slice(1);
+    const fallbackPath = getLanguagePath(normalizedLanguage) +
+      (remainingSegments.length > 0 ? `/${remainingSegments.join('/')}` : '');
+
+    navigate(fallbackPath, { replace: true });
+  }, [isSupportedLanguage, location.pathname, navigate, normalizedLanguage]);
+
+  if (!isSupportedLanguage) {
+    return null;
+  }
+
+  return <AppShell />;
+}
+
+function App() {
+  return (
+    <Routes>
+      <Route path="/" element={<Navigate to={getLanguagePath('en')} replace />} />
+      <Route path="/:lang/*" element={<AppLanguageRoute />} />
+      <Route path="*" element={<Navigate to={getLanguagePath('en')} replace />} />
+    </Routes>
   );
 }
 

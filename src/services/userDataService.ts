@@ -113,17 +113,27 @@ async function upsertPublicIdentityProfile(
   const db = firebaseDb;
   if (!firebaseEnabled || !db) return;
 
-  await setDoc(
-    doc(db, USER_PUBLIC_PROFILES_COLLECTION, uid),
-    {
-      uid,
-      nickname: normalizedIdentity.nickname,
-      normalizedNickname: normalizeNickname(normalizedIdentity.nickname),
-      country: normalizedIdentity.country,
-      updatedAt: serverTimestamp(),
-    },
-    { merge: true }
-  );
+  console.debug('[userDataService] upsertPublicIdentityProfile start', {
+    uid,
+    normalizedIdentity,
+  });
+  try {
+    await setDoc(
+      doc(db, USER_PUBLIC_PROFILES_COLLECTION, uid),
+      {
+        uid,
+        nickname: normalizedIdentity.nickname,
+        normalizedNickname: normalizeNickname(normalizedIdentity.nickname),
+        country: normalizedIdentity.country,
+        updatedAt: serverTimestamp(),
+      },
+      { merge: true }
+    );
+    console.debug('[userDataService] upsertPublicIdentityProfile success', { uid });
+  } catch (error) {
+    console.error('[userDataService] upsertPublicIdentityProfile failed', error);
+    throw error;
+  }
 }
 
 async function appendScoreSubmissionForUser(
@@ -488,19 +498,36 @@ export async function upsertUserIdentityProfile(
 ): Promise<void> {
   const normalizedIdentity = sanitizeIdentityProfile(identity);
   const db = firebaseDb;
-  if (!firebaseEnabled || !db) return;
+  if (!firebaseEnabled || !db) {
+    console.debug('[userDataService] upsertUserIdentityProfile skipped (firebase disabled)', {
+      uid,
+    });
+    return;
+  }
 
-  await setDoc(
-    doc(db, 'users', uid),
-    {
-      nickname: normalizedIdentity.nickname,
-      country: normalizedIdentity.country,
-      updatedAt: serverTimestamp(),
-    },
-    { merge: true }
-  );
+  console.debug('[userDataService] upsertUserIdentityProfile start', {
+    uid,
+    normalizedIdentity,
+  });
 
-  await upsertPublicIdentityProfile(uid, normalizedIdentity);
+  try {
+    await setDoc(
+      doc(db, 'users', uid),
+      {
+        nickname: normalizedIdentity.nickname,
+        country: normalizedIdentity.country,
+        updatedAt: serverTimestamp(),
+      },
+      { merge: true }
+    );
+    console.debug('[userDataService] upsertUserIdentityProfile wrote users doc', { uid });
+
+    await upsertPublicIdentityProfile(uid, normalizedIdentity);
+    console.debug('[userDataService] upsertUserIdentityProfile wrote public profile', { uid });
+  } catch (error) {
+    console.error('[userDataService] upsertUserIdentityProfile failed', error);
+    throw error;
+  }
 }
 
 export async function isNicknameAvailable(
@@ -518,6 +545,10 @@ export async function isNicknameAvailable(
   }
 
   try {
+    console.debug('[userDataService] isNicknameAvailable query', {
+      normalized,
+      currentUid,
+    });
     const q = query(
       collection(db, USER_PUBLIC_PROFILES_COLLECTION),
       where('normalizedNickname', '==', normalized),
@@ -526,7 +557,14 @@ export async function isNicknameAvailable(
     const snapshot = await getDocs(q);
     if (snapshot.empty) return true;
 
-    return snapshot.docs.every((docSnap) => Boolean(currentUid && docSnap.id === currentUid));
+    const result = snapshot.docs.every((docSnap) => Boolean(currentUid && docSnap.id === currentUid));
+    console.debug('[userDataService] isNicknameAvailable result', {
+      normalized,
+      currentUid,
+      snapshotSize: snapshot.size,
+      result,
+    });
+    return result;
   } catch (error) {
     console.error('Nickname availability check failed:', error);
     return true;
