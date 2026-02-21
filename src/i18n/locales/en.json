@@ -5,6 +5,7 @@
   "layout": {
     "navGame": "Game",
     "navMarket": "Shop",
+    "navBrandStory": "Brand Story",
     "navGlobalWall": "Global Wall",
     "goHome": "Go to homepage",
     "languageSwitch": "Change language",
@@ -18,6 +19,9 @@
     "userMenuLogin": "Sign In",
     "userMenuLogout": "Sign Out",
     "userDefaultName": "User",
+    "brandStoryTitle": "Brand Story",
+    "brandStoryDescription": "I built this because I missed the dodge game I used to play when I was younger. I put together the parts I liked and made it more fun. Play a round whenever you want, and leave your name on the ranking!",
+    "brandStoryClose": "Close brand story",
     "footerYear": "© 2024",
     "footerBrand": "ONE MORE SECOND",
     "footerTagline": ". STAY FOCUSED."

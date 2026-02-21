@@ -5,6 +5,7 @@
   "layout": {
     "navGame": "ゲーム",
     "navMarket": "ショップ",
+    "navBrandStory": "ブランドストーリー",
     "navGlobalWall": "グローバルウォール",
     "goHome": "ホームへ移動",
     "languageSwitch": "言語を変更",
@@ -18,6 +19,9 @@
     "userMenuLogin": "ログイン",
     "userMenuLogout": "ログアウト",
     "userDefaultName": "ユーザー",
+    "brandStoryTitle": "ブランドストーリー",
+    "brandStoryDescription": "子どもの頃に遊んでいたドッジゲームが懐かしくて作りました。自分の好きな要素を取り入れて、さらに楽しく作り直しました。気軽に一回遊んで、ランキングに名前を残してください！",
+    "brandStoryClose": "ブランドストーリーを閉じる",
     "footerYear": "© 2024",
     "footerBrand": "ONE MORE SECOND",
     "footerTagline": ". STAY FOCUSED."

@@ -5,6 +5,7 @@
   "layout": {
     "navGame": "游戏",
     "navMarket": "商店",
+    "navBrandStory": "品牌故事",
     "navGlobalWall": "全球墙",
     "goHome": "返回首页",
     "languageSwitch": "切换语言",
@@ -18,6 +19,9 @@
     "userMenuLogin": "登录",
     "userMenuLogout": "登出",
     "userDefaultName": "用户",
+    "brandStoryTitle": "品牌故事",
+    "brandStoryDescription": "我在想起小时候常玩的躲避游戏后决定制作它。把我喜欢的元素融合进去，让它变得更有趣。轻松玩一局，去排行榜留下你的名字吧！",
+    "brandStoryClose": "关闭品牌故事",
     "footerYear": "© 2024",
     "footerBrand": "ONE MORE SECOND",
     "footerTagline": ". STAY FOCUSED."

@@ -64,6 +64,7 @@ interface LayoutProps {
   userPhotoUrl?: string;
   compactPanelModeOverride?: boolean;
   onCompactPanelModeChange?: (enabled: boolean) => void;
+  onBrandStoryClick?: () => void;
 }
 
 type MobilePanelType = 'ranking' | 'stats';
@@ -88,11 +89,13 @@ export default function Layout({
   userPhotoUrl,
   compactPanelModeOverride,
   onCompactPanelModeChange,
+  onBrandStoryClick,
 }: LayoutProps) {
   const { t, i18n } = useTranslation();
   const [isLanguageMenuOpen, setIsLanguageMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [compactPanelMode, setCompactPanelMode] = useState(false);
+  const [isBrandStoryOpen, setIsBrandStoryOpen] = useState(false);
   const [mobilePanel, setMobilePanel] = useState<MobilePanelType | null>(null);
   const [onlineUsers, setOnlineUsers] = useState<number>(DEFAULT_ONLINE_USERS_FALLBACK);
   const [isUserPhotoLoadFailed, setIsUserPhotoLoadFailed] = useState(false);
@@ -165,6 +168,14 @@ export default function Layout({
 
   const handleLanguageButtonClick = () => {
     setIsLanguageMenuOpen(prev => !prev);
+  };
+
+  const handleBrandStoryClick = () => {
+    if (onBrandStoryClick) {
+      onBrandStoryClick();
+      return;
+    }
+    setIsBrandStoryOpen(prev => !prev);
   };
 
   const handleUserButtonClick = () => {
@@ -248,6 +259,15 @@ export default function Layout({
             >
               {t('layout.navMarket')}
             </button>
+            <button
+              type="button"
+              className="text-text-muted font-primary text-sm sm:text-lg font-bold cursor-pointer bg-transparent border-none p-0 hover:text-text-primary transition-colors duration-200"
+              onClick={handleBrandStoryClick}
+              title={t('layout.navBrandStory')}
+              aria-label={t('layout.navBrandStory')}
+            >
+              {t('layout.navBrandStory')}
+            </button>
           </div>
 
           <div className="hidden md:block w-px h-6 bg-bg-card-alt" />
@@ -264,6 +284,17 @@ export default function Layout({
                 aria-label={t('layout.navMarket')}
               >
                 {t('layout.navMarket')}
+              </button>
+              <button
+                type="button"
+                className={compactPanelMode
+                  ? 'h-8 px-2 rounded-lg border border-border-secondary bg-bg-card text-text-primary text-[10px] sm:text-[11px] font-primary font-semibold'
+                  : 'md:hidden h-8 px-2 rounded-lg border border-border-secondary bg-bg-card text-text-primary text-[11px] font-primary font-semibold'}
+                onClick={handleBrandStoryClick}
+                title={t('layout.navBrandStory')}
+                aria-label={t('layout.navBrandStory')}
+              >
+                {t('layout.navBrandStory')}
               </button>
             </>
           )}
@@ -503,6 +534,44 @@ export default function Layout({
               )}
             </div>
           </div>
+        </div>
+      )}
+
+      {isBrandStoryOpen && (
+        <div
+          className="absolute inset-0 z-[10010] bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6"
+          onClick={() => setIsBrandStoryOpen(false)}
+        >
+          <section
+            className="w-full max-w-[900px] max-h-[88vh] overflow-y-auto rounded-3xl border border-border-primary bg-bg-secondary px-5 py-6 sm:px-8 sm:py-7 shadow-[0_34px_100px_rgba(0,0,0,0.55)]"
+            onClick={event => event.stopPropagation()}
+          >
+            <div className="flex items-start justify-between gap-2">
+              <div>
+                <h2 className="text-2xl font-extrabold font-primary text-text-primary">{t('layout.brandStoryTitle')}</h2>
+              </div>
+              <button
+                type="button"
+                className="h-8 w-8 rounded-lg border border-border-secondary bg-bg-card text-text-primary text-lg font-bold"
+                onClick={() => setIsBrandStoryOpen(false)}
+                aria-label={t('layout.brandStoryClose')}
+              >
+                ×
+              </button>
+            </div>
+            <div className="mt-5 space-y-3 text-text-primary/90 font-primary leading-relaxed">
+              {t('layout.brandStoryDescription')
+                .split('\n')
+                .map((line, index) => (
+                  <p
+                    key={`${line}-${index}`}
+                    className={index > 0 ? 'mt-2' : ''}
+                  >
+                    {line}
+                  </p>
+                ))}
+            </div>
+          </section>
         </div>
       )}
 

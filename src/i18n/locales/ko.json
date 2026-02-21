@@ -5,6 +5,7 @@
   "layout": {
     "navGame": "게임",
     "navMarket": "상점",
+    "navBrandStory": "브랜드 스토리",
     "navGlobalWall": "글로벌 월",
     "goHome": "홈으로 이동",
     "languageSwitch": "언어 변경",
@@ -20,7 +21,10 @@
     "userMenuEditProfile": "프로필 수정",
     "userMenuLogin": "로그인",
     "userMenuLogout": "로그아웃",
-    "userDefaultName": "사용자"
+    "userDefaultName": "사용자",
+    "brandStoryTitle": "브랜드 스토리",
+    "brandStoryDescription": "어릴 적 즐겨 하던 닷지 게임이 생각나서 만들게 됐어요.\n제가 좋아하는 요소들을 골고루 담아, 더 몰입감 있게 다시 만들어 봤습니다.\n부담 없이 한 판씩 즐기고, 랭킹에 여러분의 이름을 남겨주세요!",
+    "brandStoryClose": "브랜드 스토리 닫기"
   },
   "ranking": {
     "title": "랭킹",
