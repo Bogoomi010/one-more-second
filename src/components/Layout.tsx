@@ -265,51 +265,64 @@ export default function Layout({
               </button>
             </>
           )}
-          <div className="hidden md:flex gap-8 items-center">
-            {onAchievementsClick ? (
+          {compactPanelMode ? (
+            <div className="flex items-center gap-2 sm:gap-2.5">
+              {onAchievementsClick ? (
+                <button
+                  type="button"
+                  className="h-8 px-2 rounded-lg border border-border-secondary bg-bg-card text-text-primary text-[10px] sm:text-[11px] font-primary font-semibold"
+                  onClick={onAchievementsClick}
+                  title={t('systemMenu.achievements')}
+                  aria-label={t('systemMenu.achievements')}
+                >
+                  {t('systemMenu.achievements')}
+                </button>
+              ) : (
+                <span className="h-8 px-2 text-text-muted text-[10px] sm:text-[11px] font-primary font-semibold flex items-center">
+                  {t('systemMenu.achievements')}
+                </span>
+              )}
+              {onMarketClick && (
+                <button
+                  type="button"
+                  className="h-8 px-2 rounded-lg border border-border-secondary bg-bg-card text-text-primary text-[10px] sm:text-[11px] font-primary font-semibold"
+                  onClick={onMarketClick}
+                  title={t('layout.navMarket')}
+                  aria-label={t('layout.navMarket')}
+                >
+                  {t('layout.navMarket')}
+                </button>
+              )}
+              <button
+                type="button"
+                className="h-8 px-2 rounded-lg border border-border-secondary bg-bg-card text-text-primary text-[10px] sm:text-[11px] font-primary font-semibold"
+                onClick={handleBrandStoryClick}
+                title={t('layout.navBrandStory')}
+                aria-label={t('layout.navBrandStory')}
+              >
+                {t('layout.navBrandStory')}
+              </button>
+            </div>
+          ) : (
+            <div className="hidden md:flex gap-8 items-center">
+              {onAchievementsClick ? (
+                <button
+                  type="button"
+                  className="text-text-muted font-primary text-sm sm:text-lg font-bold cursor-pointer bg-transparent border-none p-0 hover:text-text-primary transition-colors duration-200"
+                  onClick={onAchievementsClick}
+                  title={t('systemMenu.achievements')}
+                  aria-label={t('systemMenu.achievements')}
+                >
+                  {t('systemMenu.achievements')}
+                </button>
+              ) : (
+                <span className="text-text-muted font-primary text-sm sm:text-lg font-bold">
+                  {t('systemMenu.achievements')}
+                </span>
+              )}
               <button
                 type="button"
                 className="text-text-muted font-primary text-sm sm:text-lg font-bold cursor-pointer bg-transparent border-none p-0 hover:text-text-primary transition-colors duration-200"
-                onClick={onAchievementsClick}
-                title={t('systemMenu.achievements')}
-                aria-label={t('systemMenu.achievements')}
-              >
-                {t('systemMenu.achievements')}
-              </button>
-            ) : (
-              <span className="text-text-muted font-primary text-sm sm:text-lg font-bold">
-                {t('systemMenu.achievements')}
-              </span>
-            )}
-            <button
-              type="button"
-              className="text-text-muted font-primary text-sm sm:text-lg font-bold cursor-pointer bg-transparent border-none p-0 hover:text-text-primary transition-colors duration-200"
-              onClick={onMarketClick}
-              title={t('layout.navMarket')}
-              aria-label={t('layout.navMarket')}
-            >
-              {t('layout.navMarket')}
-            </button>
-            <button
-              type="button"
-              className="text-text-muted font-primary text-sm sm:text-lg font-bold cursor-pointer bg-transparent border-none p-0 hover:text-text-primary transition-colors duration-200"
-              onClick={handleBrandStoryClick}
-              title={t('layout.navBrandStory')}
-              aria-label={t('layout.navBrandStory')}
-            >
-              {t('layout.navBrandStory')}
-            </button>
-          </div>
-
-          <div className="hidden md:block w-px h-6 bg-bg-card-alt" />
-
-          {onMarketClick && (
-            <>
-              <button
-                type="button"
-                className={compactPanelMode
-                  ? 'h-8 px-2 rounded-lg border border-border-secondary bg-bg-card text-text-primary text-[10px] sm:text-[11px] font-primary font-semibold'
-                  : 'md:hidden h-8 px-2 rounded-lg border border-border-secondary bg-bg-card text-text-primary text-[11px] font-primary font-semibold'}
                 onClick={onMarketClick}
                 title={t('layout.navMarket')}
                 aria-label={t('layout.navMarket')}
@@ -318,16 +331,28 @@ export default function Layout({
               </button>
               <button
                 type="button"
-                className={compactPanelMode
-                  ? 'h-8 px-2 rounded-lg border border-border-secondary bg-bg-card text-text-primary text-[10px] sm:text-[11px] font-primary font-semibold'
-                  : 'md:hidden h-8 px-2 rounded-lg border border-border-secondary bg-bg-card text-text-primary text-[11px] font-primary font-semibold'}
+                className="text-text-muted font-primary text-sm sm:text-lg font-bold cursor-pointer bg-transparent border-none p-0 hover:text-text-primary transition-colors duration-200"
                 onClick={handleBrandStoryClick}
                 title={t('layout.navBrandStory')}
                 aria-label={t('layout.navBrandStory')}
               >
                 {t('layout.navBrandStory')}
               </button>
-            </>
+            </div>
+          )}
+
+          <div className="hidden md:block w-px h-6 bg-bg-card-alt" />
+
+          {!compactPanelMode && onMarketClick && (
+            <button
+              type="button"
+              className="md:hidden h-8 px-2 rounded-lg border border-border-secondary bg-bg-card text-text-primary text-[11px] font-primary font-semibold"
+              onClick={onMarketClick}
+              title={t('layout.navMarket')}
+              aria-label={t('layout.navMarket')}
+            >
+              {t('layout.navMarket')}
+            </button>
           )}
 
           <div className="relative" ref={languageMenuRef}>
@@ -534,12 +559,16 @@ export default function Layout({
       </main>
 
       {compactPanelMode && mobilePanel && (
-        <div className="absolute left-3 right-3 top-full mt-2 z-[10020]">
+        <div
+          className="fixed inset-0 z-[10020] bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6"
+          onClick={() => setMobilePanel(null)}
+        >
           <div
-            className="rounded-[20px] border border-border-primary bg-bg-primary shadow-[0_24px_70px_rgba(0,0,0,0.55)] p-3 pb-5 flex flex-col gap-3"
+            className="w-full max-w-[900px] max-h-[86vh] overflow-hidden rounded-[20px] border border-border-primary bg-bg-primary shadow-[0_24px_70px_rgba(0,0,0,0.55)] p-3 pb-5 flex flex-col gap-3"
             role="dialog"
             aria-modal="true"
             aria-label={mobilePanel === 'ranking' ? t('ranking.title') : t('stats.title')}
+            onClick={(event) => event.stopPropagation()}
           >
             <div className="flex items-center justify-between px-1">
               <h2 className="m-0 text-[18px] font-bold font-primary text-text-primary">
