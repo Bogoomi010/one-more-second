@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { PlayerProfile } from '../gameSystem/types';
 import { syncLanguagePreferenceToCloud } from '../services/userDataService';
 import { DEFAULT_ONLINE_USERS_FALLBACK, subscribeOnlineUsersCount } from '../services/onlinePresenceService';
@@ -7,10 +8,7 @@ import RankingPanel from './RankingPanel';
 import StatsPanel from './StatsPanel';
 import GameBottomBar from './GameBottomBar';
 import { LeftColumn, MainColumn, RightColumn } from './ColumnSlots';
-
-type SupportedLanguage = 'ko' | 'en' | 'ja' | 'zh-CN';
-
-const SUPPORTED_LANGUAGES: SupportedLanguage[] = ['ko', 'en', 'ja', 'zh-CN'];
+import { SUPPORTED_LANGUAGES, getLanguagePath, normalizeLanguage, type SupportedLanguage } from '../i18n';
 const LANGUAGE_NAMES: Record<SupportedLanguage, string> = {
   ko: '한국어',
   en: 'English',
@@ -19,13 +17,17 @@ const LANGUAGE_NAMES: Record<SupportedLanguage, string> = {
 };
 const COMPACT_PANEL_BREAKPOINT = 1240;
 
-function normalizeLanguage(language?: string | null): SupportedLanguage {
-  if (!language) return 'ko';
-  if (language.startsWith('zh')) return 'zh-CN';
-  if (language.startsWith('ja')) return 'ja';
-  if (language.startsWith('en')) return 'en';
-  if (language.startsWith('ko')) return 'ko';
-  return 'ko';
+function syncCanonicalAndSocialMetaPath(nextPath: string) {
+  const canonicalUrl = `${window.location.origin}${nextPath}`;
+  const setMeta = (selector: string, key: string, value: string) => {
+    const node = document.querySelector(selector);
+    if (!node) return;
+    node.setAttribute(key, value);
+  };
+
+  setMeta('link[rel="canonical"]', 'href', canonicalUrl);
+  setMeta('meta[property="og:url"]', 'content', canonicalUrl);
+  setMeta('meta[name="twitter:url"]', 'content', canonicalUrl);
 }
 
 function getLanguageLabel(language: SupportedLanguage): string {
@@ -101,6 +103,8 @@ export default function Layout({
   const [isUserPhotoLoadFailed, setIsUserPhotoLoadFailed] = useState(false);
   const languageMenuRef = useRef<HTMLDivElement | null>(null);
   const userMenuRef = useRef<HTMLDivElement | null>(null);
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const shouldUseCompactGameLayout = compactPanelMode && Boolean(compactPanelModeOverride);
 
@@ -166,6 +170,10 @@ export default function Layout({
     setIsUserPhotoLoadFailed(false);
   }, [userPhotoUrl, isLoggedIn]);
 
+  useEffect(() => {
+    syncCanonicalAndSocialMetaPath(location.pathname);
+  }, [location.pathname]);
+
   const handleLanguageButtonClick = () => {
     setIsLanguageMenuOpen(prev => !prev);
   };
@@ -185,6 +193,16 @@ export default function Layout({
   const handleLanguageSelect = (nextLanguage: SupportedLanguage) => {
     i18n.changeLanguage(nextLanguage);
     void syncLanguagePreferenceToCloud(nextLanguage);
+    const pathname = location.pathname;
+    const segments = pathname.split('/').filter(Boolean);
+    const nextSegments = segments[0] && SUPPORTED_LANGUAGES.includes(segments[0] as SupportedLanguage)
+      ? [nextLanguage, ...segments.slice(1)]
+      : [nextLanguage, ...segments];
+    const nextPath = `/${nextSegments.join('/')}`.replace(/\/{2,}/g, '/');
+
+    navigate(nextPath);
+    syncCanonicalAndSocialMetaPath(nextPath);
+    document.documentElement.setAttribute('lang', nextLanguage === 'zh-CN' ? 'zh-CN' : nextLanguage);
     setIsLanguageMenuOpen(false);
   };
 
@@ -193,7 +211,9 @@ export default function Layout({
   };
 
   const handleBrandClick = () => {
-    window.location.assign('/');
+    const languagePath = getLanguagePath(normalizeLanguage(i18n.resolvedLanguage ?? i18n.language));
+    navigate(languagePath);
+    syncCanonicalAndSocialMetaPath(languagePath);
   };
 
   const shouldShowUserPhoto = isLoggedIn && Boolean(userPhotoUrl) && !isUserPhotoLoadFailed;
@@ -201,17 +221,28 @@ export default function Layout({
   return (
     <div className="h-screen bg-bg-primary flex flex-col items-center w-full overflow-hidden box-border">
       <div className="relative z-40 w-full bg-bg-secondary border border-border-primary px-3 py-3 sm:px-6 sm:py-4 flex justify-between items-center backdrop-blur-[10px]">
-        <div className="flex items-center">
-          <button
-            type="button"
-            onClick={handleBrandClick}
-            className="flex items-center gap-1 font-primary bg-transparent border-none p-0 cursor-pointer"
-            aria-label={t('layout.goHome')}
-          >
-            <span className="text-[16px] sm:text-[24px] italic font-bold text-text-primary">ONE</span>
-            <span className="text-[16px] sm:text-[24px] italic font-bold text-accent-green">MORE</span>
-            <span className="hidden sm:inline text-[24px] italic font-bold text-text-primary">SECOND</span>
-          </button>
+        <div className="flex items-baseline">
+          <div className="flex items-baseline gap-1.5 leading-none">
+            <button
+              type="button"
+              onClick={handleBrandClick}
+              className="inline-flex items-baseline gap-1 font-primary bg-transparent border-none p-0 cursor-pointer leading-none"
+              aria-label={t('layout.goHome')}
+            >
+              <span className="text-[18px] sm:text-[26px] leading-none italic font-bold text-text-primary">
+                ONE
+              </span>
+              <span className="text-[18px] sm:text-[26px] leading-none italic font-bold text-accent-green">
+                MORE
+              </span>
+              <span className="hidden sm:inline text-[26px] leading-none italic font-bold text-text-primary">
+                SECOND
+              </span>
+            </button>
+            <span className="text-[9px] sm:text-[10px] leading-none text-text-muted font-primary">
+              dodge game
+            </span>
+          </div>
         </div>
 
         <div className="flex items-center gap-3 sm:gap-6">
