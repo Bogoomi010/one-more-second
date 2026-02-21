@@ -16,6 +16,7 @@ const LANGUAGE_NAMES: Record<SupportedLanguage, string> = {
   'zh-CN': '简体中文',
 };
 const COMPACT_PANEL_BREAKPOINT = 1240;
+const ULTRA_COMPACT_PANEL_BREAKPOINT = 540;
 
 function syncCanonicalAndSocialMetaPath(nextPath: string) {
   const canonicalUrl = `${window.location.origin}${nextPath}`;
@@ -97,10 +98,13 @@ export default function Layout({
   const [isLanguageMenuOpen, setIsLanguageMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [compactPanelMode, setCompactPanelMode] = useState(false);
+  const [ultraCompactPanelMode, setUltraCompactPanelMode] = useState(false);
   const [isBrandStoryOpen, setIsBrandStoryOpen] = useState(false);
   const [mobilePanel, setMobilePanel] = useState<MobilePanelType | null>(null);
   const [onlineUsers, setOnlineUsers] = useState<number>(DEFAULT_ONLINE_USERS_FALLBACK);
   const [isUserPhotoLoadFailed, setIsUserPhotoLoadFailed] = useState(false);
+  const [isHeaderMenuOpen, setIsHeaderMenuOpen] = useState(false);
+  const headerMenuRef = useRef<HTMLDivElement | null>(null);
   const languageMenuRef = useRef<HTMLDivElement | null>(null);
   const userMenuRef = useRef<HTMLDivElement | null>(null);
   const navigate = useNavigate();
@@ -117,6 +121,9 @@ export default function Layout({
       }
       if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
         setIsUserMenuOpen(false);
+      }
+      if (headerMenuRef.current && !headerMenuRef.current.contains(event.target as Node)) {
+        setIsHeaderMenuOpen(false);
       }
     };
 
@@ -161,10 +168,31 @@ export default function Layout({
   }, [onCompactPanelModeChange]);
 
   useEffect(() => {
+    const mediaQuery = window.matchMedia(`(max-width: ${ULTRA_COMPACT_PANEL_BREAKPOINT - 1}px)`);
+    const handleMediaChange = () => {
+      const next = mediaQuery.matches;
+      setUltraCompactPanelMode(next);
+      if (!next) {
+        setIsHeaderMenuOpen(false);
+      }
+    };
+
+    handleMediaChange();
+    mediaQuery.addEventListener('change', handleMediaChange);
+    return () => {
+      mediaQuery.removeEventListener('change', handleMediaChange);
+    };
+  }, []);
+
+  useEffect(() => {
     if (!compactPanelMode) {
       setMobilePanel(null);
     }
-  }, [compactPanelMode]);
+
+    if (!ultraCompactPanelMode) {
+      setIsHeaderMenuOpen(false);
+    }
+  }, [compactPanelMode, ultraCompactPanelMode]);
 
   useEffect(() => {
     setIsUserPhotoLoadFailed(false);
@@ -246,7 +274,7 @@ export default function Layout({
         </div>
 
         <div className="flex items-center gap-3 sm:gap-6">
-          {compactPanelMode && (
+          {compactPanelMode && !ultraCompactPanelMode && (
             <>
               <button
                 type="button"
@@ -261,50 +289,109 @@ export default function Layout({
                 onClick={() => toggleMobilePanel('stats')}
                 disabled={!profile}
               >
-                {t('stats.title')}
+                {t('stats.tabStats')}
               </button>
             </>
           )}
-          {compactPanelMode ? (
-            <div className="flex items-center gap-2 sm:gap-2.5">
-              {onAchievementsClick ? (
-                <button
-                  type="button"
-                  className="h-8 px-2 rounded-lg border border-border-secondary bg-bg-card text-text-primary text-[10px] sm:text-[11px] font-primary font-semibold"
-                  onClick={onAchievementsClick}
-                  title={t('systemMenu.achievements')}
-                  aria-label={t('systemMenu.achievements')}
-                >
-                  {t('systemMenu.achievements')}
-                </button>
-              ) : (
-                <span className="h-8 px-2 text-text-muted text-[10px] sm:text-[11px] font-primary font-semibold flex items-center">
-                  {t('systemMenu.achievements')}
-                </span>
-              )}
-              {onMarketClick && (
-                <button
-                  type="button"
-                  className="h-8 px-2 rounded-lg border border-border-secondary bg-bg-card text-text-primary text-[10px] sm:text-[11px] font-primary font-semibold"
-                  onClick={onMarketClick}
-                  title={t('layout.navMarket')}
-                  aria-label={t('layout.navMarket')}
-                >
-                  {t('layout.navMarket')}
-                </button>
-              )}
+          {compactPanelMode && ultraCompactPanelMode ? (
+            <div className="relative" ref={headerMenuRef}>
               <button
                 type="button"
                 className="h-8 px-2 rounded-lg border border-border-secondary bg-bg-card text-text-primary text-[10px] sm:text-[11px] font-primary font-semibold"
-                onClick={handleBrandStoryClick}
-                title={t('layout.navBrandStory')}
-                aria-label={t('layout.navBrandStory')}
+                onClick={() => setIsHeaderMenuOpen((prev) => !prev)}
+                title="Menu"
+                aria-label="Menu"
+                aria-haspopup="menu"
+                aria-expanded={isHeaderMenuOpen}
               >
-                {t('layout.navBrandStory')}
+                ☰
               </button>
+              {isHeaderMenuOpen && (
+                <div className="absolute right-0 top-[calc(100%+8px)] min-w-[180px] rounded-xl border border-border-primary bg-bg-secondary shadow-lg z-[80] p-1.5">
+                  <button
+                    type="button"
+                    className="w-full px-3 py-2 rounded-lg text-left text-[13px] font-primary text-text-primary hover:bg-bg-card-alt"
+                    onClick={() => {
+                      toggleMobilePanel('ranking');
+                      setIsHeaderMenuOpen(false);
+                    }}
+                  >
+                    {t('ranking.title')}
+                  </button>
+                  <button
+                    type="button"
+                    className="w-full px-3 py-2 rounded-lg text-left text-[13px] font-primary text-text-primary hover:bg-bg-card-alt disabled:opacity-50 disabled:cursor-not-allowed"
+                    onClick={() => {
+                      toggleMobilePanel('stats');
+                      setIsHeaderMenuOpen(false);
+                    }}
+                    disabled={!profile}
+                  >
+                    {t('stats.tabStats')}
+                  </button>
+                  {onAchievementsClick && (
+                    <button
+                      type="button"
+                      className="w-full px-3 py-2 rounded-lg text-left text-[13px] font-primary text-text-primary hover:bg-bg-card-alt"
+                      onClick={() => {
+                        onAchievementsClick();
+                        setIsHeaderMenuOpen(false);
+                      }}
+                    >
+                      {t('systemMenu.achievements')}
+                    </button>
+                  )}
+                  {onMarketClick && (
+                    <button
+                      type="button"
+                      className="w-full px-3 py-2 rounded-lg text-left text-[13px] font-primary text-text-primary hover:bg-bg-card-alt"
+                      onClick={() => {
+                        onMarketClick();
+                        setIsHeaderMenuOpen(false);
+                      }}
+                    >
+                      {t('layout.navMarket')}
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    className="w-full px-3 py-2 rounded-lg text-left text-[13px] font-primary text-text-primary hover:bg-bg-card-alt"
+                    onClick={() => {
+                      handleBrandStoryClick();
+                      setIsHeaderMenuOpen(false);
+                    }}
+                  >
+                    {t('layout.navBrandStory')}
+                  </button>
+                  {onSettingsClick && (
+                    <button
+                      type="button"
+                      className="w-full px-3 py-2 rounded-lg text-left text-[13px] font-primary text-text-primary hover:bg-bg-card-alt"
+                      onClick={() => {
+                        onSettingsClick();
+                        setIsHeaderMenuOpen(false);
+                      }}
+                    >
+                      {t('layout.systemMenu')}
+                    </button>
+                  )}
+                  {onToggleMute && (
+                    <button
+                      type="button"
+                      className="w-full px-3 py-2 rounded-lg text-left text-[13px] font-primary text-text-primary hover:bg-bg-card-alt"
+                      onClick={() => {
+                        onToggleMute();
+                        setIsHeaderMenuOpen(false);
+                      }}
+                    >
+                      {isMuted ? t('layout.unmute') : t('layout.mute')}
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
-          ) : (
-            <div className="hidden md:flex gap-8 items-center">
+          ) : compactPanelMode ? (
+            <div className="flex items-center gap-2 sm:gap-2.5">
               {onAchievementsClick ? (
                 <button
                   type="button"
@@ -329,19 +416,20 @@ export default function Layout({
               >
                 {t('layout.navMarket')}
               </button>
-              <button
-                type="button"
-                className="text-text-muted font-primary text-sm sm:text-lg font-bold cursor-pointer bg-transparent border-none p-0 hover:text-text-primary transition-colors duration-200"
-                onClick={handleBrandStoryClick}
-                title={t('layout.navBrandStory')}
-                aria-label={t('layout.navBrandStory')}
-              >
-                {t('layout.navBrandStory')}
-              </button>
+                <button
+                  type="button"
+                  className="text-text-muted font-primary text-sm sm:text-lg font-bold cursor-pointer bg-transparent border-none p-0 hover:text-text-primary transition-colors duration-200"
+                  onClick={handleBrandStoryClick}
+                  title={t('layout.navBrandStory')}
+                  aria-label={t('layout.navBrandStory')}
+                >
+                  {t('layout.navBrandStory')}
+                </button>
+              </div>
             </div>
           )}
 
-          <div className="hidden md:block w-px h-6 bg-bg-card-alt" />
+          {compactPanelMode ? null : <div className="hidden md:block w-px h-6 bg-bg-card-alt" />}
 
           {!compactPanelMode && onMarketClick && (
             <button
@@ -567,12 +655,12 @@ export default function Layout({
             className="w-full max-w-[900px] max-h-[86vh] overflow-hidden rounded-[20px] border border-border-primary bg-bg-primary shadow-[0_24px_70px_rgba(0,0,0,0.55)] p-3 pb-5 flex flex-col gap-3"
             role="dialog"
             aria-modal="true"
-            aria-label={mobilePanel === 'ranking' ? t('ranking.title') : t('stats.title')}
+            aria-label={mobilePanel === 'ranking' ? t('ranking.title') : t('stats.tabStats')}
             onClick={(event) => event.stopPropagation()}
           >
             <div className="flex items-center justify-between px-1">
               <h2 className="m-0 text-[18px] font-bold font-primary text-text-primary">
-                {mobilePanel === 'ranking' ? t('ranking.title') : t('stats.title')}
+                {mobilePanel === 'ranking' ? t('ranking.title') : t('stats.tabStats')}
               </h2>
               <button
                 type="button"

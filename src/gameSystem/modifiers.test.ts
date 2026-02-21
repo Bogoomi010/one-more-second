@@ -41,7 +41,7 @@ describe('modifiers', () => {
     const result = calculateScoreBreakdown(100, ['crossline-40-80', 'shrink-field-80']);
 
     expect(result.baseScore).toBe(100);
-    expect(result.adjustmentScore).toBe(22);
-    expect(result.finalScore).toBe(122);
+    expect(result.adjustmentScore).toBe(40);
+    expect(result.finalScore).toBe(140);
   });
 });

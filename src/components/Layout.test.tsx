@@ -89,12 +89,12 @@ describe('Layout mobile panel controls', () => {
     const statsButton = screen.getByRole('button', { name: 'Stats' });
     fireEvent.click(statsButton);
 
-    const dialog = screen.getByRole('dialog', { name: 'Stats & Achievements' });
+    const dialog = screen.getByRole('dialog', { name: 'Stats' });
     expect(dialog).toBeInTheDocument();
     expect(within(dialog).getByTestId('stats-panel-mock')).toBeInTheDocument();
 
     fireEvent.click(statsButton);
-    expect(screen.queryByRole('dialog', { name: 'Stats & Achievements' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('dialog', { name: 'Stats' })).not.toBeInTheDocument();
   });
 
   it('opens achievements modal from desktop header achievements button', () => {
