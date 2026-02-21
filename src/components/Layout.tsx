@@ -416,18 +416,17 @@ export default function Layout({
               >
                 {t('layout.navMarket')}
               </button>
-                <button
-                  type="button"
-                  className="text-text-muted font-primary text-sm sm:text-lg font-bold cursor-pointer bg-transparent border-none p-0 hover:text-text-primary transition-colors duration-200"
-                  onClick={handleBrandStoryClick}
-                  title={t('layout.navBrandStory')}
-                  aria-label={t('layout.navBrandStory')}
-                >
-                  {t('layout.navBrandStory')}
-                </button>
-              </div>
+              <button
+                type="button"
+                className="text-text-muted font-primary text-sm sm:text-lg font-bold cursor-pointer bg-transparent border-none p-0 hover:text-text-primary transition-colors duration-200"
+                onClick={handleBrandStoryClick}
+                title={t('layout.navBrandStory')}
+                aria-label={t('layout.navBrandStory')}
+              >
+                {t('layout.navBrandStory')}
+              </button>
             </div>
-          )}
+          ) : null}
 
           {compactPanelMode ? null : <div className="hidden md:block w-px h-6 bg-bg-card-alt" />}
 
