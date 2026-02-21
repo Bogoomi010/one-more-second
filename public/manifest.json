@@ -1,6 +1,7 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "ONE MORE SECOND",
+  "name": "ONE MORE SECOND",
+  "description": "ONE MORE SECOND is a fast-paced endless survival game with rankings, daily challenges, and collectible rewards.",
   "icons": [
     {
       "src": "favicon.ico",
@@ -20,6 +21,6 @@
   ],
   "start_url": ".",
   "display": "standalone",
-  "theme_color": "#000000",
-  "background_color": "#ffffff"
+  "theme_color": "#0f172a",
+  "background_color": "#020617"
 }
