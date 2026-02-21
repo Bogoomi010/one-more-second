@@ -197,7 +197,7 @@ function AppShell() {
     return () => {
       cancelled = true;
     };
-  }, [pendingProfileSetupCheck, user]);
+  }, [location.pathname, pendingProfileSetupCheck, user]);
 
   const handleLoginClick = async () => {
     if (!firebaseEnabled) {
