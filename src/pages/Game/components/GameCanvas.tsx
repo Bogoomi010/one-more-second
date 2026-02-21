@@ -208,6 +208,7 @@ function GameCanvasComponent({
   const fpsLimitRef = useRef<number>(0);
   const frameAccumulatorRef = useRef(0);
   const countdownRef = useRef<number | null>(null);
+  const ensureBgmPlaybackRef = useRef<(() => void) | null>(null);
   const [canvasAspectRatio, setCanvasAspectRatio] = useState(resolveCanvasAspectRatio);
 
   useEffect(() => {
@@ -370,6 +371,7 @@ function GameCanvasComponent({
 
     const ensureBgmPlayback = () => {
       if (destroyed || state.gameOver) return;
+      if (countdownRef.current !== null) return;
       const settings = loadSettings();
       if (!settings.audio.bgmEnabled) return;
       if (!audioManager.canPlayAudioNow()) return;
@@ -377,6 +379,8 @@ function GameCanvasComponent({
       audioManager.resume();
       audioManager.playBGM();
     };
+
+    ensureBgmPlaybackRef.current = ensureBgmPlayback;
 
     const unlockAndPlayAudio = () => {
       if (state.gameOver) return;
@@ -915,7 +919,7 @@ function GameCanvasComponent({
 
     drawBackground(state.viewportWidth, state.viewportHeight);
     // Try auto-resume only if user interaction was already confirmed for audio playback.
-    if (audioManager.canPlayAudioNow()) {
+    if (audioManager.canPlayAudioNow() && countdownRef.current === null) {
       audioManager.resume();
       ensureBgmPlayback();
     }
@@ -934,6 +938,9 @@ function GameCanvasComponent({
 
     return () => {
       destroyed = true;
+      if (ensureBgmPlaybackRef.current === ensureBgmPlayback) {
+        ensureBgmPlaybackRef.current = null;
+      }
       app.ticker.remove(ticker);
       view.removeEventListener('pointerdown', handlePointerDown);
       window.removeEventListener('pointerdown', unlockAndPlayAudio);
@@ -949,6 +956,11 @@ function GameCanvasComponent({
       app.destroy(true, true);
     };
   }, [activeModifiers, bulletImage, playerImage, isAiMode]);
+
+  useEffect(() => {
+    if (countdown !== null) return;
+    ensureBgmPlaybackRef.current?.();
+  }, [countdown]);
 
   const handleCanvasDoubleClick = (event: React.MouseEvent<HTMLDivElement>) => {
     event.preventDefault();
