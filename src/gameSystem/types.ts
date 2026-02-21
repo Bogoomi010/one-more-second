@@ -48,7 +48,9 @@ export interface PlayerProfile {
   achievements: Record<string, { unlockedAt: number }>;
   dailyChallenge: {
     dateKey: string; // YYYY-MM-DD
+    type: 'survival' | 'no-hit' | 'limited-hits';
     targetSeconds: number;
+    targetHits?: number;
     rewardCoins: number;
     completed: boolean;
   };

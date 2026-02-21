@@ -255,12 +255,19 @@ export default function NewStatsPanel({ profile }: NewStatsPanelProps) {
               <span className="text-ui-icon-lg font-tertiary">🛡️</span>
               <div className="text-ui-tab font-black text-accent-blue font-secondary tracking-wide">
                 {t('stats.dailyChallenge')}
+                </div>
               </div>
-            </div>
 
-            <div className="text-ui-body font-bold text-text-secondary font-primary">
-              {t('stats.dailyChallengeTarget', { seconds: profile.dailyChallenge.targetSeconds })}
-            </div>
+              <div className="text-ui-body font-bold text-text-secondary font-primary">
+                {profile.dailyChallenge.type === 'no-hit'
+                  ? t('stats.dailyChallengeTargetNoHit', { seconds: profile.dailyChallenge.targetSeconds })
+                  : profile.dailyChallenge.type === 'limited-hits'
+                    ? t('stats.dailyChallengeTargetLimitedHits', {
+                        seconds: profile.dailyChallenge.targetSeconds,
+                        hits: profile.dailyChallenge.targetHits ?? 1,
+                      })
+                    : t('stats.dailyChallengeTarget', { seconds: profile.dailyChallenge.targetSeconds })}
+              </div>
 
             <div className="flex justify-between items-center">
               <div className="rounded-[4px] px-2 py-1 bg-accent-green-alpha border border-[#4ade8033]">

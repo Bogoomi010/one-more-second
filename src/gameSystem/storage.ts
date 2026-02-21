@@ -115,8 +115,10 @@ export function defaultProfile(): PlayerProfile {
     achievements: {},
     dailyChallenge: {
       dateKey: '',
+      type: 'survival',
       targetSeconds: 20,
-      rewardCoins: 25,
+      targetHits: undefined,
+      rewardCoins: 500,
       completed: false,
     },
   };

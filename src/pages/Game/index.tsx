@@ -101,7 +101,7 @@ export default function Game({
     const { profile: afterRun, runReward } = applyRunToProfile(next, result);
     next = afterRun;
 
-    const { profile: afterDaily, rewarded: dailyReward } = applyDailyChallengeResult(next, result.scoreSeconds);
+    const { profile: afterDaily, rewarded: dailyReward } = applyDailyChallengeResult(next, result);
     next = afterDaily;
 
     const coinsBeforeAchievementRewards = next.coins;

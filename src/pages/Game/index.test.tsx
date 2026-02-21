@@ -119,9 +119,11 @@ describe('Game Page Integration', () => {
     const profile = {
       ...defaultProfile(),
       dailyChallenge: {
+        ...defaultProfile().dailyChallenge,
         dateKey: getLocalDateKey(),
+        type: 'survival',
         targetSeconds: 20,
-        rewardCoins: 30,
+        rewardCoins: 500,
         completed: false,
       },
     };

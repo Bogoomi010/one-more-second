@@ -12,9 +12,11 @@ describe('Daily Challenge System', () => {
       const updated = ensureDailyChallenge(profile, today);
       
       expect(updated.dailyChallenge.dateKey).toBe('2026-02-01');
+      expect(updated.dailyChallenge.rewardCoins).toBe(500);
       expect(updated.dailyChallenge.targetSeconds).toBeGreaterThanOrEqual(15);
-      expect(updated.dailyChallenge.targetSeconds).toBeLessThanOrEqual(45);
+      expect(updated.dailyChallenge.targetSeconds).toBeLessThanOrEqual(60);
       expect(updated.dailyChallenge.completed).toBe(false);
+      expect(['survival', 'no-hit', 'limited-hits']).toContain(updated.dailyChallenge.type);
     });
 
     it('should not change challenge for same day', () => {
@@ -26,6 +28,7 @@ describe('Daily Challenge System', () => {
       
       expect(updated2.dailyChallenge.targetSeconds).toBe(updated1.dailyChallenge.targetSeconds);
       expect(updated2.dailyChallenge.rewardCoins).toBe(updated1.dailyChallenge.rewardCoins);
+      expect(updated2.dailyChallenge.type).toBe(updated1.dailyChallenge.type);
     });
 
     it('should generate consistent challenge for same date', () => {
@@ -38,12 +41,14 @@ describe('Daily Challenge System', () => {
       
       expect(updated1.dailyChallenge.targetSeconds).toBe(updated2.dailyChallenge.targetSeconds);
       expect(updated1.dailyChallenge.rewardCoins).toBe(updated2.dailyChallenge.rewardCoins);
+      expect(updated1.dailyChallenge.type).toBe(updated2.dailyChallenge.type);
     });
 
     it('should reset completion status for new day', () => {
       const profile = {
         ...defaultProfile(),
         dailyChallenge: {
+          ...defaultProfile().dailyChallenge,
           dateKey: '2026-01-31',
           targetSeconds: 20,
           rewardCoins: 30,
@@ -60,61 +65,91 @@ describe('Daily Challenge System', () => {
   });
 
   describe('applyDailyChallengeResult', () => {
-    it('should reward coins when target is met', () => {
+    it('should reward coins when survival target is met', () => {
       const profile = {
         ...defaultProfile(),
         coins: 100,
         dailyChallenge: {
+          ...defaultProfile().dailyChallenge,
           dateKey: '2026-02-01',
+          type: 'survival',
           targetSeconds: 20,
-          rewardCoins: 30,
+          rewardCoins: 500,
           completed: false,
         },
       };
       
-      const { profile: updated, rewarded } = applyDailyChallengeResult(profile, 20, FIXED_DAY);
+      const { profile: updated, rewarded } = applyDailyChallengeResult(profile, { scoreSeconds: 20, hitsTaken: 1 }, FIXED_DAY);
       
-      expect(rewarded).toBe(30);
-      expect(updated.coins).toBe(130);
+      expect(rewarded).toBe(500);
+      expect(updated.coins).toBe(600);
       expect(updated.dailyChallenge.completed).toBe(true);
     });
 
-    it('should reward coins when target is exceeded', () => {
+    it('should reward coins for no-hit challenge when hits are 0', () => {
       const profile = {
         ...defaultProfile(),
         coins: 100,
         dailyChallenge: {
+          ...defaultProfile().dailyChallenge,
           dateKey: '2026-02-01',
+          type: 'no-hit',
           targetSeconds: 20,
-          rewardCoins: 30,
+          targetHits: 0,
+          rewardCoins: 500,
           completed: false,
         },
       };
       
-      const { profile: updated, rewarded } = applyDailyChallengeResult(profile, 25, FIXED_DAY);
+      const { profile: updated, rewarded } = applyDailyChallengeResult(profile, { scoreSeconds: 20, hitsTaken: 0 }, FIXED_DAY);
       
-      expect(rewarded).toBe(30);
-      expect(updated.coins).toBe(130);
+      expect(rewarded).toBe(500);
+      expect(updated.coins).toBe(600);
       expect(updated.dailyChallenge.completed).toBe(true);
     });
 
-    it('should not reward if target not met', () => {
+    it('should not reward no-hit challenge when hits are taken', () => {
       const profile = {
         ...defaultProfile(),
         coins: 100,
         dailyChallenge: {
+          ...defaultProfile().dailyChallenge,
           dateKey: '2026-02-01',
+          type: 'no-hit',
           targetSeconds: 20,
-          rewardCoins: 30,
+          targetHits: 0,
+          rewardCoins: 500,
           completed: false,
         },
       };
       
-      const { profile: updated, rewarded } = applyDailyChallengeResult(profile, 19, FIXED_DAY);
+      const { profile: updated, rewarded } = applyDailyChallengeResult(profile, { scoreSeconds: 20, hitsTaken: 1 }, FIXED_DAY);
       
       expect(rewarded).toBe(0);
       expect(updated.coins).toBe(100);
       expect(updated.dailyChallenge.completed).toBe(false);
+    });
+
+    it('should reward coins for limited-hits challenge', () => {
+      const profile = {
+        ...defaultProfile(),
+        coins: 100,
+        dailyChallenge: {
+          ...defaultProfile().dailyChallenge,
+          dateKey: '2026-02-01',
+          type: 'limited-hits',
+          targetSeconds: 20,
+          targetHits: 1,
+          rewardCoins: 500,
+          completed: false,
+        },
+      };
+      
+      const { profile: updated, rewarded } = applyDailyChallengeResult(profile, { scoreSeconds: 20, hitsTaken: 1 }, FIXED_DAY);
+      
+      expect(rewarded).toBe(500);
+      expect(updated.coins).toBe(600);
+      expect(updated.dailyChallenge.completed).toBe(true);
     });
 
     it('should not reward if already completed', () => {
@@ -122,14 +157,16 @@ describe('Daily Challenge System', () => {
         ...defaultProfile(),
         coins: 100,
         dailyChallenge: {
+          ...defaultProfile().dailyChallenge,
           dateKey: '2026-02-01',
+          type: 'survival',
           targetSeconds: 20,
-          rewardCoins: 30,
+          rewardCoins: 500,
           completed: true,
         },
       };
       
-      const { profile: updated, rewarded } = applyDailyChallengeResult(profile, 25, FIXED_DAY);
+      const { profile: updated, rewarded } = applyDailyChallengeResult(profile, { scoreSeconds: 25, hitsTaken: 0 }, FIXED_DAY);
       
       expect(rewarded).toBe(0);
       expect(updated.coins).toBe(100);

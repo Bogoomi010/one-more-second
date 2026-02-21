@@ -179,9 +179,16 @@ export default function SystemMenuModal({
 
               <div className="rounded-2xl border border-border-secondary bg-bg-card p-4">
                 <h3 className="m-0 mb-3 text-[14px] text-text-primary font-primary">{t('systemMenu.dailyChallenge')}</h3>
-                <div className="space-y-2 text-[13px] text-text-secondary font-primary">
+                  <div className="space-y-2 text-[13px] text-text-secondary font-primary">
                   <div>
-                    {t('systemMenu.dailyChallengeGoal', { seconds: daily.targetSeconds })}
+                    {daily.type === 'no-hit'
+                      ? t('systemMenu.dailyChallengeGoalNoHit', { seconds: daily.targetSeconds })
+                      : daily.type === 'limited-hits'
+                        ? t('systemMenu.dailyChallengeGoalLimitedHits', {
+                            seconds: daily.targetSeconds,
+                            hits: daily.targetHits ?? 1,
+                          })
+                        : t('systemMenu.dailyChallengeGoal', { seconds: daily.targetSeconds })}
                   </div>
                   <div>
                     {t('systemMenu.dailyChallengeReward', { coins: daily.rewardCoins })}
