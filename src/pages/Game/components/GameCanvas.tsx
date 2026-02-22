@@ -144,8 +144,8 @@ function resolveTouchControls() {
 
   return {
     speedMultiplier: Math.max(0.5, Math.min(2, speedMultiplier)),
-    responseAlphaActive: 0.2 + normalizedSpeed * 0.28,
-    responseAlphaRelease: 0.16 + normalizedSpeed * 0.2,
+    responseAlphaActive: Math.min(1, 0.3 + normalizedSpeed * 0.18),
+    responseAlphaRelease: Math.min(1, 0.2 + normalizedSpeed * 0.12),
   };
 }
 

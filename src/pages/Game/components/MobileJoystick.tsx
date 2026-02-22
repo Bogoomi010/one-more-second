@@ -27,6 +27,10 @@ function resolveDeadzonePx(): number {
   return clamp(settings.graphics.touchDeadzone, 0, 80);
 }
 
+function normalizeMagnitude(progress: number): number {
+  return Math.pow(clamp(progress, 0, 1), 0.78);
+}
+
 type JoystickSizePreset = {
   containerSizeClass: string;
   ringClass: string;
@@ -198,7 +202,7 @@ export default function MobileJoystick({
   const ringShadowClass = isDragging
     ? 'shadow-[0_0_0_2px_rgba(37,99,235,0.28)]'
     : 'shadow-none';
-  const knobPositionClass = `absolute rounded-full bg-[#334155] flex items-center justify-center left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 ${knobSizePreset.knobBaseClass} ${ringShadowClass} ${
+  const knobPositionClass = `absolute rounded-full bg-[#334155] flex items-center justify-center left-1/2 top-1/2 ${knobSizePreset.knobBaseClass} ${ringShadowClass} ${
     isDragging ? 'transition-none' : `transition-all ${getTransitionDurationClass(knobTransitionMs)} ease-out`
   }`;
   const opacityClass = isDragging
@@ -233,7 +237,7 @@ export default function MobileJoystick({
     }
 
     const activeMagnitude = (distance - cappedDeadzone) / (maxKnobDistance - cappedDeadzone);
-    const normalizedMagnitude = clamp(activeMagnitude, 0, 1);
+    const normalizedMagnitude = normalizeMagnitude(activeMagnitude);
     const nx = (offsetX / distance) * normalizedMagnitude;
     const ny = (offsetY / distance) * normalizedMagnitude;
 
@@ -338,7 +342,7 @@ export default function MobileJoystick({
       <div
         className={knobPositionClass}
         style={{
-          transform: `translate(${knobOffset.x}px, ${knobOffset.y}px)`,
+          transform: `translate(calc(-50% + ${knobOffset.x}px), calc(-50% + ${knobOffset.y}px))`,
         }}
       >
         <div

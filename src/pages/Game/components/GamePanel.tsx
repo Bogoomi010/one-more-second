@@ -33,6 +33,9 @@ function resolveJoystickSize(viewportWidth: number, isTouchInput: boolean): numb
 
 const COUNTDOWN_SECONDS = 3;
 const COUNTDOWN_STEP_MS = 1000;
+const JOYSTICK_RENDER_RATIO = 0.75;
+const JOYSTICK_RENDER_SIZE_MIN = 110;
+const JOYSTICK_RENDER_SIZE_MAX = 174;
 
 function primeAudioContexts() {
   void audioManager.init();
@@ -159,7 +162,7 @@ export default function NewGamePanel({
   }, []);
 
   const joystickSize = resolveJoystickSize(viewportWidth, isTouchInput);
-  const joystickInset = viewportWidth <= 400 ? 8 : 12;
+  const joystickInset = viewportWidth <= 420 ? 7 : 12;
 
   const handleGameOver = (result: GameResult) => {
     stopBgmPlayback();
@@ -387,8 +390,11 @@ export default function NewGamePanel({
                 }`}
               >
                 <div className="pointer-events-auto">
-                  <MobileJoystick
-                    size={Math.round(joystickSize * 0.5)}
+                <MobileJoystick
+                    size={Math.min(
+                      JOYSTICK_RENDER_SIZE_MAX,
+                      Math.max(JOYSTICK_RENDER_SIZE_MIN, Math.round(joystickSize * JOYSTICK_RENDER_RATIO))
+                    )}
                     idleOpacity={0.62}
                     activeOpacity={0.94}
                     knobTransitionMs={80}
