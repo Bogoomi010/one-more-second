@@ -99,6 +99,7 @@ export default function Layout({
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [compactPanelMode, setCompactPanelMode] = useState(false);
   const [ultraCompactPanelMode, setUltraCompactPanelMode] = useState(false);
+  const [isWindowWiderThanGamePanel, setIsWindowWiderThanGamePanel] = useState(true);
   const [isBrandStoryOpen, setIsBrandStoryOpen] = useState(false);
   const [mobilePanel, setMobilePanel] = useState<MobilePanelType | null>(null);
   const [onlineUsers, setOnlineUsers] = useState<number>(DEFAULT_ONLINE_USERS_FALLBACK);
@@ -107,10 +108,12 @@ export default function Layout({
   const headerMenuRef = useRef<HTMLDivElement | null>(null);
   const languageMenuRef = useRef<HTMLDivElement | null>(null);
   const userMenuRef = useRef<HTMLDivElement | null>(null);
+  const gamePanelRef = useRef<HTMLDivElement | null>(null);
   const navigate = useNavigate();
   const location = useLocation();
 
   const shouldUseCompactGameLayout = compactPanelMode && Boolean(compactPanelModeOverride);
+  const shouldUseCompactHeaderDropdown = compactPanelMode && (ultraCompactPanelMode || !isWindowWiderThanGamePanel);
 
   const currentLanguage = normalizeLanguage(i18n.resolvedLanguage ?? i18n.language);
 
@@ -183,6 +186,33 @@ export default function Layout({
       mediaQuery.removeEventListener('change', handleMediaChange);
     };
   }, []);
+
+  useEffect(() => {
+    if (!compactPanelMode) {
+      setIsWindowWiderThanGamePanel(true);
+      return;
+    }
+
+    const updatePanelComparison = () => {
+      const panelWidth = gamePanelRef.current?.offsetWidth ?? 0;
+      if (panelWidth > 0) {
+        setIsWindowWiderThanGamePanel(window.innerWidth > panelWidth);
+      }
+    };
+
+    const resizeObserver = new ResizeObserver(updatePanelComparison);
+
+    if (gamePanelRef.current) {
+      resizeObserver.observe(gamePanelRef.current);
+    }
+    updatePanelComparison();
+    window.addEventListener('resize', updatePanelComparison);
+
+    return () => {
+      resizeObserver.disconnect();
+      window.removeEventListener('resize', updatePanelComparison);
+    };
+  }, [compactPanelMode]);
 
   useEffect(() => {
     if (!compactPanelMode) {
@@ -274,7 +304,7 @@ export default function Layout({
         </div>
 
         <div className="flex items-center gap-3 sm:gap-6">
-          {compactPanelMode && !ultraCompactPanelMode && (
+          {compactPanelMode && !shouldUseCompactHeaderDropdown && (
             <>
               <button
                 type="button"
@@ -293,7 +323,7 @@ export default function Layout({
               </button>
             </>
           )}
-          {compactPanelMode && ultraCompactPanelMode ? (
+          {compactPanelMode && shouldUseCompactHeaderDropdown ? (
             <div className="relative" ref={headerMenuRef}>
               <button
                 type="button"
@@ -578,6 +608,7 @@ export default function Layout({
         }
       >
         <div
+          ref={gamePanelRef}
           className={
             shouldUseCompactGameLayout
               ? 'w-full h-full min-h-0 min-w-0 overflow-hidden'
