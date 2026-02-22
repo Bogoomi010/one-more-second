@@ -397,7 +397,7 @@ export default function Layout({
               )}
             </div>
           ) : compactPanelMode ? (
-            <div className="flex items-center gap-2 sm:gap-2.5">
+            <div className="flex items-center gap-4 sm:gap-5">
               {onAchievementsClick ? (
                 <button
                   type="button"
@@ -429,10 +429,52 @@ export default function Layout({
                 title={t('layout.navBrandStory')}
                 aria-label={t('layout.navBrandStory')}
               >
+                  {t('layout.navBrandStory')}
+                </button>
+              </div>
+          ) : (
+            <div className="flex items-center gap-4 sm:gap-5">
+              {onAchievementsClick ? (
+                <button
+                  type="button"
+                  className="text-text-muted font-primary text-sm sm:text-lg font-bold cursor-pointer bg-transparent border-none p-0 hover:text-text-primary transition-colors duration-200"
+                  onClick={onAchievementsClick}
+                  title={t('systemMenu.achievements')}
+                  aria-label={t('systemMenu.achievements')}
+                >
+                  {t('systemMenu.achievements')}
+                </button>
+              ) : (
+                <span className="text-text-muted font-primary text-sm sm:text-lg font-bold">
+                  {t('systemMenu.achievements')}
+                </span>
+              )}
+              {onMarketClick ? (
+                <button
+                  type="button"
+                  className="text-text-muted font-primary text-sm sm:text-lg font-bold cursor-pointer bg-transparent border-none p-0 hover:text-text-primary transition-colors duration-200"
+                  onClick={onMarketClick}
+                  title={t('layout.navMarket')}
+                  aria-label={t('layout.navMarket')}
+                >
+                  {t('layout.navMarket')}
+                </button>
+              ) : (
+                <span className="text-text-muted font-primary text-sm sm:text-lg font-bold">
+                  {t('layout.navMarket')}
+                </span>
+              )}
+              <button
+                type="button"
+                className="text-text-muted font-primary text-sm sm:text-lg font-bold cursor-pointer bg-transparent border-none p-0 hover:text-text-primary transition-colors duration-200"
+                onClick={handleBrandStoryClick}
+                title={t('layout.navBrandStory')}
+                aria-label={t('layout.navBrandStory')}
+              >
                 {t('layout.navBrandStory')}
               </button>
             </div>
-          ) : null}
+          )}
 
           {compactPanelMode ? null : <div className="hidden md:block w-px h-6 bg-bg-card-alt" />}
 
