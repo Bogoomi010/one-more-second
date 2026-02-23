@@ -9,6 +9,7 @@ import StatsPanel from './StatsPanel';
 import GameBottomBar from './GameBottomBar';
 import { LeftColumn, MainColumn, RightColumn } from './ColumnSlots';
 import { SUPPORTED_LANGUAGES, getLanguagePath, normalizeLanguage, type SupportedLanguage } from '../i18n/index';
+import iconFavicon from '../assets/icon-svg-favicon.svg';
 const LANGUAGE_NAMES: Record<SupportedLanguage, string> = {
   ko: '한국어',
   en: 'English',
@@ -287,6 +288,12 @@ export default function Layout({
               className="inline-flex items-baseline gap-1 font-primary bg-transparent border-none p-0 cursor-pointer leading-none"
               aria-label={t('layout.goHome')}
             >
+              <img
+                src={iconFavicon}
+                alt=""
+                aria-hidden="true"
+                className="h-[42px] w-[42px] object-contain sm:h-[62px] sm:w-[62px] flex-shrink-0"
+              />
               <span className="text-brand-title sm:text-brand-title-lg leading-none italic font-bold text-text-primary">
                 ONE
               </span>

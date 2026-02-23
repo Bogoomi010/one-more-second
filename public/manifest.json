@@ -4,9 +4,9 @@
   "description": "ONE MORE SECOND is a fast-paced endless survival game with rankings, daily challenges, and collectible rewards.",
   "icons": [
     {
-      "src": "icon-favicon.png",
-      "type": "image/png",
-      "sizes": "1024x1024"
+      "src": "icon-svg-favicon.svg",
+      "type": "image/svg+xml",
+      "sizes": "any"
     }
   ],
   "start_url": ".",
