@@ -279,7 +279,7 @@ export default function Layout({
 
   return (
     <div className="h-screen bg-bg-primary flex flex-col items-center w-full overflow-hidden box-border">
-      <div className="relative z-40 w-full bg-bg-secondary border border-border-primary px-3 py-3 sm:px-6 sm:py-4 flex justify-between items-center backdrop-blur-[10px]">
+      <div className="relative z-40 w-full bg-bg-secondary border border-border-primary px-3 py-2 sm:px-6 sm:py-3 flex justify-between items-center backdrop-blur-[10px]">
         <div className="flex items-baseline">
           <div className="flex items-center gap-1.5 leading-none">
             <button
@@ -292,7 +292,7 @@ export default function Layout({
                 src={iconFavicon}
                 alt=""
                 aria-hidden="true"
-                className="h-[42px] w-[42px] object-contain sm:h-[62px] sm:w-[62px] flex-shrink-0"
+                className="h-[34px] w-[34px] object-contain sm:h-[48px] sm:w-[48px] flex-shrink-0"
               />
               <span className="text-brand-title sm:text-brand-title-lg leading-none italic font-bold text-text-primary">
                 ONE
