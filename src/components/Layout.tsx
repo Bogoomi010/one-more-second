@@ -281,18 +281,18 @@ export default function Layout({
     <div className="h-screen bg-bg-primary flex flex-col items-center w-full overflow-hidden box-border">
       <div className="relative z-40 w-full bg-bg-secondary border border-border-primary px-3 py-3 sm:px-6 sm:py-4 flex justify-between items-center backdrop-blur-[10px]">
         <div className="flex items-baseline">
-          <div className="flex items-baseline gap-1.5 leading-none">
+          <div className="flex items-end gap-1.5 leading-none">
             <button
               type="button"
               onClick={handleBrandClick}
-              className="inline-flex items-baseline gap-1 font-primary bg-transparent border-none p-0 cursor-pointer leading-none"
+              className="inline-flex items-end gap-1 font-primary bg-transparent border-none p-0 cursor-pointer leading-none"
               aria-label={t('layout.goHome')}
             >
               <img
                 src={iconFavicon}
                 alt=""
                 aria-hidden="true"
-                className="h-[42px] w-[42px] object-contain sm:h-[62px] sm:w-[62px] flex-shrink-0"
+                className="h-[42px] w-[42px] object-contain sm:h-[62px] sm:w-[62px] flex-shrink-0 self-end"
               />
               <span className="text-brand-title sm:text-brand-title-lg leading-none italic font-bold text-text-primary">
                 ONE
