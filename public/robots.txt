@@ -1,4 +1,4 @@
 # https://www.robotstxt.org/robotstxt.html
 User-agent: *
 Allow: /
-Sitemap: https://one-more-sencond-web.firebaseapp.com/sitemap.xml
+Sitemap: https://onemoresecond.site/sitemap.xml

@@ -1,9 +1,32 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="https://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
-    <loc>https://one-more-sencond-web.firebaseapp.com/</loc>
-    <lastmod>2026-02-21</lastmod>
-    <changefreq>daily</changefreq>
+    <loc>https://onemoresecond.site/en</loc>
+    <lastmod>2026-02-23</lastmod>
+    <changefreq>weekly</changefreq>
     <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://onemoresecond.site/en" />
+    <xhtml:link rel="alternate" hreflang="ko" href="https://onemoresecond.site/ko" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://onemoresecond.site/ja" />
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://onemoresecond.site/zh-CN" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://onemoresecond.site/en" />
+  </url>
+  <url>
+    <loc>https://onemoresecond.site/ko</loc>
+    <lastmod>2026-02-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://onemoresecond.site/ja</loc>
+    <lastmod>2026-02-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://onemoresecond.site/zh-CN</loc>
+    <lastmod>2026-02-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
   </url>
 </urlset>
