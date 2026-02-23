@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Analytics } from '@vercel/analytics/react';
 import { Navigate, Route, Routes, useLocation, useNavigate, useParams } from 'react-router-dom';
 import Layout from './components/Layout';
 import DifficultyModal from './components/DifficultyModal';
@@ -449,12 +450,17 @@ function AppLanguageRoute() {
 }
 
 function App() {
+  const location = useLocation();
+
   return (
-    <Routes>
-      <Route path="/" element={<Navigate to={getLanguagePath('en')} replace />} />
-      <Route path="/:lang/*" element={<AppLanguageRoute />} />
-      <Route path="*" element={<Navigate to={getLanguagePath('en')} replace />} />
-    </Routes>
+    <>
+      <Analytics route={location.pathname} path={`${location.pathname}${location.search}`} />
+      <Routes>
+        <Route path="/" element={<Navigate to={getLanguagePath('en')} replace />} />
+        <Route path="/:lang/*" element={<AppLanguageRoute />} />
+        <Route path="*" element={<Navigate to={getLanguagePath('en')} replace />} />
+      </Routes>
+    </>
   );
 }
 
