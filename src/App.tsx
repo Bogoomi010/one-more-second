@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Analytics } from '@vercel/analytics/react';
+import { SpeedInsights } from '@vercel/speed-insights/react';
 import { Navigate, Route, Routes, useLocation, useNavigate, useParams } from 'react-router-dom';
 import Layout from './components/Layout';
 import DifficultyModal from './components/DifficultyModal';
@@ -455,6 +456,7 @@ function App() {
   return (
     <>
       <Analytics route={location.pathname} path={`${location.pathname}${location.search}`} />
+      <SpeedInsights />
       <Routes>
         <Route path="/" element={<Navigate to={getLanguagePath('en')} replace />} />
         <Route path="/:lang/*" element={<AppLanguageRoute />} />
