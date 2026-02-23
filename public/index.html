@@ -2,7 +2,8 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
+    <link rel="icon" href="%PUBLIC_URL%/icon-favicon.png" type="image/png" />
+    <link rel="shortcut icon" href="%PUBLIC_URL%/icon-favicon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#0f172a" />
     <meta name="application-name" content="ONE MORE SECOND" />
@@ -25,7 +26,7 @@
     />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="%PUBLIC_URL%" />
-    <meta property="og:image" content="%PUBLIC_URL%/logo512.png" />
+    <meta property="og:image" content="%PUBLIC_URL%/icon-favicon.png" />
     <meta property="og:site_name" content="ONE MORE SECOND" />
     <meta property="og:locale" content="en_US" />
     <meta name="twitter:card" content="summary_large_image" />
@@ -36,12 +37,12 @@
       name="twitter:description"
       content="ONE MORE SECOND is a high-tempo web game where you survive bullet waves and climb the leaderboard."
     />
-    <meta name="twitter:image" content="%PUBLIC_URL%/logo512.png" />
+    <meta name="twitter:image" content="%PUBLIC_URL%/icon-favicon.png" />
     <link rel="canonical" href="%PUBLIC_URL%/" />
     <link rel="preconnect" href="https://firestore.googleapis.com" crossorigin />
     <link rel="preconnect" href="https://identitytoolkit.googleapis.com" crossorigin />
     <link rel="preconnect" href="https://securetoken.googleapis.com" crossorigin />
-    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
+    <link rel="apple-touch-icon" href="%PUBLIC_URL%/icon-favicon.png" />
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -80,7 +81,7 @@
         var language = supportedLanguageCodes.indexOf(languageSegment) >= 0 ? languageSegment : 'en';
         var canonicalPath = path;
         var canonicalUrl = origin + canonicalPath;
-        var logoUrl = origin + '/logo512.png';
+        var iconUrl = origin + '/icon-favicon.png';
         var htmlLang = language === 'zh-CN' ? 'zh-CN' : language;
         var ogLocale = language === 'zh-CN' ? 'zh_CN' : language + '_' + language.toUpperCase();
 
@@ -101,10 +102,10 @@
 
         setAttr('link[rel="canonical"]', 'href', canonicalUrl);
         setAttr('meta[property="og:url"]', 'content', canonicalUrl);
-        setAttr('meta[property="og:image"]', 'content', logoUrl);
+        setAttr('meta[property="og:image"]', 'content', iconUrl);
         setAttr('meta[property="og:locale"]', 'content', ogLocale);
         setAttr('meta[name="twitter:url"]', 'content', canonicalUrl);
-        setAttr('meta[name="twitter:image"]', 'content', logoUrl);
+        setAttr('meta[name="twitter:image"]', 'content', iconUrl);
         document.documentElement.setAttribute('lang', htmlLang);
 
         var ldJson = document.getElementById('ld-json');
@@ -112,7 +113,7 @@
           try {
             var data = JSON.parse(ldJson.textContent || '{}');
             data.url = canonicalUrl;
-            data.image = logoUrl;
+            data.image = iconUrl;
             data.inLanguage = [htmlLang];
             ldJson.textContent = JSON.stringify(data);
           } catch (error) {
