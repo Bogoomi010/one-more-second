@@ -153,9 +153,9 @@ describe('Storage System', () => {
       localStorage.setItem('oms.profile.v1', JSON.stringify(legacyProfile));
 
       const loaded = loadProfile();
-      expect(loaded.selectedPlayerSkinId).toBe('player-girl');
+      expect(loaded.selectedPlayerSkinId).toBe('player-rabbit-girl');
       expect(loaded.selectedBulletSkinId).toBe('bullet-gimic');
-      expect(loaded.ownedPlayerSkins).toContain('player-girl');
+      expect(loaded.ownedPlayerSkins).toContain('player-rabbit-girl');
       expect(loaded.ownedBulletSkins).toContain('bullet-gimic');
     });
   });

@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useLocation, useNavigate } from 'react-router-dom';
 import { PlayerProfile } from '../gameSystem/types';
 import { syncLanguagePreferenceToCloud } from '../services/userDataService';
 import { DEFAULT_ONLINE_USERS_FALLBACK, subscribeOnlineUsersCount } from '../services/onlinePresenceService';
@@ -10,6 +9,32 @@ import GameBottomBar from './GameBottomBar';
 import { LeftColumn, MainColumn, RightColumn } from './ColumnSlots';
 import { SUPPORTED_LANGUAGES, getLanguagePath, normalizeLanguage, type SupportedLanguage } from '../i18n/index';
 import iconFavicon from '../assets/icon-svg-favicon.svg';
+
+type RouterLocation = {
+  pathname: string;
+};
+
+type NavigateFunction = (to: string) => void;
+
+const fallbackNavigate: NavigateFunction = () => {};
+const fallbackUseLocation = (): RouterLocation => ({ pathname: '/' });
+let useLocation = fallbackUseLocation;
+let useNavigate = () => fallbackNavigate;
+
+try {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const router = require('react-router-dom') as {
+    useLocation?: () => RouterLocation;
+    useNavigate?: () => NavigateFunction;
+  };
+  if (typeof router.useLocation === 'function') {
+    useLocation = router.useLocation;
+  }
+  if (typeof router.useNavigate === 'function') {
+    useNavigate = router.useNavigate;
+  }
+} catch {}
+
 const LANGUAGE_NAMES: Record<SupportedLanguage, string> = {
   ko: '한국어',
   en: 'English',

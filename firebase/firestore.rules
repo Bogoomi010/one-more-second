@@ -18,7 +18,17 @@ service cloud.firestore {
     }
 
     function isNickname(value) {
-        return value is string && value.size() >= 1 && value.size() <= 20;
+        return value is string
+          && value.size() >= 1
+          && value.size() <= 20
+          && value.matches('^\\S(?:.*\\S)?$');
+    }
+
+    function isNormalizedNickname(value) {
+        return value is string
+          && value.size() >= 1
+          && value.size() <= 20
+          && value.matches('^[a-z0-9._-]+( [a-z0-9._-]+)*$');
     }
 
     function isDateKey(value) {
@@ -173,7 +183,7 @@ service cloud.firestore {
         ]) &&
         request.resource.data.uid == request.auth.uid &&
         isNickname(request.resource.data.nickname) &&
-        isNickname(request.resource.data.normalizedNickname) &&
+        (!('normalizedNickname' in request.resource.data) || isNormalizedNickname(request.resource.data.normalizedNickname)) &&
         isCountryCode(request.resource.data.country) &&
         (!('updatedAt' in request.resource.data) || request.resource.data.updatedAt is timestamp);
     }

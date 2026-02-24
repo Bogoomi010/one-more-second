@@ -143,7 +143,7 @@ describe('Achievements System', () => {
     expect(updated.achievements['coins-100']).toBeDefined();
     expect(updated.achievements['coins-500']).toBeDefined();
     expect(updated.achievements['coins-1000']).toBeUndefined();
-    expect(updated.coins - afterRun.coins).toBe(ACHIEVEMENT_REWARD_COINS * 2);
+    expect(updated.coins - afterRun.coins).toBe(ACHIEVEMENT_REWARD_COINS * 4);
   });
 
   it('should not unlock coin achievements from achievement reward coins alone', () => {

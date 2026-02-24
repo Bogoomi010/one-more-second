@@ -1,7 +1,17 @@
 import React from 'react';
 import { fireEvent, render, screen, within } from '@testing-library/react';
-import Layout from './Layout';
 import { defaultProfile } from '../gameSystem/storage';
+
+jest.mock('../i18n/index', () => ({
+  SUPPORTED_LANGUAGES: ['en', 'ko', 'ja', 'zh-CN'],
+  getLanguagePath: (value: string) => `/${value}`,
+  normalizeLanguage: (value?: string) => (value as 'en' | 'ko' | 'ja' | 'zh-CN') ?? 'en',
+}));
+
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const { default: Layout } = require('./Layout') as {
+  default: React.ComponentType<Record<string, unknown>>;
+};
 
 jest.mock('react-i18next', () => {
   const translationMap: Record<string, string> = {
@@ -63,6 +73,29 @@ function renderLayout(profileIncluded = true, overrides: Partial<React.Component
     </Layout>
   );
 }
+
+beforeAll(() => {
+  if (!window.matchMedia) {
+    window.matchMedia = ((query: string) => ({
+      media: query,
+      matches: query.includes('1239px') ? true : false,
+      onchange: null,
+      addEventListener: jest.fn(),
+      removeEventListener: jest.fn(),
+      addListener: jest.fn(),
+      removeListener: jest.fn(),
+      dispatchEvent: jest.fn(),
+    })) as typeof window.matchMedia;
+  }
+
+  if (!window.ResizeObserver) {
+    window.ResizeObserver = class {
+      observe() {}
+      unobserve() {}
+      disconnect() {}
+    } as unknown as typeof ResizeObserver;
+  }
+});
 
 describe('Layout mobile panel controls', () => {
   it('opens and closes ranking bottom sheet', () => {
