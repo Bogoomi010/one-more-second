@@ -79,3 +79,18 @@ yarn build
 yarn global add serve
 serve -s build
 ```
+
+## submitScore 함수 배포/검증
+
+- `firebase/functions/index.js`의 `submitScore`는 `onCall`(v2)와 `cors: ALLOWED_ORIGINS` 옵션을 사용하도록 유지합니다.
+- 운영 반영은 아래 순서로 진행합니다.
+
+```bash
+cd /Users/kbk-admin/Workspaces/one-more-second
+firebase deploy --only functions
+```
+
+배포 확인 체크리스트
+1. Firebase Console > Functions > `asia-northeast3` > `submitScore` 트리거가 존재하는지 확인
+2. 트리거 소스에서 `onCall` 형태로 배포되었는지 확인
+3. `cors` 허용 목록에 `https://onemoresecond.site`, `https://www.onemoresecond.site`가 있는지 확인

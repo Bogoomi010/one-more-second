@@ -9,6 +9,7 @@ import {
 } from '../services/userDataService';
 import { normalizeCountryCode, normalizeNickname } from '../utils/validation';
 import { useModalAccessibility } from './useModalAccessibility';
+import { firebaseAuth } from '../lib/firebase';
 
 interface ProfileSetupModalProps {
   isOpen: boolean;
@@ -108,6 +109,20 @@ export default function ProfileSetupModal({
       rawNickname: nickname,
       rawCountry: country,
     });
+    const currentUser = firebaseAuth?.currentUser ?? null;
+    console.debug('[ProfileSetupModal] auth status', {
+      isSignedIn: Boolean(currentUser),
+      authUid: currentUser?.uid,
+      contextUid: user?.uid,
+    });
+
+    if (!currentUser) {
+      console.warn('[ProfileSetupModal] auth required for identity confirm', {
+        isSignedIn: Boolean(currentUser),
+      });
+      setError('로그인이 필요합니다.');
+      return;
+    }
 
     const validationError = validateNickname(nickname);
     if (validationError) {

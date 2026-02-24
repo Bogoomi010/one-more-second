@@ -36,12 +36,19 @@ export interface UserIdentityProfile {
   country: string;
 }
 
+interface UserIdentityProfileForWrite extends UserIdentityProfile {
+  normalizedNickname: string;
+}
+
 const SCORE_SUBMIT_FUNCTION_NAME = 'submitScore';
 const DISABLE_SCORE_FUNCTION_CALL = process.env.REACT_APP_DISABLE_SCORE_FUNCTION_CALL === 'true';
+const USER_DOCUMENT_ID = 'users';
+const USER_PUBLIC_PROFILES_COLLECTION = 'userPublicProfiles';
+const NORMALIZED_NICKNAME_MAX_LENGTH = 20;
+const PUBLIC_NICKNAME_VALIDATOR = /^[a-z0-9._-]+( [a-z0-9._-]+)*$/;
 
 type SupportedLanguage = 'ko' | 'en' | 'ja' | 'zh-CN';
 const LANGUAGE_STORAGE_KEY = 'oms.language';
-const USER_PUBLIC_PROFILES_COLLECTION = 'userPublicProfiles';
 
 let canUseCallableScoreSubmit = !DISABLE_SCORE_FUNCTION_CALL;
 
@@ -105,33 +112,119 @@ function sanitizeIdentityProfile(value: UserIdentityProfile): UserIdentityProfil
   };
 }
 
+function sanitizeIdentityProfileForWrite(value: UserIdentityProfile): UserIdentityProfileForWrite {
+  const normalizedIdentity = sanitizeIdentityProfile(value);
+  const normalizedNickname = normalizePublicNickname(normalizedIdentity.nickname);
+
+  return {
+    ...normalizedIdentity,
+    normalizedNickname,
+  };
+}
+
+function normalizePublicNickname(value: string): string {
+  const normalizedNickname = value
+    .toLowerCase()
+    .replace(/[^a-z0-9._-\s]/g, '-')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, NORMALIZED_NICKNAME_MAX_LENGTH);
+
+  if (!normalizedNickname || !PUBLIC_NICKNAME_VALIDATOR.test(normalizedNickname)) {
+    throw new Error(
+      '닉네임은 영문 소문자, 숫자, 점, 하이픈, 언더스코어, 공백만 사용할 수 있습니다.'
+    );
+  }
+
+  return normalizedNickname;
+}
+
+function ensureSignedInIdentityWrite(uid: string, operation: string): void {
+  const currentUser = getCurrentUser();
+  console.debug(`[userDataService] ${operation} auth check`, {
+    uid,
+    currentUid: currentUser?.uid,
+    isSignedIn: Boolean(currentUser),
+  });
+
+  if (!currentUser) {
+    const error = new Error('로그인이 필요합니다.');
+    (error as { code?: string }).code = 'auth/no-current-user';
+    throw error;
+  }
+
+  if (currentUser.uid !== uid) {
+    const error = new Error('요청한 사용자 UID와 로그인 사용자 UID가 일치하지 않습니다.');
+    (error as { code?: string }).code = 'permission-denied';
+    throw error;
+  }
+}
+
+function logFirestoreWriteFailure(
+  operation: string,
+  documentPath: string,
+  payload: Record<string, unknown>,
+  error: unknown
+): void {
+  const code = getFirebaseErrorCode(error);
+  const message = getFirebaseErrorMessage(error);
+
+  if (code === 'permission-denied') {
+    console.error(`[userDataService] ${operation} blocked`, {
+      code,
+      message,
+      documentPath,
+      payload,
+    });
+    return;
+  }
+
+  console.error(`[userDataService] ${operation} failed`, {
+    code,
+    message,
+    documentPath,
+    payload,
+  });
+}
+
 async function upsertPublicIdentityProfile(
   uid: string,
   identity: UserIdentityProfile
 ): Promise<void> {
-  const normalizedIdentity = sanitizeIdentityProfile(identity);
+  ensureSignedInIdentityWrite(uid, 'upsertPublicIdentityProfile');
+  const normalizedIdentity = sanitizeIdentityProfileForWrite(identity);
   const db = firebaseDb;
   if (!firebaseEnabled || !db) return;
 
+  const publicProfileRef = doc(db, USER_PUBLIC_PROFILES_COLLECTION, uid);
+  const publicProfile = {
+    uid,
+    nickname: normalizedIdentity.nickname,
+    normalizedNickname: normalizedIdentity.normalizedNickname,
+    country: normalizedIdentity.country,
+    updatedAt: serverTimestamp(),
+  };
+
   console.debug('[userDataService] upsertPublicIdentityProfile start', {
     uid,
+    documentPath: publicProfileRef.path,
     normalizedIdentity,
   });
   try {
-    await setDoc(
-      doc(db, USER_PUBLIC_PROFILES_COLLECTION, uid),
-      {
-        uid,
-        nickname: normalizedIdentity.nickname,
-        normalizedNickname: normalizeNickname(normalizedIdentity.nickname),
-        country: normalizedIdentity.country,
-        updatedAt: serverTimestamp(),
-      },
-      { merge: true }
-    );
+    await setDoc(publicProfileRef, publicProfile, { merge: true });
     console.debug('[userDataService] upsertPublicIdentityProfile success', { uid });
   } catch (error) {
-    console.error('[userDataService] upsertPublicIdentityProfile failed', error);
+    logFirestoreWriteFailure(
+      'upsertPublicIdentityProfile',
+      publicProfileRef.path,
+      {
+        uid: publicProfile.uid,
+        nickname: publicProfile.nickname,
+        normalizedNickname: publicProfile.normalizedNickname,
+        country: publicProfile.country,
+      },
+      error
+    );
     throw error;
   }
 }
@@ -163,18 +256,43 @@ async function appendScoreSubmissionForUser(
 async function submitScoreViaCallable(scoreData: ScoreRecord): Promise<ScoreSubmitResult | null> {
   if (!firebaseFunctions) return null;
 
-  const call = httpsCallable(firebaseFunctions, SCORE_SUBMIT_FUNCTION_NAME);
-  const response = await call(scoreData);
-  const data = response.data as ScoreSubmitResult;
-  if (!data || typeof data.success !== 'boolean') {
-    throw new Error('Cloud Function response format is invalid.');
-  }
+  console.debug('[userDataService] submitScoreViaCallable start', {
+    functionName: SCORE_SUBMIT_FUNCTION_NAME,
+    payload: {
+      nickname: scoreData.nickname,
+      country: scoreData.country,
+    },
+    region: 'asia-northeast3',
+  });
+  try {
+    const call = httpsCallable(firebaseFunctions, SCORE_SUBMIT_FUNCTION_NAME);
+    const response = await call(scoreData);
+    const data = response.data as ScoreSubmitResult;
+    if (!data || typeof data.success !== 'boolean') {
+      throw new Error('Cloud Function response format is invalid.');
+    }
 
-  if (!data.success) {
-    throw new Error(data.message ?? 'Cloud Function score submit rejected.');
+    if (!data.success) {
+      throw new Error(data.message ?? 'Cloud Function score submit rejected.');
+    }
+    console.debug('[userDataService] submitScoreViaCallable success', {
+      success: data.success,
+      cloudSynced: data.cloudSynced,
+    });
+    return data;
+  } catch (error) {
+    console.error('[userDataService] submitScoreViaCallable failed', {
+      code: getFirebaseErrorCode(error),
+      message: getFirebaseErrorMessage(error),
+      functionName: SCORE_SUBMIT_FUNCTION_NAME,
+      region: 'asia-northeast3',
+      payload: {
+        nickname: scoreData.nickname,
+        country: scoreData.country,
+      },
+    });
+    throw error;
   }
-
-  return data;
 }
 
 async function submitScoreViaLegacyWrites(
@@ -499,7 +617,8 @@ export async function upsertUserIdentityProfile(
   uid: string,
   identity: UserIdentityProfile
 ): Promise<void> {
-  const normalizedIdentity = sanitizeIdentityProfile(identity);
+  ensureSignedInIdentityWrite(uid, 'upsertUserIdentityProfile');
+  const normalizedIdentity = sanitizeIdentityProfileForWrite(identity);
   const db = firebaseDb;
   if (!firebaseEnabled || !db) {
     console.debug('[userDataService] upsertUserIdentityProfile skipped (firebase disabled)', {
@@ -512,23 +631,45 @@ export async function upsertUserIdentityProfile(
     uid,
     normalizedIdentity,
   });
+  const userRef = doc(db, USER_DOCUMENT_ID, uid);
+  const userPayload = {
+    nickname: normalizedIdentity.nickname,
+    country: normalizedIdentity.country,
+    updatedAt: serverTimestamp(),
+  };
 
   try {
-    await setDoc(
-      doc(db, 'users', uid),
-      {
-        nickname: normalizedIdentity.nickname,
-        country: normalizedIdentity.country,
-        updatedAt: serverTimestamp(),
-      },
-      { merge: true }
-    );
-    console.debug('[userDataService] upsertUserIdentityProfile wrote users doc', { uid });
+    await setDoc(userRef, userPayload, { merge: true });
+    console.debug('[userDataService] upsertUserIdentityProfile wrote users doc', {
+      uid,
+      documentPath: userRef.path,
+    });
 
     await upsertPublicIdentityProfile(uid, normalizedIdentity);
     console.debug('[userDataService] upsertUserIdentityProfile wrote public profile', { uid });
   } catch (error) {
-    console.error('[userDataService] upsertUserIdentityProfile failed', error);
+    const publicProfileRef = doc(db, USER_PUBLIC_PROFILES_COLLECTION, uid);
+    logFirestoreWriteFailure(
+      'upsertUserIdentityProfile',
+      userRef.path,
+      {
+        uid,
+        nickname: userPayload.nickname,
+        country: userPayload.country,
+      },
+      error
+    );
+    logFirestoreWriteFailure(
+      'upsertUserIdentityProfile',
+      publicProfileRef.path,
+      {
+        uid,
+        nickname: normalizedIdentity.nickname,
+        normalizedNickname: normalizedIdentity.normalizedNickname,
+        country: normalizedIdentity.country,
+      },
+      error
+    );
     throw error;
   }
 }
@@ -542,7 +683,7 @@ export async function isNicknameAvailable(
 
   let normalized: string;
   try {
-    normalized = normalizeNickname(nickname);
+    normalized = normalizePublicNickname(normalizeNickname(nickname));
   } catch {
     return false;
   }
