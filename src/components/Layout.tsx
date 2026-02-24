@@ -732,7 +732,7 @@ export default function Layout({
           onClick={() => setMobilePanel(null)}
         >
           <div
-            className="w-full max-w-[900px] max-h-[86vh] overflow-hidden rounded-[20px] border border-border-primary bg-bg-primary shadow-[0_24px_70px_rgba(0,0,0,0.55)] p-3 pb-5 flex flex-col gap-3"
+            className="w-full max-w-[900px] max-h-[86vh] overflow-y-auto rounded-[20px] border border-border-primary bg-bg-primary shadow-[0_24px_70px_rgba(0,0,0,0.55)] p-3 pb-5 flex flex-col gap-3"
             role="dialog"
             aria-modal="true"
             aria-label={mobilePanel === 'ranking' ? t('ranking.title') : t('stats.tabStats')}
@@ -752,7 +752,7 @@ export default function Layout({
               </button>
             </div>
 
-            <div className="w-full flex-1 min-h-0 overflow-hidden">
+            <div className="w-full flex-1 min-h-0 overflow-visible">
               {mobilePanel === 'ranking' ? (
                 <RankingPanel userCountry={userCountry} refreshTrigger={rankingRefreshTrigger} />
               ) : profile ? (
