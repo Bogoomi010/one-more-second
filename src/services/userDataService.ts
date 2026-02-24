@@ -103,6 +103,10 @@ function getCallableErrorStatus(error: unknown): number | undefined {
   if (typeof rawStatus === 'number') {
     return rawStatus;
   }
+  if (typeof rawStatus === 'string') {
+    const parsed = Number(rawStatus);
+    return Number.isNaN(parsed) ? undefined : parsed;
+  }
 
   return undefined;
 }
