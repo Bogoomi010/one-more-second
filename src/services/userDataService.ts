@@ -434,10 +434,13 @@ export async function upsertUserProfile(
       })
   );
 
+  const dailyChallengeDateKey = profile.dailyChallenge.dateKey || todayDateKey();
   await setDoc(
-    doc(db, 'users', uid, 'daily', profile.dailyChallenge.dateKey || todayDateKey()),
+    doc(db, 'users', uid, 'daily', dailyChallengeDateKey),
     {
-      ...profile.dailyChallenge,
+      targetSeconds: profile.dailyChallenge.targetSeconds,
+      rewardCoins: profile.dailyChallenge.rewardCoins,
+      completed: profile.dailyChallenge.completed,
       updatedAt: serverTimestamp(),
     },
     { merge: true }

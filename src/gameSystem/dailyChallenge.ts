@@ -30,7 +30,6 @@ function buildDailyChallenge(seed: string): Pick<
     return {
       type: 'survival',
       targetSeconds: seededInt(`${seed}:survival`, 15, 45),
-      targetHits: undefined,
     };
   }
 
