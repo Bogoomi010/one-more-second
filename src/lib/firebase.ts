@@ -24,6 +24,17 @@ const app = hasRequiredConfig ? initializeApp(firebaseConfig) : null;
 const appCheckSiteKey = process.env.REACT_APP_FIREBASE_APPCHECK_SITE_KEY;
 const appCheckDebugToken = process.env.REACT_APP_FIREBASE_APPCHECK_DEBUG_TOKEN;
 const functionsRegion = 'asia-northeast3';
+const functionsDebugInfo =
+  app && app.options
+    ? {
+        projectId: app.options.projectId ?? null,
+        functionsRegion,
+        authDomain: app.options.authDomain ?? null,
+        expectedCallableBaseUrl: app.options.projectId
+          ? `https://${functionsRegion}-${app.options.projectId}.cloudfunctions.net`
+          : null,
+      }
+    : null;
 
 if (app && typeof window !== 'undefined') {
   if (appCheckDebugToken && process.env.NODE_ENV !== 'production') {
@@ -48,4 +59,9 @@ if (app && typeof window !== 'undefined') {
 export const firebaseEnabled = hasRequiredConfig;
 export const firebaseAuth = app ? getAuth(app) : null;
 export const firebaseDb = app ? getFirestore(app) : null;
+
+if (typeof window !== 'undefined' && functionsDebugInfo) {
+  console.debug('[firebase] getFunctions init', functionsDebugInfo);
+}
+
 export const firebaseFunctions = app ? getFunctions(app, functionsRegion) : null;

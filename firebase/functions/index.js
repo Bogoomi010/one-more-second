@@ -13,6 +13,14 @@ const ALLOWED_ORIGINS = [
   'http://127.0.0.1:3000',
 ];
 
+function isAllowedOrigin(origin) {
+  if (typeof origin !== 'string' || !origin.trim()) {
+    return false;
+  }
+  const normalized = origin.toLowerCase().replace(/\/$/, '');
+  return ALLOWED_ORIGINS.map((allowed) => allowed.toLowerCase()).includes(normalized);
+}
+
 function normalizeScore(value, fallback = 0) {
   const num = Number(value);
   if (!Number.isFinite(num) || num < 0) {
@@ -27,6 +35,17 @@ exports.submitScore = onCall(
     cors: ALLOWED_ORIGINS,
   },
   async (request) => {
+    const origin = request.rawRequest?.headers?.origin;
+    const userAgent = request.rawRequest?.headers?.['user-agent'];
+    const allowed = isAllowedOrigin(origin);
+
+    console.log('[submitScore] incoming request', {
+      origin: origin ?? '(none)',
+      userAgent: userAgent ?? '(none)',
+      isOriginAllowed: allowed,
+      allowedOrigins: ALLOWED_ORIGINS,
+    });
+
     const { auth, data } = request;
 
     if (!auth || !auth.uid) {

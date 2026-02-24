@@ -84,6 +84,79 @@ function formatScoreSubmitError(error: unknown): string {
   return code ? `${code}: ${message}` : message;
 }
 
+function getCallableErrorStatus(error: unknown): number | undefined {
+  if (!error || typeof error !== 'object') {
+    return undefined;
+  }
+
+  const customData = (error as { customData?: unknown }).customData;
+  if (!customData || typeof customData !== 'object') {
+    return undefined;
+  }
+
+  const status = (customData as { httpStatus?: unknown }).httpStatus;
+  if (typeof status === 'number') {
+    return status;
+  }
+
+  const rawStatus = (customData as { status?: unknown }).status;
+  if (typeof rawStatus === 'number') {
+    return rawStatus;
+  }
+
+  return undefined;
+}
+
+function getCallableErrorStatusText(error: unknown): string | undefined {
+  if (!error || typeof error !== 'object') {
+    return undefined;
+  }
+
+  const customData = (error as { customData?: unknown }).customData;
+  if (!customData || typeof customData !== 'object') {
+    return undefined;
+  }
+
+  const statusText =
+    (customData as { statusText?: unknown }).statusText ??
+    (customData as { httpStatusText?: unknown }).httpStatusText;
+  if (typeof statusText === 'string' && statusText.trim()) {
+    return statusText;
+  }
+
+  return undefined;
+}
+
+function getCallableErrorResponseText(error: unknown): string | undefined {
+  if (!error || typeof error !== 'object') {
+    return undefined;
+  }
+
+  const customData = (error as { customData?: unknown }).customData;
+  if (!customData || typeof customData !== 'object') {
+    return undefined;
+  }
+
+  const rawText =
+    (customData as { body?: unknown }).body ??
+    (customData as { responseText?: unknown }).responseText ??
+    (customData as { text?: unknown }).text ??
+    (error as { details?: unknown }).details;
+
+  if (typeof rawText === 'string') {
+    return rawText;
+  }
+  if (rawText !== undefined && rawText !== null) {
+    try {
+      return JSON.stringify(rawText);
+    } catch {
+      return String(rawText);
+    }
+  }
+
+  return undefined;
+}
+
 function normalizeLanguage(language?: string | null): SupportedLanguage {
   if (!language) return 'en';
   if (language.startsWith('zh')) return 'zh-CN';
@@ -281,9 +354,15 @@ async function submitScoreViaCallable(scoreData: ScoreRecord): Promise<ScoreSubm
     });
     return data;
   } catch (error) {
+    const status = getCallableErrorStatus(error);
+    const statusText = getCallableErrorStatusText(error);
+    const responseText = getCallableErrorResponseText(error);
     console.error('[userDataService] submitScoreViaCallable failed', {
       code: getFirebaseErrorCode(error),
       message: getFirebaseErrorMessage(error),
+      status,
+      statusText,
+      responseText,
       functionName: SCORE_SUBMIT_FUNCTION_NAME,
       region: 'asia-northeast3',
       payload: {
