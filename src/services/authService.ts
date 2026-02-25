@@ -1,8 +1,8 @@
 import {
   GoogleAuthProvider,
   User,
+  type Auth,
   onAuthStateChanged,
-  signInWithPopup,
   signInWithRedirect,
   signOut,
 } from 'firebase/auth';
@@ -12,18 +12,38 @@ const provider = new GoogleAuthProvider();
 provider.addScope('profile');
 provider.addScope('email');
 
-function shouldUseRedirectAuth(): boolean {
-  if (typeof window === 'undefined') return false;
+const GOOGLE_REDIRECT_LOGIN_PENDING_KEY = 'one-more-second-google-redirect-login';
 
-  const host = window.location.hostname;
-  return host === 'localhost' || host === '127.0.0.1' || host === '::1' || host.endsWith('.localhost');
+function getBrowserAuth(): Auth | null {
+  return firebaseAuth;
 }
 
-async function signInWithRedirectFallback(): Promise<null> {
-  if (!firebaseAuth) return null;
+function setRedirectLoginPending(pending: boolean) {
+  if (typeof window === 'undefined' || !window.sessionStorage) return;
+  if (pending) {
+    window.sessionStorage.setItem(GOOGLE_REDIRECT_LOGIN_PENDING_KEY, '1');
+    return;
+  }
 
-  await signInWithRedirect(firebaseAuth, provider);
-  return null;
+  window.sessionStorage.removeItem(GOOGLE_REDIRECT_LOGIN_PENDING_KEY);
+}
+
+export function markGoogleRedirectLoginPending() {
+  setRedirectLoginPending(true);
+}
+
+export function consumeGoogleRedirectLoginPending(): boolean {
+  if (typeof window === 'undefined' || !window.sessionStorage) return false;
+
+  const isPending = window.sessionStorage.getItem(GOOGLE_REDIRECT_LOGIN_PENDING_KEY);
+  if (isPending !== '1') return false;
+
+  setRedirectLoginPending(false);
+  return true;
+}
+
+export function clearGoogleRedirectLoginPending() {
+  setRedirectLoginPending(false);
 }
 
 export function isAuthAvailable(): boolean {
@@ -31,44 +51,39 @@ export function isAuthAvailable(): boolean {
 }
 
 export function getCurrentUser(): User | null {
-  if (!firebaseAuth) return null;
-  return firebaseAuth.currentUser;
+  const auth = getBrowserAuth();
+  if (!auth) return null;
+  return auth.currentUser;
 }
 
-export async function signInWithGooglePopup(): Promise<User | null> {
-  if (!firebaseAuth) {
+export async function signInWithGoogleRedirect(): Promise<User | null> {
+  const auth = getBrowserAuth();
+  if (!auth) {
     const error = new Error('Firebase Authentication is not configured.');
     (error as { code?: string }).code = 'auth/not-configured';
     throw error;
   }
 
-  if (shouldUseRedirectAuth()) {
-    return signInWithRedirectFallback();
-  }
-
   try {
-    const result = await signInWithPopup(firebaseAuth, provider);
-    return result.user;
+    await signInWithRedirect(auth, provider);
+    return null;
   } catch (error) {
-    console.warn('[authService] signInWithPopup failed, fallback to redirect.', error);
-    try {
-      return await signInWithRedirectFallback();
-    } catch (redirectError) {
-      console.error('[authService] signInWithRedirect failed.', redirectError);
-      throw redirectError;
-    }
+    console.error('[authService] signInWithRedirect failed.', error);
+    throw error;
   }
 }
 
 export async function signOutCurrentUser(): Promise<void> {
-  if (!firebaseAuth) return;
-  await signOut(firebaseAuth);
+  const auth = getBrowserAuth();
+  if (!auth) return;
+  await signOut(auth);
 }
 
 export function subscribeAuthState(callback: (user: User | null) => void): () => void {
-  if (!firebaseAuth) {
+  const auth = getBrowserAuth();
+  if (!auth) {
     callback(null);
     return () => {};
   }
-  return onAuthStateChanged(firebaseAuth, callback);
+  return onAuthStateChanged(auth, callback);
 }
