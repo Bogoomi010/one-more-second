@@ -328,7 +328,7 @@ export default function Layout({
               SECOND
             </span>
           </button>
-          <span className="text-brand-subtitle sm:text-brand-subtitle-lg leading-none text-text-muted font-primary self-end -mt-1">
+          <span className="text-brand-subtitle sm:text-brand-subtitle-lg leading-none text-text-muted font-primary self-end -translate-y-2">
             dodge game
           </span>
         </div>
