@@ -49,11 +49,27 @@ if (app && typeof window !== 'undefined') {
   }
 
   if (appCheckSiteKey) {
+    console.debug('[firebase] AppCheck initialized', {
+      hasSiteKey: Boolean(appCheckSiteKey),
+      debugToken: Boolean(appCheckDebugToken),
+    });
+
     initializeAppCheck(app, {
       provider: new ReCaptchaV3Provider(appCheckSiteKey),
       isTokenAutoRefreshEnabled: true,
     });
+  } else {
+    console.debug('[firebase] AppCheck skipped: no site key');
   }
+}
+
+if (process.env.NODE_ENV !== 'production') {
+  console.debug('[firebase] config validation', {
+    hasRequiredConfig,
+    authDomainConfigured: Boolean(firebaseConfig.authDomain),
+    projectId: firebaseConfig.projectId ? 'present' : 'missing',
+    apiKeySet: Boolean(firebaseConfig.apiKey),
+  });
 }
 
 export const firebaseEnabled = hasRequiredConfig;

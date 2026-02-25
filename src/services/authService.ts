@@ -11,12 +11,23 @@ import { firebaseAuth, firebaseEnabled } from '../lib/firebase';
 const provider = new GoogleAuthProvider();
 provider.addScope('profile');
 provider.addScope('email');
+provider.setCustomParameters({ prompt: 'select_account' });
 
 function shouldUseRedirectAuth(): boolean {
   if (typeof window === 'undefined') return false;
 
   const host = window.location.hostname;
-  return host === 'localhost' || host === '127.0.0.1' || host === '::1' || host.endsWith('.localhost');
+  const shouldRedirect = host === 'localhost' || host === '127.0.0.1' || host === '::1' || host.endsWith('.localhost');
+
+  if (process.env.NODE_ENV !== 'production') {
+    console.debug('[authService] shouldUseRedirectAuth', {
+      host,
+      shouldUseRedirectAuth: shouldRedirect,
+      userAgent: navigator.userAgent,
+    });
+  }
+
+  return shouldRedirect;
 }
 
 async function signInWithRedirectFallback(): Promise<null> {
@@ -36,25 +47,82 @@ export function getCurrentUser(): User | null {
 }
 
 export async function signInWithGooglePopup(): Promise<User | null> {
+  if (process.env.NODE_ENV !== 'production') {
+    console.debug('[authService] signInWithGooglePopup:start', {
+      hasFirebaseAuth: Boolean(firebaseAuth),
+      host: typeof window !== 'undefined' ? window.location.host : 'server',
+      pathname: typeof window !== 'undefined' ? window.location.pathname : 'server',
+      hasGoogleProviderScopes: provider.getScopes(),
+      isLocalEnv: shouldUseRedirectAuth(),
+    });
+  }
+
   if (!firebaseAuth) {
+    if (process.env.NODE_ENV !== 'production') {
+      console.error('[authService] Firebase Auth is unavailable', {
+        firebaseEnabled,
+      });
+    }
     const error = new Error('Firebase Authentication is not configured.');
     (error as { code?: string }).code = 'auth/not-configured';
     throw error;
   }
 
   if (shouldUseRedirectAuth()) {
+    if (process.env.NODE_ENV !== 'production') {
+      console.debug('[authService] using redirect auth path');
+    }
     return signInWithRedirectFallback();
   }
 
   try {
     const result = await signInWithPopup(firebaseAuth, provider);
+    if (process.env.NODE_ENV !== 'production') {
+      console.debug('[authService] signInWithPopup success', {
+        uid: result.user?.uid,
+        email: result.user?.email,
+        providerId: result.providerId,
+      });
+    }
     return result.user;
   } catch (error) {
-    console.warn('[authService] signInWithPopup failed, fallback to redirect.', error);
+    const authError = error as {
+      code?: string;
+      message?: string;
+      name?: string;
+      stack?: string;
+      customData?: {
+        _tokenResponse?: unknown;
+        [key: string]: unknown;
+      };
+    };
+
+    console.warn('[authService] signInWithPopup failed, fallback to redirect.', {
+      code: authError?.code,
+      message: authError?.message,
+      name: authError?.name,
+      customData: authError?.customData,
+    });
+
     try {
-      return await signInWithRedirectFallback();
+      const redirectResult = await signInWithRedirectFallback();
+      if (process.env.NODE_ENV !== 'production') {
+        console.debug('[authService] signInWithRedirectFallback finished');
+      }
+      return redirectResult;
     } catch (redirectError) {
-      console.error('[authService] signInWithRedirect failed.', redirectError);
+      const redirectAuthError = redirectError as {
+        code?: string;
+        message?: string;
+        name?: string;
+      };
+
+      console.error('[authService] signInWithRedirect failed.', {
+        code: redirectAuthError?.code,
+        message: redirectAuthError?.message,
+        name: redirectAuthError?.name,
+      });
+
       throw redirectError;
     }
   }
