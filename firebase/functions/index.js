@@ -9,6 +9,8 @@ const db = getFirestore();
 const ALLOWED_ORIGINS = [
   'https://onemoresecond.site',
   'https://www.onemoresecond.site',
+  'https://one-more-sencond-web.firebaseapp.com',
+  'https://one-more-sencond-web.web.app',
   'http://localhost:3000',
   'http://127.0.0.1:3000',
 ];
