@@ -309,7 +309,7 @@ export default function Layout({
           <button
             type="button"
             onClick={handleBrandClick}
-            className="inline-flex items-center gap-1 font-primary bg-transparent border-none p-0 cursor-pointer leading-none translate-y-0.5"
+            className="inline-flex items-center gap-1 font-primary bg-transparent border-none p-0 cursor-pointer leading-none"
             aria-label={t('layout.goHome')}
           >
             <img
