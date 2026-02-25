@@ -305,34 +305,32 @@ export default function Layout({
   return (
     <div className="h-screen bg-bg-primary flex flex-col items-center w-full overflow-hidden box-border">
       <div className="relative z-40 w-full bg-bg-secondary border border-border-primary px-3 py-2 sm:px-6 sm:py-3 flex justify-between items-center backdrop-blur-[10px]">
-        <div className="flex items-baseline">
-          <div className="flex items-center gap-1.5 leading-none">
-            <button
-              type="button"
-              onClick={handleBrandClick}
-              className="inline-flex items-center gap-1 font-primary bg-transparent border-none p-0 cursor-pointer leading-none"
-              aria-label={t('layout.goHome')}
-            >
-              <img
-                src={iconFavicon}
-                alt=""
-                aria-hidden="true"
-                className="h-[34px] w-[34px] object-contain sm:h-[48px] sm:w-[48px] flex-shrink-0"
-              />
-              <span className="text-brand-title sm:text-brand-title-lg leading-none italic font-bold text-text-primary">
-                ONE
-              </span>
-              <span className="text-brand-title sm:text-brand-title-lg leading-none italic font-bold text-accent-green">
-                MORE
-              </span>
-              <span className="hidden sm:inline text-brand-title-lg leading-none italic font-bold text-text-primary">
-                SECOND
-              </span>
-            </button>
-            <span className="text-brand-subtitle sm:text-brand-subtitle-lg leading-none text-text-muted font-primary">
-              dodge game
+        <div className="flex items-baseline gap-1.5">
+          <button
+            type="button"
+            onClick={handleBrandClick}
+            className="inline-flex items-center gap-1 font-primary bg-transparent border-none p-0 cursor-pointer leading-none"
+            aria-label={t('layout.goHome')}
+          >
+            <img
+              src={iconFavicon}
+              alt=""
+              aria-hidden="true"
+              className="h-[34px] w-[34px] object-contain sm:h-[48px] sm:w-[48px] flex-shrink-0"
+            />
+            <span className="text-brand-title sm:text-brand-title-lg leading-none italic font-bold text-text-primary">
+              ONE
             </span>
-          </div>
+            <span className="text-brand-title sm:text-brand-title-lg leading-none italic font-bold text-accent-green">
+              MORE
+            </span>
+            <span className="hidden sm:inline text-brand-title-lg leading-none italic font-bold text-text-primary">
+              SECOND
+            </span>
+          </button>
+          <span className="text-brand-subtitle sm:text-brand-subtitle-lg leading-none text-text-muted font-primary self-end">
+            dodge game
+          </span>
         </div>
 
         <div className="flex items-center gap-3 sm:gap-6">
