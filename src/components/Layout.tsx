@@ -311,23 +311,23 @@ export default function Layout({
             onClick={handleBrandClick}
             className="inline-flex items-center gap-1 font-primary bg-transparent border-none p-0 cursor-pointer leading-none"
             aria-label={t('layout.goHome')}
-          >
-            <img
-              src={iconFavicon}
-              alt=""
-              aria-hidden="true"
-              className="h-[34px] w-[34px] object-contain sm:h-[48px] sm:w-[48px] flex-shrink-0"
-            />
-            <span className="text-brand-title sm:text-brand-title-lg leading-none italic font-bold text-text-primary">
-              ONE
-            </span>
-            <span className="text-brand-title sm:text-brand-title-lg leading-none italic font-bold text-accent-green">
-              MORE
-            </span>
-            <span className="hidden sm:inline text-brand-title-lg leading-none italic font-bold text-text-primary">
-              SECOND
-            </span>
-          </button>
+            >
+              <img
+                src={iconFavicon}
+                alt=""
+                aria-hidden="true"
+                className="h-[34px] w-[34px] object-contain sm:h-[48px] sm:w-[48px] flex-shrink-0"
+              />
+              <span className="text-brand-title sm:text-brand-title-lg leading-none italic font-bold text-text-primary translate-y-1">
+                ONE
+              </span>
+              <span className="text-brand-title sm:text-brand-title-lg leading-none italic font-bold text-accent-green translate-y-1">
+                MORE
+              </span>
+              <span className="hidden sm:inline text-brand-title-lg leading-none italic font-bold text-text-primary translate-y-1">
+                SECOND
+              </span>
+            </button>
           <span className="text-brand-subtitle sm:text-brand-subtitle-lg leading-none text-text-muted font-primary self-end -translate-y-2">
             dodge game
           </span>
