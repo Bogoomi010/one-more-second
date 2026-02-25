@@ -40,7 +40,7 @@ interface UserIdentityProfileForWrite extends UserIdentityProfile {
   normalizedNickname: string;
 }
 
-const SCORE_SUBMIT_FUNCTION_NAME = 'submitScoreCallable';
+const SCORE_SUBMIT_FUNCTION_NAME = 'submitScore';
 const DISABLE_SCORE_FUNCTION_CALL = process.env.REACT_APP_DISABLE_SCORE_FUNCTION_CALL === 'true';
 const USER_DOCUMENT_ID = 'users';
 const USER_PUBLIC_PROFILES_COLLECTION = 'userPublicProfiles';
