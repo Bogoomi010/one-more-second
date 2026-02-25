@@ -38,11 +38,6 @@ import {
   upsertUserIdentityProfile,
   UserIdentityProfile,
 } from './services/userDataService';
-import {
-  clearGoogleRedirectLoginPending,
-  consumeGoogleRedirectLoginPending,
-  markGoogleRedirectLoginPending,
-} from './services/authService';
 
 type ToastVariant = 'info' | 'success' | 'error';
 
@@ -142,13 +137,6 @@ function AppShell() {
   }, [achievementPopupIds]);
 
   useEffect(() => {
-    if (!user) return;
-    if (consumeGoogleRedirectLoginPending()) {
-      setPendingProfileSetupCheck(true);
-    }
-  }, [user]);
-
-  useEffect(() => {
     if (!isAiMode) return;
     if (achievementPopupIds.length === 0) return;
     setAchievementPopupIds([]);
@@ -219,10 +207,9 @@ function AppShell() {
     }
 
     try {
-      markGoogleRedirectLoginPending();
       await signInWithGoogle();
+      setPendingProfileSetupCheck(true);
     } catch (error) {
-      clearGoogleRedirectLoginPending();
       console.error('Auth action failed:', error);
       showToast(getFirebaseAuthErrorMessage(error), 'error');
     }

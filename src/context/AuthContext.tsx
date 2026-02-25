@@ -2,17 +2,17 @@ import React, { createContext, useContext, useEffect, useMemo, useState } from '
 import { User } from 'firebase/auth';
 import {
   isAuthAvailable,
-  signInWithGoogleRedirect,
+  signInWithGooglePopup,
   signOutCurrentUser,
   subscribeAuthState,
 } from '../services/authService';
 
 interface AuthContextValue {
   user: User | null;
-      loading: boolean;
-      firebaseEnabled: boolean;
-      signInWithGoogle: () => Promise<void>;
-      signOut: () => Promise<void>;
+  loading: boolean;
+  firebaseEnabled: boolean;
+  signInWithGoogle: () => Promise<void>;
+  signOut: () => Promise<void>;
 }
 
 const defaultValue: AuthContextValue = {
@@ -44,7 +44,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       loading,
       firebaseEnabled,
       signInWithGoogle: async () => {
-        await signInWithGoogleRedirect();
+        await signInWithGooglePopup();
       },
       signOut: async () => {
         await signOutCurrentUser();
